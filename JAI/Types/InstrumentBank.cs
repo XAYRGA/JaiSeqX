@@ -10,7 +10,7 @@ namespace JaiSeqX.JAI.Types
 {
     public class InstrumentBank
     {
-        int id;
+        public int id;
 
         public Instrument[] Instruments;
 
@@ -18,27 +18,38 @@ namespace JaiSeqX.JAI.Types
         private const uint PERC = 0x50455243;
         private const uint PER2 = 0x50455232;
 
-        public void LoadInstrumentBank(BeBinaryReader instReader)
+        public void LoadInstrumentBank(BeBinaryReader instReader, JAIVersion version)
         {
-          
+
             Instruments = new Instrument[0xF0]; // for some reason, they will only ever have 0xF0 instruments in them
+          
+            if (version==JAIVersion.ONE || version==JAIVersion.TWO)
+            {
+                loadIBNKJaiV1(instReader); // Both of these use standard ibnk structure. 
+            }
+      
+        }
+
+
+        private void loadIBNKJaiV1(BeBinaryReader instReader)
+        {
             long anchor = 0;
-            var current_header = 0u;
             var BaseAddress = instReader.BaseStream.Position;
+            var current_header = 0u;
             current_header = instReader.ReadUInt32(); // read the first 4 byteas
-            if (current_header!= 0x49424e4b) // Check to see if it equals IBNK
+            if (current_header != 0x49424e4b) // Check to see if it equals IBNK
             {
                 throw new InvalidDataException("Scanned header is not an IBNK.");
             }
             var size = instReader.ReadUInt32();
             id = instReader.ReadInt32(); // Global virtual ID
-            instReader.BaseStream.Seek(0x14,SeekOrigin.Current); // 0x14 bytes always blank 
+            instReader.BaseStream.Seek(0x14, SeekOrigin.Current); // 0x14 bytes always blank 
             current_header = instReader.ReadUInt32(); // We should be reading "BANK"
             for (int inst_id = 0; inst_id < 0xF0; inst_id++)
             {
                 var inst_offset = instReader.ReadInt32(); // Read the relative pointer to the instrument
                 anchor = instReader.BaseStream.Position; // store the position to jump back into.
-                if (inst_offset > 0 ) // If we have a 0 offset, then the instrument is unassigned. 
+                if (inst_offset > 0) // If we have a 0 offset, then the instrument is unassigned. 
                 {
                     instReader.BaseStream.Position = BaseAddress + inst_offset; // Seek to the offset of the instrument.  
                     current_header = instReader.ReadUInt32(); // Read the 4 byte identity of the instrument.
@@ -61,8 +72,8 @@ namespace JaiSeqX.JAI.Types
                                 /*////////////////////////////////////////////////////////////////////////////*/
                                 var keyCounts = instReader.ReadInt32(); // How many key regions are in here.
                                 int KeyHigh = 0;
-                                int KeyLow = 0; 
-                                for (int k= 0; k < keyCounts; k++)
+                                int KeyLow = 0;
+                                for (int k = 0; k < keyCounts; k++)
                                 {
                                     var NewKey = new InstrumentKey();
                                     NewKey.keys = new InstrumentKeyVelocity[0x81];
@@ -92,9 +103,9 @@ namespace JaiSeqX.JAI.Types
                                             NewVelR.Pitch = instReader.ReadSingle(); // finetune pitch, float. 
                                             for (int idx = 0; idx < (VelHigh - VelLow); idx++) // See below for what this is doing
                                             {
-                                                NewKey.keys[(VelLow + idx)] =NewVelR;
+                                                NewKey.keys[(VelLow + idx)] = NewVelR;
                                             }
-                                            VelLow = VelHigh; 
+                                            VelLow = VelHigh;
                                         }
                                         instReader.BaseStream.Position = velreg_retn; // return to our pointer position  [THIS IS BELOW]
                                     }
@@ -115,14 +126,15 @@ namespace JaiSeqX.JAI.Types
 
                         case PERC:
 
-                            break; 
+                            break;
                     }
                     Instruments[inst_id] = NewINST; // Store it in the instruments bank
                 }
                 instReader.BaseStream.Position = anchor; // return back to our original pos to read the next pointer             
             }
 
-        }
+        
+    }
 
     }
 }

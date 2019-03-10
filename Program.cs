@@ -13,7 +13,7 @@ namespace JaiSeqX
         static void Main(string[] args)
         {
             var b = new AAFFile();
-            b.LoadAAFile("JaiInit.aaf");
+            b.LoadAAFile("JaiInit.aaf", JAIVersion.ONE);
 
             Console.ReadLine();
 

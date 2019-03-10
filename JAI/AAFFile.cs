@@ -13,7 +13,7 @@ namespace JaiSeqX.JAI
 {
     
 
-    public class AAFFile
+    public class AAFFile : AABase
     {
         public WaveSystem[] WSYS;
         public InstrumentBank[] IBNK;
@@ -40,7 +40,7 @@ namespace JaiSeqX.JAI
             }
         }
 
-        public void LoadAAFile(string filename)
+        public void LoadAAFile(string filename, JAIVersion version)
         {
             WSYS = new WaveSystem[0xFF]; // None over 256 please :).
             IBNK = new InstrumentBank[0xFF]; // These either. 
@@ -91,15 +91,20 @@ namespace JaiSeqX.JAI
                                 aafRead.BaseStream.Position = offset; // Seek to the offset pos. 
                                 if (ChunkID==3)
                                 {
-                                    var b = new WaveSystem();
-                                    b.LoadWSYS(aafRead);
-                                    WSYS[b.id] = b;
+                                   
+                                        var b = new WaveSystem(); // Load the wavesystem
+                                        b.LoadWSYS(aafRead);
+                                        WSYS[b.id] = b; // store it
+                               
+
                                     Console.WriteLine("\t WSYS at 0x{0:X}", offset);
                                 } else if (ChunkID==2)
                                 {
+                                    
                                     var x = new InstrumentBank();
-                                    x.LoadInstrumentBank(aafRead);
+                                    x.LoadInstrumentBank(aafRead,version);
                                     Console.WriteLine("\t IBNK at 0x{0:X}", offset);
+                                    IBNK[x.id] = x; // Store it 
                                 }
                                 aafRead.BaseStream.Position = anchor; // Return back to our original pos after loading. 
 

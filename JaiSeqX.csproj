@@ -45,6 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JAIVersion.cs" />
+    <Compile Include="JAI\AABase.cs" />
     <Compile Include="JAI\AAFFile.cs" />
     <Compile Include="JAI\BAAFile.cs" />
     <Compile Include="JAI\Helpers.cs" />

@@ -12,7 +12,7 @@ using System.IO;
 namespace JaiSeqX.JAI
 {
    
-    public class BAAFile
+    public class BAAFile : AABase
     {
         public WaveSystem[] WSYS;
         public InstrumentBank[] IBNK;
@@ -41,7 +41,7 @@ namespace JaiSeqX.JAI
                 }
             }
 
-            public void LoadBAAFile(string filename)
+            public void LoadBAAFile(string filename, JAIVersion version)
             {
                 WSYS = new WaveSystem[0xFF]; // None over 256 please :).
                 IBNK = new InstrumentBank[0xFF]; // These either. 
@@ -87,17 +87,20 @@ namespace JaiSeqX.JAI
                             {
                                 var id = aafRead.ReadUInt32();
                                 var offset = aafRead.ReadUInt32();
+                                anchor = aafRead.BaseStream.Position; // Store our return position. 
+                                aafRead.BaseStream.Position = offset; // Seek to the offset pos. 
+                                var b = new InstrumentBank();
+                                b.LoadInstrumentBank(aafRead, version); // Load it up
+                                IBNK[b.id] = b;
+                                aafRead.BaseStream.Position = anchor; // Return back to our original pos after loading. 
 
                                 break;
                             }
                         case 2004033568: // WSYS 
                             {
                                 var id = aafRead.ReadUInt32();
-                                
                                 var offset = aafRead.ReadUInt32();
                                 var flags = aafRead.ReadUInt32();
-
-
 
                                 anchor = aafRead.BaseStream.Position; // Store our return position. 
                                 aafRead.BaseStream.Position = offset; // Seek to the offset pos. 
