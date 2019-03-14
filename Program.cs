@@ -15,8 +15,8 @@ namespace JaiSeqX
         {
 #if DEBUG
             args = new string[2];
-            args[0] = "JaiInit.aaf";
-            args[1] = "0"; 
+            args[0] = "JaiInit.baa";
+            args[1] = "2"; 
 #endif
             JAIVersion SequencerVersion = JAIVersion.UNKNOWN; 
            if (args.Length < 2)

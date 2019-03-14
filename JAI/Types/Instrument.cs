@@ -35,9 +35,5 @@ namespace JaiSeqX.JAI.Types
         public bool IsPercussion; 
         public InstrumentKey[] Keys; 
 
-        public void LoadInstrument()
-        {
-
-        }
     }
 }

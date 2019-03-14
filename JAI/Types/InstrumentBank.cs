@@ -45,9 +45,11 @@ namespace JaiSeqX.JAI.Types
         {
             long anchor = 0;
             var BaseAddress = instReader.BaseStream.Position;
-            var current_header = 0u;
+            var current_header = instReader.ReadUInt32();
             if (current_header != 0x49424e4b) // Check to see if it equals IBNK
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("0x{0:X}", BaseAddress);
                 throw new InvalidDataException("Scanned header is not an IBNK.");
             }
 
@@ -55,10 +57,13 @@ namespace JaiSeqX.JAI.Types
             id = instReader.ReadInt32();
             var flags = instReader.ReadUInt32(); // usually 1, determines if the bank is melodic or used for sound effects. Usually the bank is melodic. 
             instReader.BaseStream.Seek(0x10, SeekOrigin.Current); // Skip 16 bytes, always 0x00, please document if wrong. 
-
+            var i = 0;
             while (true) {
                 anchor = instReader.BaseStream.Position; // Store current section base. 
-                current_header = instReader.ReadUInt32(); 
+                i++;
+                Console.WriteLine("Iteration {0} 0x{1:X}", i,anchor);
+                current_header = instReader.ReadUInt32();
+                Console.WriteLine("GOT HD {0:X}", current_header);
                 if (current_header==0x00)
                 {
                     break;  // End of section. 
@@ -68,7 +73,10 @@ namespace JaiSeqX.JAI.Types
                     // If it is, we seek back 2 bytes then read again, and our alignment is fixed :). 
                     // of course, this comes after our check to see if it's 0, which indicates end of section
                     instReader.BaseStream.Seek(-2, SeekOrigin.Current);
+                    Console.WriteLine("[!] Misalignment detected in IBNK, new position 0x{0:X}",instReader.BaseStream.Position);
+                    anchor = instReader.BaseStream.Position; // 3/14/2019, i forgot this. It's S M R T to update your read base. 
                     current_header = instReader.ReadUInt32();
+                    Console.WriteLine("New header {0:X}", current_header);
                 }
                 var next_section = ReadJARCSizePointer(instReader); // if that works, go ahead and grab the 'pointer' to the next section. 
                 if (current_header < 0xFFFF)
@@ -86,10 +94,15 @@ namespace JaiSeqX.JAI.Types
                         break;
                     case INST:
                         {
-                            var InstCount = instReader.ReadInt32(); 
+                            var InstCount = instReader.ReadInt32();
+
+
+                            instReader.BaseStream.Position = anchor + next_section; // SAFETY.
                         }
                         break;
                     case PERC:
+
+                        instReader.BaseStream.Position = anchor + next_section;
                         break;
                     case 0x4C495354: // LIST 
                         instReader.BaseStream.Position = anchor + next_section; // Skip section 
