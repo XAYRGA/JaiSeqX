@@ -12,6 +12,7 @@ namespace JaiSeqX
         // Luigis Mansion
         // Super Mario Sunshine
         // Pikmin
+        // Pikmin 2
         ONE = 0x00, 
         
         // Games that use JAIV2 
@@ -23,5 +24,7 @@ namespace JaiSeqX
         // Legend of Zelda: Windwaker 
         // Legend of Zelda: Twilight Princess
         THREE = 0x02, 
+
+        UNKNOWN = 0xFF,
     }
 }

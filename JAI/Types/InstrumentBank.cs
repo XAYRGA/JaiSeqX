@@ -26,10 +26,84 @@ namespace JaiSeqX.JAI.Types
             if (version==JAIVersion.ONE || version==JAIVersion.TWO)
             {
                 loadIBNKJaiV1(instReader); // Both of these use standard ibnk structure. 
-            }
-      
+            } else if (version==JAIVersion.THREE)
+            {
+                loadIBNKJaiV2(instReader);
+            }      
         }
 
+
+        private long ReadJARCSizePointer(BeBinaryReader br)
+        {
+            var sectSize = br.ReadUInt32();
+            return sectSize + 8;  // This is basically taking the section size pointer and adding 8 to it, because the size is always 8 bytes deep. 
+            // Adding 8 to this makes it a pointer to the next section relative to the section base :v
+        }
+
+
+        private void loadIBNKJaiV2(BeBinaryReader instReader) 
+        {
+            long anchor = 0;
+            var BaseAddress = instReader.BaseStream.Position;
+            var current_header = 0u;
+            if (current_header != 0x49424e4b) // Check to see if it equals IBNK
+            {
+                throw new InvalidDataException("Scanned header is not an IBNK.");
+            }
+
+            var IBNKSize = instReader.ReadUInt32();
+            id = instReader.ReadInt32();
+            var flags = instReader.ReadUInt32(); // usually 1, determines if the bank is melodic or used for sound effects. Usually the bank is melodic. 
+            instReader.BaseStream.Seek(0x10, SeekOrigin.Current); // Skip 16 bytes, always 0x00, please document if wrong. 
+
+            while (true) {
+                anchor = instReader.BaseStream.Position; // Store current section base. 
+                current_header = instReader.ReadUInt32(); 
+                if (current_header==0x00)
+                {
+                    break;  // End of section. 
+                } else if (current_header < 0xFFFF) // Read below for explanation
+                {
+                    // I've noticed VERY RARELY, that the section pointer is wrong by two bytes. This sucks. So we check if it's less than two full bytes.
+                    // If it is, we seek back 2 bytes then read again, and our alignment is fixed :). 
+                    // of course, this comes after our check to see if it's 0, which indicates end of section
+                    instReader.BaseStream.Seek(-2, SeekOrigin.Current);
+                    current_header = instReader.ReadUInt32();
+                }
+                var next_section = ReadJARCSizePointer(instReader); // if that works, go ahead and grab the 'pointer' to the next section. 
+                if (current_header < 0xFFFF)
+                {
+                    Console.WriteLine("Corrupt IBNK 0x{0:X}", BaseAddress);
+                    break;
+                }
+                switch (current_header)
+                {
+                    case 0x4F534354: // OSCT
+                    case 0x52414E44: // RAND 
+                    case 0x454E5654: // EVNT
+                    case 0x53454E53: // SENS 
+                        instReader.BaseStream.Position = anchor + next_section; // Skip section. 
+                        break;
+                    case INST:
+                        {
+                            var InstCount = instReader.ReadInt32(); 
+                        }
+                        break;
+                    case PERC:
+                        break;
+                    case 0x4C495354: // LIST 
+                        instReader.BaseStream.Position = anchor + next_section; // Skip section 
+                        // Explanation: This is just a set of pointers relative to BaseAddress for the instruments, nothing special because we're
+                        // already parsing them above. 
+                        break;
+                    default:
+                        instReader.BaseStream.Position = anchor + next_section; // Skip section. 
+                        break; 
+                }
+            }
+        }
+
+        
 
         private void loadIBNKJaiV1(BeBinaryReader instReader)
         {
