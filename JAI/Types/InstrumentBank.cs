@@ -17,6 +17,7 @@ namespace JaiSeqX.JAI.Types
         private const uint INST = 0x494E5354;
         private const uint PERC = 0x50455243;
         private const uint PER2 = 0x50455232;
+        private const uint Inst = 0x496E7374;
 
         public void LoadInstrumentBank(BeBinaryReader instReader, JAIVersion version)
         {
@@ -94,12 +95,78 @@ namespace JaiSeqX.JAI.Types
                         break;
                     case INST:
                         {
+                            var NewINST = new Instrument();
                             var InstCount = instReader.ReadInt32();
+                            NewINST.Keys = new InstrumentKey[0xF0];
+                            for (int instid = 0; instid < InstCount; instid++)
+                            {
+                                current_header = instReader.ReadUInt32();
+                                if (current_header != Inst)
+                                {
+                                    break; // FUCK. 
+                                }
+                                NewINST.oscillator = instReader.ReadInt32();
+                                NewINST.id = instReader.ReadInt32();
+
+                                instReader.ReadInt32(); // cant figure out what these are. 
+                                var keyCounts = instReader.ReadInt32(); // How many key regions are in here.
+                                int KeyHigh = 0;
+                                int KeyLow = 0;
+                                for (int k = 0; k < keyCounts; k++)
+                                {
+                                    var NewKey = new InstrumentKey();
+                                    NewKey.keys = new InstrumentKeyVelocity[0x81];
+                    
+                                    byte key = instReader.ReadByte(); // Read the key identifierr
+                                    KeyHigh = key;  // Set the highest key to what we just read. 
+                                    instReader.BaseStream.Seek(3, SeekOrigin.Current); // 3 bytes, unused.
+                                    var VelocityRegionCount = instReader.ReadInt32(); // read the number of entries in the velocity region array\
+                                    if (VelocityRegionCount > 0x7F)
+                                    {
+                                        Console.WriteLine("Alignment is fucked, IBNK load aborted.");
+                                        Console.WriteLine("E: VelocityRegionCount is too thicc. {0} > 128", VelocityRegionCount);
+                                        Console.ReadLine();
+                                        return;
+                                    }
+                                    for (int b = 0; b < VelocityRegionCount; b++)
+                                    {
+                                        var NewVelR = new InstrumentKeyVelocity();
+                                        
+                                        int VelLow = 0;
+                                        int VelHigh = 0;
+                                        {
+                                            var velocity = instReader.ReadByte(); // The velocity of this key.
+                                            VelHigh = velocity;
+                                            instReader.BaseStream.Seek(3, SeekOrigin.Current); // Unused.
+                                            NewVelR.velocity = velocity;
+                                            NewVelR.wave = instReader.ReadUInt16(); // This will be the ID of the wave inside of that wavesystem
+                                            NewVelR.wsysid = instReader.ReadUInt16(); // This will be the ID of the WAVESYSTEM that its in
+                                       
+                                            NewVelR.Volume = instReader.ReadSingle(); // Finetune, volume, float
+                                            NewVelR.Pitch = instReader.ReadSingle(); // finetune pitch, float. 
+                                            for (int idx = 0; idx < (VelHigh - VelLow); idx++) // See below for what this is doing
+                                            {
+                                                NewKey.keys[(VelLow + idx)] = NewVelR;
+                                            }
+                                            VelLow = VelHigh;
+                                        }
+              
+                                    }
+                                    for (int idx = 0; idx < (KeyHigh - KeyLow); idx++) // The keys are gappy.
+                                    {
+                                        NewINST.Keys[(KeyLow + idx)] = NewKey; // So we want to interpolate the previous keys across the empty ones, so that way it's a region
+                                    }
+                                    KeyLow = KeyHigh; // Set our new lowest key to the previous highest
+                         
 
 
+                                }
+
+                            
+                            }
                             instReader.BaseStream.Position = anchor + next_section; // SAFETY.
+                            break;
                         }
-                        break;
                     case PERC:
 
                         instReader.BaseStream.Position = anchor + next_section;
