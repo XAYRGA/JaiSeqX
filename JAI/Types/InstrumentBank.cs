@@ -62,9 +62,9 @@ namespace JaiSeqX.JAI.Types
             while (true) {
                 anchor = instReader.BaseStream.Position; // Store current section base. 
                 i++;
-                Console.WriteLine("Iteration {0} 0x{1:X}", i,anchor);
+               // Console.WriteLine("Iteration {0} 0x{1:X}", i,anchor);
                 current_header = instReader.ReadUInt32();
-                Console.WriteLine("GOT HD {0:X}", current_header);
+              //  Console.WriteLine("GOT HD {0:X}", current_header);
                 if (current_header==0x00)
                 {
                     break;  // End of section. 
@@ -101,6 +101,7 @@ namespace JaiSeqX.JAI.Types
                             for (int instid = 0; instid < InstCount; instid++)
                             {
                                 current_header = instReader.ReadUInt32();
+                                var iebase = instReader.BaseStream.Position;
                                 if (current_header != Inst)
                                 {
                                     break; // FUCK. 
@@ -123,15 +124,16 @@ namespace JaiSeqX.JAI.Types
                                     var VelocityRegionCount = instReader.ReadInt32(); // read the number of entries in the velocity region array\
                                     if (VelocityRegionCount > 0x7F)
                                     {
+
                                         Console.WriteLine("Alignment is fucked, IBNK load aborted.");
                                         Console.WriteLine("E: VelocityRegionCount is too thicc. {0} > 128", VelocityRegionCount);
-                                        Console.ReadLine();
+                                        Console.WriteLine("IBASE: 0x{0:X} + 0x{1:X} ({2:X})", anchor, iebase - anchor, (instReader.BaseStream.Position - anchor) - (iebase - anchor)  );
+                                        
                                         return;
                                     }
                                     for (int b = 0; b < VelocityRegionCount; b++)
                                     {
                                         var NewVelR = new InstrumentKeyVelocity();
-                                        
                                         int VelLow = 0;
                                         int VelHigh = 0;
                                         {
@@ -157,12 +159,7 @@ namespace JaiSeqX.JAI.Types
                                         NewINST.Keys[(KeyLow + idx)] = NewKey; // So we want to interpolate the previous keys across the empty ones, so that way it's a region
                                     }
                                     KeyLow = KeyHigh; // Set our new lowest key to the previous highest
-                         
-
-
                                 }
-
-                            
                             }
                             instReader.BaseStream.Position = anchor + next_section; // SAFETY.
                             break;
@@ -275,9 +272,56 @@ namespace JaiSeqX.JAI.Types
                                 break;
                             }
                         case PER2:
+                            {
+                                NewINST.IsPercussion = true;
+                                instReader.BaseStream.Seek(0x84, SeekOrigin.Current); // 0x88 - 4 (PERC) 
+                                for (int per = 0; per < 100; per++)
+                                {
+                                    var NewKey = new InstrumentKey();
+                                    NewKey.keys = new InstrumentKeyVelocity[0x81];
 
-                            break;
+                                    var keyreg_offset = instReader.ReadInt32(); // This will be where the data for our key region is. 
+                                    var keyptr_return = instReader.BaseStream.Position; // This is our position after reading the pointer, we'll need to return to it
+                                    if (keyreg_offset == 0)
+                                    {
+                                        continue; // Skip, its empty. 
+                                    }
+                                    instReader.BaseStream.Position = BaseAddress + keyreg_offset; // seek to position. 
+                                    NewINST.Pitch = instReader.ReadSingle();
+                                    NewINST.Volume = instReader.ReadSingle();
+                                    instReader.BaseStream.Seek(8, SeekOrigin.Current);
+                                    var VelocityRegionCount = instReader.ReadInt32(); // read the number of entries in the velocity region array
+                                    for (int b = 0; b < VelocityRegionCount; b++)
+                                    {
+                                        var NewVelR = new InstrumentKeyVelocity();
+                                        var velreg_offs = instReader.ReadInt32(); // read the offset of the velocity region
+                                        var velreg_retn = instReader.BaseStream.Position;  // another one of these.  Return pointer
+                                        instReader.BaseStream.Position = velreg_offs + BaseAddress;
+                                        int VelLow = 0;
+                                        int VelHigh = 0;
+                                        {
+                                            var velocity = instReader.ReadByte(); // The velocity of this key.
+                                            VelHigh = velocity;
+                                            instReader.BaseStream.Seek(3, SeekOrigin.Current); // Unused.
+                                            NewVelR.velocity = velocity;
+                                            NewVelR.wsysid = instReader.ReadUInt16(); // This will be the ID of the WAVESYSTEM that its in
+                                            
+                                            NewVelR.wave = instReader.ReadUInt16(); // This will be the ID of the wave inside of that wavesystem
+                                            NewVelR.Volume = instReader.ReadSingle(); // Finetune, volume, float
+                                            NewVelR.Pitch = instReader.ReadSingle(); // finetune pitch, float. 
+                                            for (int idx = 0; idx < (VelHigh - VelLow); idx++) // See below for what this is doing
+                                            {
+                                                NewKey.keys[(VelLow + idx)] = NewVelR;
+                                            }
+                                            VelLow = VelHigh;
+                                        }
+                                        instReader.BaseStream.Position = velreg_retn; // return to our pointer position  [THIS IS BELOW]
+                                    }
+                                    instReader.BaseStream.Position = keyptr_return;
+                                }
 
+                                break;
+                            }
                         case PERC:
 
                             break;
