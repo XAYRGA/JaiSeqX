@@ -8,7 +8,7 @@ namespace JaiSeqX.JAI.Seq
 {
 
     // Track state object, tells all of the parameters of the track at any given point. 
-    public struct JSequenceState
+    public class JSequenceState
     {
        
         public byte note; 

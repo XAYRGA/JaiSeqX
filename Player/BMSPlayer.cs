@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JaiSeqX.JAI.Seq
+namespace JaiSeqX.Player
 {
+    class BMSPlayer
+    {
+    }
 }

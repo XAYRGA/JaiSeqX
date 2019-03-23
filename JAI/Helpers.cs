@@ -267,5 +267,44 @@ namespace JaiSeqX.JAI
             return pth_out;
         }
 
+
+
+        public static void printJaiSeqStack(JAI.Seq.Subroutine Seq)
+        {
+            var opstack = Seq.OpcodeHistory;
+            var postack = Seq.OpcodeAddressStack;
+            opstack = new Queue<byte>(opstack.Reverse());
+            postack = new Queue<int>(postack.Reverse());
+            int finalCall = 0; 
+            int finalCallAddr = 0; 
+
+            try
+            {
+                finalCall = opstack.Dequeue();
+                finalCallAddr = postack.Dequeue();
+                
+            } catch
+            {
+                Console.WriteLine("JaiSeqXHelpers: Couldn't print JaiSeq stack. There's probably nothing in the stack.");
+                return;
+            }
+
+            var depth = 0;
+            Console.WriteLine("===== printJaiSeqStack");
+            Console.WriteLine("(depth) addr: opcode");
+            var b = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("({2:X}) 0x{1:X}: 0x{0:X}", finalCall, finalCallAddr, depth);
+            Console.ForegroundColor = b; 
+            while (true)
+            {
+                depth++;
+                if (opstack.Count == 0) { break; }
+                finalCall = opstack.Dequeue();
+                finalCallAddr = postack.Dequeue();
+                Console.WriteLine("\t({2:X}) 0x{1:X}: 0x{0:X}", finalCall, finalCallAddr,depth);
+            }
+        }
+
     }
 }

@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -37,6 +38,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -51,7 +53,6 @@
     <Compile Include="JAI\BAAFile.cs" />
     <Compile Include="JAI\Helpers.cs" />
     <Compile Include="JAI\Seq\JaiEventType.cs" />
-    <Compile Include="JAI\Seq\JaiSeqEvent.cs" />
     <Compile Include="JAI\Seq\JSequenceState.cs" />
     <Compile Include="JAI\Seq\Subroutine.cs" />
     <Compile Include="JAI\Types\Instrument.cs" />

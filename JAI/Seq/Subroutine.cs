@@ -44,6 +44,7 @@ namespace JaiSeqX.JAI.Seq
         JUMP = 0xC7,
         JUMP_COND = 0xC8,
 
+      
 
         TIME_BASE = 0xFD,
         TEMPO = 0xFE,
@@ -67,11 +68,11 @@ namespace JaiSeqX.JAI.Seq
 
         Stack<uint> AddrStack;
 
+        public Queue<byte> OpcodeHistory;
+        public Queue<int> OpcodeAddressStack;
+        
    
         private int baseAddress;
-
-
-        public bool stopped;
 
         public JSequenceState State; 
 
@@ -81,9 +82,13 @@ namespace JaiSeqX.JAI.Seq
             SeqData = BMSData;
 
             AddrStack = new Stack<uint>(64); // 64 unit stack? 
+            OpcodeHistory = new Queue<byte>(16);
+            OpcodeAddressStack = new Queue<int>(16);
 
             Sequence = new BeBinaryReader(new MemoryStream(BMSData));
             Sequence.BaseStream.Position = BaseAddr;
+
+            State = new JSequenceState();
 
             baseAddress = BaseAddr;
           
@@ -101,11 +106,30 @@ namespace JaiSeqX.JAI.Seq
             Sequence.BaseStream.Position = baseAddress;
         }
 
+        public void jump(int pos)
+        {
+            Sequence.BaseStream.Position = pos;
+        }
 
         public JaiEventType loadNextOp()
         {
+            if (OpcodeAddressStack.Count == 16)
+            {
+                OpcodeAddressStack.Dequeue();
+            }
+            if (OpcodeHistory.Count == 16)
+            {
+                OpcodeHistory.Dequeue(); 
+            }
+
+            OpcodeAddressStack.Enqueue((int)Sequence.BaseStream.Position); // push address to FIFO stack. 
+
             byte current_opcode = Sequence.ReadByte(); // Reads the current byte in front of the cursor. 
 
+            OpcodeHistory.Enqueue(current_opcode); // push opcode to FIFO stack
+
+           
+            
             if (current_opcode < 0x80)
             {
                 State.note = current_opcode; // The note on event is laid out like a piano with 127 (0x7F1) keys. 
@@ -130,7 +154,8 @@ namespace JaiSeqX.JAI.Seq
                 {
                     /* Delays and waits */
                     case (byte)JaiSeqEvent.WAIT_16: // Wait (UInt16)
-                        State.delay += Sequence.ReadUInt16(); // Add to the state delay
+                        State.delay = Sequence.ReadInt16(); // Add to the state delay
+                      
                         return JaiEventType.DELAY;
 
                     case (byte)JaiSeqEvent.WAIT_VAR: // Wait (VLQ) see readVlq function. 
@@ -166,7 +191,9 @@ namespace JaiSeqX.JAI.Seq
                         State.bpm = Sequence.ReadInt16();
                         return JaiEventType.TIME_BASE;
 
-       
+                
+                    
+                      
 
 
                     /* Track Control */
@@ -272,7 +299,13 @@ namespace JaiSeqX.JAI.Seq
                         return JaiEventType.PERF;
 
                     /* Unsure as of yet, but we have to keep alignment */
-                     
+
+                    case 0xEF:
+                    case 0xF9:
+                    case 0xE6:
+                   // case 0xE7:
+                        skip(2);
+                        return JaiEventType.UNKNOWN;
                     case 0xA0:
                         skip(2);
                         return JaiEventType.UNKNOWN;
@@ -301,6 +334,8 @@ namespace JaiSeqX.JAI.Seq
                         if (flag == 0x40) { skip(2); }
                         if (flag == 0x80) { skip(4); }
                         return JaiEventType.UNKNOWN;
+                    case 0xDB:
+                    case 0xDF:
                     case 0xB4:
                         skip(4);
                         return JaiEventType.UNKNOWN;
@@ -318,8 +353,15 @@ namespace JaiSeqX.JAI.Seq
                     case 0xD2:
                     case 0xD5:
                     case 0xDE:
+                    case 0xDA:
+                   
                         skip(1);
                         return JaiEventType.UNKNOWN;
+                    case 0xF1:
+                    case 0xF4:
+                    case 0xE2:
+                   
+                    case 0xE3:
                     case 0xD6:
                         skip(1);
                         return JaiEventType.UNKNOWN;
