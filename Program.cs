@@ -7,7 +7,7 @@ using JaiSeqX.JAI;
 using JaiSeqX.JAI.Seq;
 using System.IO;
 using System.Drawing;
-using System.Threading.Tasks;
+
 
 namespace JaiSeqX
 {
@@ -17,6 +17,23 @@ namespace JaiSeqX
 
         static void Main(string[] args)
         {
+
+            if (args.Length > 0)
+            {
+                if (args[0] == "mkjasm")
+                {
+                    if (args.Length > 2)
+                    {
+                        var wtf = new JASM.JASMConverter(args[1], args[2]);
+                        return; 
+                    }
+
+                }
+
+            }
+
+
+
 
             /*
 
@@ -60,7 +77,7 @@ namespace JaiSeqX
              Player.BMSPlayer.LoadBMS("test.bms", ref AAData);
              */
 
-            var wtf = new JASM.JASMConverter("test.bms", "test.jasm");
+           
 
             /* 
              
