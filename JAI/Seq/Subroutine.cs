@@ -124,6 +124,7 @@ namespace JaiSeqX.JAI.Seq
 
             OpcodeAddressStack.Enqueue((int)Sequence.BaseStream.Position); // push address to FIFO stack. 
 
+            State.current_address = (int)Sequence.BaseStream.Position;
             byte current_opcode = Sequence.ReadByte(); // Reads the current byte in front of the cursor. 
 
             OpcodeHistory.Enqueue(current_opcode); // push opcode to FIFO stack

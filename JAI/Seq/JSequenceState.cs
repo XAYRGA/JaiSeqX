@@ -34,7 +34,9 @@ namespace JaiSeqX.JAI.Seq
         public byte jump_mode;
 
         public int track_id; 
-        public int track_address; 
+        public int track_address;
+
+        public int current_address;
 
     }
 }

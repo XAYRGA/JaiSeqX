@@ -24,10 +24,6 @@ namespace XAYRGA.SharpSL
                 FOutput = new MasteringVoice(RootContext);
                 inited = true;
 
-
-           
-
-
             } else
             {
                 throw new Exception("Already initialized.");

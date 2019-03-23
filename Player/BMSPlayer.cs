@@ -7,6 +7,7 @@ using JaiSeqX.JAI.Seq;
 using JaiSeqX.JAI;
 using System.IO;
 using System.Threading;
+using XAYRGA.SharpSL;
 
 namespace JaiSeqX.Player
 {

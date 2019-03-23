@@ -68,6 +68,8 @@
     <Compile Include="JAI\Types\WSYS\WaveSystem.cs" />
     <Compile Include="JAI\Types\WSYS\WSYSGroup.cs" />
     <Compile Include="JAI\Types\WSYS\WSYSWave.cs" />
+    <Compile Include="JASM\JASMConverter.cs" />
+    <Compile Include="Player\BMSChannelManager.cs" />
     <Compile Include="Player\BMSPlayer.cs" />
     <Compile Include="Player\SharpSL\SoundEffect.cs" />
     <Compile Include="Player\SharpSL\SoundEffectInstance.cs" />
@@ -81,6 +83,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="JAI\Seq\Events\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="JASM\JASMCodes.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

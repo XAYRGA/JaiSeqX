@@ -19,10 +19,6 @@ namespace JaiSeqX.JAI
         public InstrumentBank[] IBNK;
 
 
-
-
-
-
         private string convertChunkName(uint id)
         {
             switch (id)
@@ -95,7 +91,6 @@ namespace JaiSeqX.JAI
                                         var b = new WaveSystem(); // Load the wavesystem
                                         b.LoadWSYS(aafRead);
                                         WSYS[b.id] = b; // store it
-                               
 
                                     Console.WriteLine("\t WSYS at 0x{0:X}", offset);
                                 } else if (ChunkID==2)
