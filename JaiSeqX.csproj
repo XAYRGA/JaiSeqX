@@ -36,6 +36,14 @@
     <Reference Include="Be.IO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Be.IO.1.0.0\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+Xamarin.iOS10+MonoTouch10\Be.IO.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Downloads\SharpDX-master\SharpDX-master\Bin\Debug\net40\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.XAudio2, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Downloads\SharpDX-master\SharpDX-master\Bin\Debug\net40\SharpDX.XAudio2.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -60,6 +68,10 @@
     <Compile Include="JAI\Types\WSYS\WaveSystem.cs" />
     <Compile Include="JAI\Types\WSYS\WSYSGroup.cs" />
     <Compile Include="JAI\Types\WSYS\WSYSWave.cs" />
+    <Compile Include="Player\BMSPlayer.cs" />
+    <Compile Include="Player\SharpSL\SoundEffect.cs" />
+    <Compile Include="Player\SharpSL\SoundEffectInstance.cs" />
+    <Compile Include="Player\SharpSL\SoundEngine.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

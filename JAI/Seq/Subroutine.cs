@@ -303,7 +303,7 @@ namespace JaiSeqX.JAI.Seq
                     case 0xEF:
                     case 0xF9:
                     case 0xE6:
-                   // case 0xE7:
+                    case 0xE7:
                         skip(2);
                         return JaiEventType.UNKNOWN;
                     case 0xA0:

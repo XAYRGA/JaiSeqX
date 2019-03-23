@@ -18,7 +18,7 @@ namespace JaiSeqX
         static void Main(string[] args)
         {
 
-            /*
+           
         
 #if DEBUG
             args = new string[2];
@@ -55,7 +55,12 @@ namespace JaiSeqX
                 b.LoadBAAFile(args[0], SequencerVersion);
                 AAData = b;
             }
-            */
+            // */
+
+            Player.BMSPlayer.LoadBMS("test.bms", ref AAData);
+
+            /* 
+             
             var bmsfile = File.ReadAllBytes("test.bms");
             var  first = new Subroutine(ref bmsfile,0x00000);
             var subroutines = new Subroutine[24];
@@ -132,6 +137,8 @@ namespace JaiSeqX
                     
                 }
             }
+
+        */ 
 
 
 
