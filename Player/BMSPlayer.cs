@@ -77,6 +77,7 @@ namespace JaiSeqX.Player
 
         private static void sequencerTick()
         {
+            ChannelManager.onTick();
             for (int csub = 0; csub < subroutine_count; csub++)
             {
                 var current_subroutine = subroutines[csub]; // grab the current subroutine
@@ -120,7 +121,7 @@ namespace JaiSeqX.Player
                                                     var sound = ChannelManager.loadSound(wave.pcmpath,wave.loop,wave.loop_start,wave.loop_end).CreateInstance();
                                                     var pmul = program.Pitch * key.Pitch;
                                                     var vmul = program.Volume * key.Volume;
-                                                    var real_pitch = Math.Pow(2, ((note - wave.key) * pmul) / 12);
+                                                    var real_pitch = Math.Pow(2, ((note - wave.key) *pmul ) / 12) ;
                                                     var true_volume = (Math.Pow(((float)vel) / 127, 2) * vmul) * 0.5;
                                                     sound.Volume = (float)(true_volume * 0.6);
                                                     
@@ -128,7 +129,7 @@ namespace JaiSeqX.Player
                                                     {
                                                         real_pitch = (float)(key.Pitch * program.Pitch);
                                                     }
-                                                    sound.Pitch = (float)real_pitch;
+                                                    sound.Pitch = (float) (real_pitch);
 
                                                     ChannelManager.startVoice(sound, (byte)csub, current_state.voice);
                                                     if (!mutes[csub]) // The sounds are created, so they're still startable even if they're not used. 
@@ -175,6 +176,15 @@ namespace JaiSeqX.Player
                         case JaiEventType.HALT:
                             {
                                 halts[csub] = true;
+                                break;
+                            }
+                        case JaiEventType.PERF:
+                            {
+                                if (current_state.perf==1) // Pitch bend
+                                {
+                                    //Console.WriteLine("Pitch bend c {0} {1} {2}", csub, current_state.perf_value, current_state.perf_duration);
+                                    ChannelManager.doPitchBend((byte)csub, current_state.perf_value, current_state.perf_duration, current_state.perf_type);
+                                }
                                 break;
                             }
                         case JaiEventType.JUMP:

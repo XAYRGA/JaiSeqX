@@ -88,7 +88,7 @@ namespace JaiSeqX.JAI
                                 aafRead.BaseStream.Position = offset; // Seek to the offset pos. 
                                 var b = new InstrumentBank();
                                 b.LoadInstrumentBank(aafRead, version); // Load it up
-                                IBNK[b.id] = b;
+                                IBNK[id] = b;
                                 aafRead.BaseStream.Position = anchor; // Return back to our original pos after loading. 
 
                                 break;

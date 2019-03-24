@@ -23,6 +23,7 @@ namespace JaiSeqX.JAI.Seq
         public int perf;
         public int perf_value;
         public int perf_duration;
+        public byte perf_type;
         
         public byte voice_bank;
         public byte voice_program;

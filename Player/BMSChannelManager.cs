@@ -10,7 +10,8 @@ namespace JaiSeqX.Player
     public class BMSChannel
     {
         SoundEffectInstance[] voices;
-        
+        public SoundEffectInstance LastVoice; 
+
         public BMSChannel()
         {
             voices = new SoundEffectInstance[16]; // Should only ever have 8 voices, but still. 
@@ -25,6 +26,7 @@ namespace JaiSeqX.Player
                     stopVoice(index); // Stop it if we do. 
                 }
                 voices[index] = voice; // Throw the voice into its index
+                LastVoice = voice; 
                 return true; // success
             }
             return false; 
@@ -55,12 +57,28 @@ namespace JaiSeqX.Player
         BMSChannel[] channels; // current channels
         int cacheHigh; // Highest number in the cache we have
 
+        bool[] bending;
+
+        float[] bendtarget;
+        int[] bendtargetricks; 
+        int[] bendticks; 
+       
+
+        float[] bendPitchBase; 
+
         public BMSChannelManager()
         {
             SharpSLEngine.Init();
             Cache = new SoundEffect[1024]; // I HOPE that the engine doesn't need more than 1024 sounds at once.
             CacheStrings = new string[1024]; // ^
+
             channels = new BMSChannel[32];  // Usually no more than 16 channels.  Again, just to be safe
+
+            bendtarget = new float[32];
+            bending = new bool[32];
+            bendPitchBase = new float[32];
+            bendticks = new int[32];
+            bendtargetricks = new int[32];
 
             for (int i=0; i < channels.Length;i++)
             {
@@ -69,6 +87,81 @@ namespace JaiSeqX.Player
 
         }
 
+        public bool doPitchBend(byte channel, int bend, int duration, byte type)
+        {
+            var chn = channels[channel]; 
+
+            if ( chn.LastVoice != null)
+            {
+                var voi = chn.LastVoice;
+
+                bendPitchBase[channel] = voi.Pitch; // fuck
+                bending[channel] = true; // fuck
+                bendticks[channel] = 0; // fuck
+                bendtargetricks[channel] = duration; // fuck 
+
+                float target = 0;
+                if (type==1)
+                {
+                    target = (float)bend / 0xFF;
+                }
+                if (type==2)
+                {
+                    target = (float)bend / 0x7F; 
+                }
+                if (type==3)
+                {
+                    target = (float)bend / 0x7FFF;
+                }
+
+               //Console.WriteLine("Add Target {0} ", target);
+                
+                bendtarget[channel] = target; // fuck
+
+                return true; 
+            }
+           
+            return false; 
+        }
+
+        public bool onTick()
+        {
+            for (int chn = 0; chn < channels.Length; chn++)
+            {
+                // bend 
+                
+                if (bending[chn])
+                {
+                    var bendChannel = channels[chn];
+                    bendticks[chn]++;
+                    var ticks = bendticks[chn];
+                    var targetTicks = bendtargetricks[chn];
+                    if (ticks > targetTicks )
+                    {
+                        bending[chn] = false; 
+                    }
+                    float bendPercent = ((float)ticks / targetTicks) < 1 ? ((float)ticks / targetTicks) : 1 ;
+                    float semitones = bendtarget[chn] * bendPercent;
+
+                    if (bendChannel.LastVoice!=null)
+                    {
+                       // Console.WriteLine("doing it ");
+                       // var real_pitch = (float)Math.Pow(2, / 12f);
+                        var voice = bendChannel.LastVoice;
+                        var basepitch = bendPitchBase[chn];
+                        // var newpitch =  (float)Math.Pow(2,  / 12) ;
+                        float newpitch = 1 + (semitones / 12f) ;
+
+                        //Console.WriteLine("BEND DEGREE {0}", newpitch);
+                        // voice.Pitch = basepitch * newpitch;
+                    }                   
+
+                }
+                
+            }
+
+            return true; 
+        }
         public SoundEffect loadSound(string file, bool lo, int ls, int le)
         {
             for (int i=0; i < CacheStrings.Length;i++)

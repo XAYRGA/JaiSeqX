@@ -183,6 +183,15 @@ namespace JaiSeqX.JAI.Seq
                     /* Tempo Control */
 
                     case (byte)JaiSeqEvent.J2_SET_ARTIC: // The very same.
+                        {
+                            var type = Sequence.ReadByte();
+                            var val = Sequence.ReadInt16();
+                            if (type == 0x62)
+                            {
+                                State.ppqn = val;
+                            }
+                            return JaiEventType.TIME_BASE;
+                        }
                     case (byte)JaiSeqEvent.TIME_BASE: // Set ticks per quarter note.
                         State.ppqn = Sequence.ReadInt16();
                         return JaiEventType.TIME_BASE;
@@ -200,9 +209,28 @@ namespace JaiSeqX.JAI.Seq
                         return JaiEventType.NEW_TRACK;
                     case (byte)JaiSeqEvent.FIN:
                         return JaiEventType.HALT;
-                        
+
+                    case (byte)JaiSeqEvent.J2_SET_BANK:
+                        State.voice_bank = Sequence.ReadByte();
+                        return JaiEventType.BANK_CHANGE;
+
+                    case (byte)JaiSeqEvent.J2_SET_PROG:
+                        State.voice_program = Sequence.ReadByte();
+                        return JaiEventType.PROG_CHANGE;
 
                     /* Parameter control */
+
+
+                    case (byte)JaiSeqEvent.J2_SET_PERF_8:
+                        State.param = Sequence.ReadByte();
+                        State.param_value = Sequence.ReadByte();
+                        return JaiEventType.PARAM;
+
+                    case (byte)JaiSeqEvent.J2_SET_PERF_16:
+                        State.param = Sequence.ReadByte();
+                        State.param_value = Sequence.ReadInt16();
+                        return JaiEventType.PARAM;
+
                     case (byte)JaiSeqEvent.PARAM_SET_8: // Set track parameters (Usually used for instruments)
                         State.param = Sequence.ReadByte();
                         State.param_value = Sequence.ReadByte(); 
@@ -243,12 +271,14 @@ namespace JaiSeqX.JAI.Seq
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadByte();
                         State.perf_duration = 0;
+                        State.perf_type = 1;
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_U8_DUR_U8:
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadByte();
                         State.perf_duration = Sequence.ReadByte();
+                        State.perf_type = 1;
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_U8_DUR_U16:
@@ -256,44 +286,56 @@ namespace JaiSeqX.JAI.Seq
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadByte();
                         State.perf_duration = Sequence.ReadUInt16();
+                        State.perf_type = 1;
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S8_NODUR:
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadSByte();
                         State.perf_duration = 0;
+                        State.perf_type = 2;
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S8_DUR_U8:
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadSByte();
                         State.perf_duration = Sequence.ReadByte();
+                        State.perf_type = 2;
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S8_DUR_U16:
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadSByte();
                         State.perf_duration = Sequence.ReadUInt16();
+                        State.perf_type = 2;
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S16_NODUR:
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadInt16();
                         State.perf_duration = 0;
+                        State.perf_type = 3;
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S16_DUR_U8:
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadInt16();
                         State.perf_duration = Sequence.ReadByte();
+                        State.perf_type = 3;
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S16_DUR_U16:
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadInt16();
                         State.perf_duration = Sequence.ReadUInt16();
+                        State.perf_type = 3;
+
                         return JaiEventType.PERF;
 
+
+                    /* J2 Opcodes */
+                   
+                    
                     /* Unsure as of yet, but we have to keep alignment */
 
                     case 0xDD:
@@ -306,6 +348,7 @@ namespace JaiSeqX.JAI.Seq
                         skip(2);
                         return JaiEventType.UNKNOWN;
                     case 0xA0:
+                    case 0xA1:
                         skip(2);
                         return JaiEventType.UNKNOWN;
                     case 0xA3:
@@ -329,16 +372,24 @@ namespace JaiSeqX.JAI.Seq
                     case 0xAE:                        
                         return JaiEventType.UNKNOWN;
                     case 0xB1:
-                        int flag = Sequence.ReadByte();
+                    case 0xB2:
+                    case 0xB3:
+                    case 0xB4:
+                    case 0xB5:
+                    case 0xB6:
+                    case 0xB7:
+                    int flag = Sequence.ReadByte();
                         if (flag == 0x40) { skip(2); }
                         if (flag == 0x80) { skip(4); }
                         return JaiEventType.UNKNOWN;
                     case 0xDB:
+                   
                     case 0xDF:
-                    case 0xB4:
+                    
                         skip(4);
                         return JaiEventType.UNKNOWN;
                     case 0xCB:
+                    case 0xBE:
                         skip(2);
                         return JaiEventType.UNKNOWN;
                     case 0xCC:
@@ -358,9 +409,9 @@ namespace JaiSeqX.JAI.Seq
                         return JaiEventType.UNKNOWN;
                     case 0xF1:
                     case 0xF4:
-                    case 0xE2:
-                   
-                    case 0xE3:
+                    
+                    
+                    
                     case 0xD6:
                         skip(1);
                         return JaiEventType.UNKNOWN;
