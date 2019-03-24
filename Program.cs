@@ -35,7 +35,7 @@ namespace JaiSeqX
 
 
 
-            /*
+            
 
  #if DEBUG
              args = new string[2];
@@ -74,12 +74,14 @@ namespace JaiSeqX
              }
              // 
 
+            
+
              Player.BMSPlayer.LoadBMS("test.bms", ref AAData);
-             */
+            
 
            
 
-            /* 
+            /*
              
             var bmsfile = File.ReadAllBytes("test.bms");
             var  first = new Subroutine(ref bmsfile,0x00000);

@@ -14,9 +14,6 @@ namespace JaiSeqX.JAI
    
     public class BAAFile : AABase
     {
-        public WaveSystem[] WSYS;
-        public InstrumentBank[] IBNK;
-
 
             private string convertChunkName(uint id)
             {

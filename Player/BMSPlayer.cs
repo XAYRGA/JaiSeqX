@@ -22,6 +22,7 @@ namespace JaiSeqX.Player
         static bool[] halts; // Halted tracks
         static bool[] mutes;  // Muted tracks
         static int subroutine_count; // Internal counter for track ID (for creating new tracks)
+        static BMSChannelManager ChannelManager;
         static AABase AAF;
 
         public static void LoadBMS(string file, ref AABase AudioData)
@@ -31,7 +32,7 @@ namespace JaiSeqX.Player
             subroutines = new Subroutine[32]; // Initialize subroutine array. 
             halts = new bool[32];
             mutes = new bool[32];
-
+            ChannelManager = new BMSChannelManager();
             bpm = 1000; // Dummy value, should be set by the root track
             ppqn = 1; // Dummmy, ^ 
             updateTempo(); // Generate the trick length, also dummy.
@@ -44,7 +45,7 @@ namespace JaiSeqX.Player
             playbackThread.Start(); // go go go
         }
 
-
+       
         private static void updateTempo()
         {
             try {
@@ -59,9 +60,16 @@ namespace JaiSeqX.Player
         {
             while (true)
             {
-                sequencerTick(); // run the sequencer tick. 
-                // Just going to leave this for timing.
-                Thread.Sleep(ticklen); // sleeeeep 
+                try
+                {
+                    sequencerTick(); // run the sequencer tick. 
+                                     // Just going to leave this for timing.
+                    Thread.Sleep(ticklen); // sleeeeep 
+                } catch (Exception E)
+                {
+                    Console.WriteLine("SEQUENCER MISSED TICK");
+                    Console.WriteLine(E.ToString());
+                }
             }
         }
 
@@ -84,8 +92,71 @@ namespace JaiSeqX.Player
                             updateTempo();
                             break;
                         case JaiEventType.NOTE_ON:
-                            
+                            {
+                                var bankdata = AAF.IBNK[current_state.voice_bank];
+                                if (bankdata!=null)
+                                {
+                                    var program = bankdata.Instruments[current_state.voice_program];
+                                    if (program!=null)
+                                    {
+                                        var note = current_state.note;
+                                        var vel = current_state.vel;
+                                        var notedata = program.Keys[note]; // these are interpolated, no need for checks.
+                                        var key = notedata.keys[vel]; // These too. 
+                                        // Basically, if everything is valid up to this point, we should be good. (should, at least for the IBNK)
+                                        if (key!=null)
+                                        {
+                                            try
+                                            {
+                                                var wsysid = key.wsysid;
+                                                var waveid = key.wave;
+                                                var wsys = AAF.WSYS[wsysid];
+                                                if (wsys != null)
+                                                {
+                                                    var wave = wsys.waves[waveid];
+                                                    var sound = ChannelManager.loadSound(wave.pcmpath,wave.loop,wave.loop_start,wave.loop_end).CreateInstance();
+                                                    var pmul = program.Pitch * key.Pitch;
+                                                    var vmul = program.Volume * key.Volume;
+                                                    var real_pitch = Math.Pow(2, ((note - wave.key) * pmul) / 12);
+                                                    var true_volume = (Math.Pow(((float)vel) / 127, 2) * vmul) * 0.5;
+                                                    sound.Volume = (float)(true_volume * 0.4);
+                                                    
+                                                    if (program.IsPercussion)
+                                                    {
+                                                        real_pitch = 7f;
+                                                    }
+                                                    sound.Pitch = (float)real_pitch;
+
+                                                    ChannelManager.startVoice(sound, (byte)csub, current_state.voice);
+                                                    sound.Play();
+
+                                                }
+                                            }catch (Exception E)
+                                            {
+                                                var b = Console.ForegroundColor;
+                                                Console.ForegroundColor = ConsoleColor.Red;
+                                                Console.WriteLine("fuuuuuck");
+                                                Console.WriteLine(E.ToString());
+                                                Console.ForegroundColor = b;
+                                            }
+
+                                            
+                                        }
+                                    } else
+                                    {
+                                        Console.WriteLine("Null IBNK Program");
+                                    }
+                                } else
+                                {
+                                    Console.WriteLine("Null bank data {0}", current_state.voice_bank);
+                                }
+                            }
                             break;
+                        case JaiEventType.NOTE_OFF:
+                            {
+                                ChannelManager.stopVoice((byte)csub, current_state.voice);
+                                break;
+                            }
                         case JaiEventType.NEW_TRACK:
                             {
                                 var ns = new Subroutine(ref BMSData, current_state.track_address);

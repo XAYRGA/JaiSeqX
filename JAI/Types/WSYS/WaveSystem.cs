@@ -62,7 +62,7 @@ namespace JaiSeqX.JAI.Types.WSYS
         {
 
             BaseAddress = WSYSReader.BaseStream.Position;
-
+            waves = new WSYSWave[32768]; // TEMPORARY. Fix WSYS Loading!
             current_header = WSYSReader.ReadInt32();
             if (current_header != WSYS)
             {
@@ -203,6 +203,7 @@ namespace JaiSeqX.JAI.Types.WSYS
 
                     Group.Waves[wav] = o_Wave; // We're done with just about everything except the PCM data now (ADPCM / AFC conversion) 
                     Group.IDMap[o_Wave.id] = wav;
+                    waves[o_Wave.id] = o_Wave; // TEMPORARY, FIX WSYS LOADING!
 
                     fobj_reader.BaseStream.Position = o_Wave.w_start;
                     var adpcm = fobj_reader.ReadBytes((int)o_Wave.w_size);

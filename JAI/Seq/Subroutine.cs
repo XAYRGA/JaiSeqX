@@ -192,11 +192,6 @@ namespace JaiSeqX.JAI.Seq
                         State.bpm = Sequence.ReadInt16();
                         return JaiEventType.TIME_BASE;
 
-                
-                    
-                      
-
-
                     /* Track Control */
 
                     case (byte)JaiSeqEvent.OPEN_TRACK:
@@ -213,7 +208,7 @@ namespace JaiSeqX.JAI.Seq
                         State.param_value = Sequence.ReadByte(); 
                         if (State.param==0x20) // 0x20 is bank change 
                         {
-                            State.voice_bank = State.param; 
+                            State.voice_bank = (byte)State.param_value; 
                             return JaiEventType.BANK_CHANGE;
                         }
                         if (State.param == 0x21) // 0x21 is program change 
@@ -228,7 +223,7 @@ namespace JaiSeqX.JAI.Seq
                         State.param_value = Sequence.ReadInt16();
                         if (State.param == 0x20) // 0x20 is bank change 
                         {
-                            State.voice_bank = State.param;
+                            State.voice_bank = (byte)State.param_value;
                             return JaiEventType.BANK_CHANGE;
                         }
                         if (State.param == 0x21) // 0x21 is program change 

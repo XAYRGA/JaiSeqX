@@ -15,10 +15,7 @@ namespace JaiSeqX.JAI
 
     public class AAFFile : AABase
     {
-        public WaveSystem[] WSYS;
-        public InstrumentBank[] IBNK;
-
-
+     
         private string convertChunkName(uint id)
         {
             switch (id)
