@@ -17,7 +17,7 @@ namespace JaiSeqX
 
         static void Main(string[] args)
         {
-
+            Console.ReadLine();
             if (args.Length > 0)
             {
                 if (args[0] == "mkjasm")
@@ -76,7 +76,7 @@ namespace JaiSeqX
 
             
 
-             Player.BMSPlayer.LoadBMS("test.bms", ref AAData);
+             Player.BMSPlayer.LoadBMS("Training.bms", ref AAData);
             
 
            

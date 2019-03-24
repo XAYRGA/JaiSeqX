@@ -296,6 +296,9 @@ namespace JaiSeqX.JAI.Seq
 
                     /* Unsure as of yet, but we have to keep alignment */
 
+                    case 0xDD:
+                        skip(3);
+                        return JaiEventType.UNKNOWN;
                     case 0xEF:
                     case 0xF9:
                     case 0xE6:

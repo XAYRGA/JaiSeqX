@@ -252,9 +252,10 @@ namespace JaiSeqX.JAI.Types
                                             NewVelR.wave = instReader.ReadUInt16(); // This will be the ID of the wave inside of that wavesystem
                                             NewVelR.Volume = instReader.ReadSingle(); // Finetune, volume, float
                                             NewVelR.Pitch = instReader.ReadSingle(); // finetune pitch, float. 
-                                            for (int idx = 0; idx < (VelHigh - VelLow); idx++) // See below for what this is doing
+                                            for (int idx = 0; idx < ( (1+ VelHigh) - VelLow); idx++) // See below for what this is doing
                                             {
                                                 NewKey.keys[(VelLow + idx)] = NewVelR;
+                                                NewKey.keys[127] = NewVelR;
                                             }
                                             VelLow = VelHigh;
                                         }
@@ -263,6 +264,7 @@ namespace JaiSeqX.JAI.Types
                                     for (int idx = 0; idx < (KeyHigh - KeyLow); idx++) // The keys are gappy.
                                     {
                                         NewINST.Keys[(KeyLow + idx)] = NewKey; // So we want to interpolate the previous keys across the empty ones, so that way it's a region
+                                        NewINST.Keys[127] = NewKey;
                                     }
                                     KeyLow = KeyHigh; // Set our new lowest key to the previous highest
                                     instReader.BaseStream.Position = keyptr_return; // return to our last pointer position
@@ -309,15 +311,18 @@ namespace JaiSeqX.JAI.Types
                                             NewVelR.wave = instReader.ReadUInt16(); // This will be the ID of the wave inside of that wavesystem
                                             NewVelR.Volume = instReader.ReadSingle(); // Finetune, volume, float
                                             NewVelR.Pitch = instReader.ReadSingle(); // finetune pitch, float. 
-                                            for (int idx = 0; idx < (VelHigh - VelLow); idx++) // See below for what this is doing
+                                            for (int idx = 0; idx < (VelHigh - (VelLow )); idx++) // See below for what this is doing
                                             {
-                                                NewKey.keys[(VelLow + idx)] = NewVelR;
+                                                NewKey.keys[(VelLow + (idx))] = NewVelR;
+                                                NewKey.keys[127] = NewVelR;
                                             }
                                             VelLow = VelHigh;
                                         }
                                         instReader.BaseStream.Position = velreg_retn; // return to our pointer position  [THIS IS BELOW]
                                     }
                                     instReader.BaseStream.Position = keyptr_return;
+                                    NewINST.Keys[per] = NewKey; // oops, add to instrument data or else it doesnt load x.x
+                                    NewINST.Keys[127] = NewKey;
                                 }
 
                                 break;

@@ -32,6 +32,8 @@ namespace JaiSeqX.Player
             subroutines = new Subroutine[32]; // Initialize subroutine array. 
             halts = new bool[32];
             mutes = new bool[32];
+
+
             ChannelManager = new BMSChannelManager();
             bpm = 1000; // Dummy value, should be set by the root track
             ppqn = 1; // Dummmy, ^ 
@@ -101,6 +103,7 @@ namespace JaiSeqX.Player
                                     {
                                         var note = current_state.note;
                                         var vel = current_state.vel;
+                                        //Console.WriteLine("{2}: {0} {1}", note, vel,csub);
                                         var notedata = program.Keys[note]; // these are interpolated, no need for checks.
                                         var key = notedata.keys[vel]; // These too. 
                                         // Basically, if everything is valid up to this point, we should be good. (should, at least for the IBNK)
@@ -119,17 +122,22 @@ namespace JaiSeqX.Player
                                                     var vmul = program.Volume * key.Volume;
                                                     var real_pitch = Math.Pow(2, ((note - wave.key) * pmul) / 12);
                                                     var true_volume = (Math.Pow(((float)vel) / 127, 2) * vmul) * 0.5;
-                                                    sound.Volume = (float)(true_volume * 0.4);
+                                                    sound.Volume = (float)(true_volume * 0.6);
                                                     
                                                     if (program.IsPercussion)
                                                     {
-                                                        real_pitch = 7f;
+                                                        real_pitch = (float)(key.Pitch * program.Pitch);
                                                     }
                                                     sound.Pitch = (float)real_pitch;
 
                                                     ChannelManager.startVoice(sound, (byte)csub, current_state.voice);
-                                                    sound.Play();
+                                                    if (!mutes[csub]) // The sounds are created, so they're still startable even if they're not used. 
+                                                    {
+                                                        sound.Play();
+                                                    }
 
+                                                } else {
+                                                    Console.WriteLine("Null WSYS??");
                                                 }
                                             }catch (Exception E)
                                             {

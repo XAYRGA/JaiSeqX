@@ -37,20 +37,20 @@ namespace XAYRGA.SharpSL
 
             myMixer = mix;
             svoice.SetOutputVoices(new VoiceSendDescriptor(myMixer));
-            
-
-
-
-
-
-
+           
         }
 
         public void Play()
         {
             playing = true;
 
-            svoice.Start();
+            lock (myMixer)
+            {
+                lock (svoice)
+                {
+                    svoice.Start();
+                }
+            }
 
         }
 
@@ -58,7 +58,13 @@ namespace XAYRGA.SharpSL
         {
             playing = false;
 
-            svoice.Stop();
+            lock (myMixer)
+            {
+                lock (svoice)
+                {
+                    svoice.Stop();
+                }
+            }
         }
 
   

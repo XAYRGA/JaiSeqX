@@ -85,7 +85,7 @@ namespace XAYRGA.SharpSL
             isLooped = loop;
             LoopStart = ls;
             LoopEnd = le;
-            Console.WriteLine("{0} {1} {2} {3}", file, loop, ls, le);
+            // Console.WriteLine("{0} {1} {2} {3}", file, loop, ls, le);
             int channels, bits_per_sample, sample_rate;
             bufferData = SharpSLEngine.LoadWavFromFile(file, out channels, out bits_per_sample, out sample_rate);
 
@@ -118,8 +118,13 @@ namespace XAYRGA.SharpSL
         public void Play()
         {
             playing = true;
-
-            svoice.Start();
+            lock (myMixer)
+            {
+                lock (svoice)
+                {
+                    svoice.Start();
+                }
+            }
 
         }
 
@@ -127,7 +132,13 @@ namespace XAYRGA.SharpSL
         {
             playing = false;
 
-            svoice.Stop();
+            lock (myMixer)
+            {
+                lock (svoice)
+                {
+                    svoice.Stop();
+                }
+            }
         }
 
         public SoundEffectInstance CreateInstance()

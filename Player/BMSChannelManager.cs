@@ -85,7 +85,11 @@ namespace JaiSeqX.Player
                 } 
             }
 #if DEBUG
+            var b = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("loadSound {0}",file);
+            Console.ForegroundColor = b;
+
 
 #endif
             CacheStrings[cacheHigh] = file; // otherwise, it's not loaded. so we need to store it in our cache
