@@ -149,6 +149,7 @@ namespace JaiSeqX.JAI.Types
                                             for (int idx = 0; idx < (VelHigh - VelLow); idx++) // See below for what this is doing
                                             {
                                                 NewKey.keys[(VelLow + idx)] = NewVelR;
+                                                NewKey.keys[127] = NewVelR;
                                             }
                                             VelLow = VelHigh;
                                         }
@@ -157,6 +158,7 @@ namespace JaiSeqX.JAI.Types
                                     for (int idx = 0; idx < (KeyHigh - KeyLow); idx++) // The keys are gappy.
                                     {
                                         NewINST.Keys[(KeyLow + idx)] = NewKey; // So we want to interpolate the previous keys across the empty ones, so that way it's a region
+                                        NewINST.Keys[127] = NewKey;
                                     }
                                     KeyLow = KeyHigh; // Set our new lowest key to the previous highest
                                 }

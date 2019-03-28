@@ -16,13 +16,14 @@ namespace JaiSeqX.Player
         static byte[] BMSData; // byte data of our music
         public static int bpm; // beats per minute
         public static int ppqn; // pulses per quarter note
-        static int ticklen; // how long it takes before the thread continues
-        static Subroutine[] subroutines; // Container for our subroutines
+        public static int ticklen; // how long it takes before the thread continues
+        public static Subroutine[] subroutines; // Container for our subroutines
         static Thread playbackThread; // read name
-        static bool[] halts; // Halted tracks
-        static bool[] mutes;  // Muted tracks
-        static int subroutine_count; // Internal counter for track ID (for creating new tracks)
-        static BMSChannelManager ChannelManager;
+        public static bool[] halts; // Halted tracks
+        public static bool[] mutes;  // Muted tracks
+        public static int[] updated; 
+        public static int subroutine_count; // Internal counter for track ID (for creating new tracks)
+        public static BMSChannelManager ChannelManager;
         static AABase AAF;
 
         public static void LoadBMS(string file, ref AABase AudioData)
@@ -32,7 +33,9 @@ namespace JaiSeqX.Player
             subroutines = new Subroutine[32]; // Initialize subroutine array. 
             halts = new bool[32];
             mutes = new bool[32];
+            updated = new int[32];
 
+            mutes[9] = true;
 
             ChannelManager = new BMSChannelManager();
             bpm = 1000; // Dummy value, should be set by the root track
@@ -81,12 +84,18 @@ namespace JaiSeqX.Player
             for (int csub = 0; csub < subroutine_count; csub++)
             {
                 var current_subroutine = subroutines[csub]; // grab the current subroutine
+                if (halts[csub])
+                {
+                    continue; // skip over this one.
+                }
                 var current_state = current_subroutine.State; // Just for helper
                 while (current_state.delay < 1) // we want to go until there's a delay. A delay counts as a BREAK command, all other commands are executed inline. 
                 {
+                    updated[csub] = 3;
+
                     var opcode = current_subroutine.loadNextOp(); // loads the next opcode
                     /* State machine for sequencer */ 
-
+                 
                     switch (opcode)
                     {
                         case JaiEventType.TIME_BASE:
@@ -175,6 +184,13 @@ namespace JaiSeqX.Player
                             }
                         case JaiEventType.HALT:
                             {
+
+                                
+                                var b = Console.ForegroundColor;
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                Console.WriteLine("Track {0} halted by 0xFF opcode.", csub);
+                                Console.ForegroundColor = b;
+
                                 halts[csub] = true;
                                 break;
                             }

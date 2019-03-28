@@ -160,6 +160,7 @@ namespace JaiSeqX.JAI.Types.WSYS
                     var aw_id = WSYSReader.ReadInt16(); // Strangely enough, it has an AW_ID here. This tells which file it sits in?  I guess they're normally loaded separately. 
                     o_Wave.id = WSYSReader.ReadInt16(); // This is the waveid for this wave, it's normally globally unique, but some games hot-load banks. 
 
+
                     WSYSReader.BaseStream.Position = BaseAddress + info_offsets[wav]; // Seek to the offset of the actual wave parameters. 
 
                     WSYSReader.ReadByte(); // I have no clue what the first byte does. 
@@ -167,7 +168,9 @@ namespace JaiSeqX.JAI.Types.WSYS
                     o_Wave.key = WSYSReader.ReadByte(); // Tells the base key for this wave (0-127 usually) 
                     WSYSReader.ReadByte(); // I have no clue what this byte does. 
                     var srate = WSYSReader.ReadBytes(4);
+
                     o_Wave.sampleRate = ((srate[1] << 8) | srate[2]) / 2;
+
 
                     if (o_Wave.format == 5)
                     {
@@ -181,9 +184,9 @@ namespace JaiSeqX.JAI.Types.WSYS
 
                     o_Wave.w_start = WSYSReader.ReadUInt32(); // 4 byte start in AW
                     o_Wave.w_size = WSYSReader.ReadUInt32(); // 4 byte size in AW 
-                    o_Wave.loop = WSYSReader.ReadUInt32() == UInt32.MaxValue; // Weird looping flag?
-                    o_Wave.loop_start = WSYSReader.ReadInt32() / 9 * 16; // huh. 
-                    o_Wave.loop_end = WSYSReader.ReadInt32() / 9 * 16; 
+                    o_Wave.loop = WSYSReader.ReadUInt32() == UInt32.MaxValue ? true : false; // Weird looping flag?
+                    o_Wave.loop_start = WSYSReader.ReadInt32();
+                    o_Wave.loop_end = WSYSReader.ReadInt32();
                     o_Wave.sampleCount = WSYSReader.ReadInt32(); // 4 byte sample cont
 
 

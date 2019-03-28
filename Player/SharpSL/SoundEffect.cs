@@ -96,10 +96,12 @@ namespace XAYRGA.SharpSL
             sBuffer.Stream.Write(bufferData, 0, bufferData.Length);
             sBuffer.PlayBegin = 0;
             sBuffer.PlayLength = 0;
-            
+
+            var ll = le - ls;
             sBuffer.LoopCount = (loop ? 255 : 0);
-            //Console.WriteLine("==LoopStart== {0} -- {1}", LoopStart, bufferData.Length);
-            sBuffer.LoopBegin = 0;
+            Console.WriteLine("==LoopStart== {0} -- {1} -- {2} / {3}", ls,le , ll, bufferData.Length) ;
+           // Console.ReadLine();
+            sBuffer.LoopBegin = ls;
             sBuffer.LoopLength = 0; // fuck. 
 
             svoice = new SourceVoice(SharpSLEngine.GetEngineBase(), fmt, VoiceFlags.None, 1024f);

@@ -101,7 +101,10 @@ namespace XAYRGA.SharpSL
 
         public void Dispose()
         {
-            svoice.Dispose();
+            lock (svoice)
+            {
+                svoice.Dispose();
+            }
 
         }
 
