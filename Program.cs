@@ -20,14 +20,16 @@ namespace JaiSeqX
         {
 
 #if DEBUG
+            /*
             args = new string[4];
             args[0] = "visu";
             args[1] = "JaiInit.aaf";
             args[2] = "0";
-            args[3] = "sea_enemy.bms";
+            args[3] = "test.bms";
+            */
 #endif
 
-            //Console.ReadLine();
+            
             if (args.Length > 0)
             {
                 if (args[0] == "mkjasm")
@@ -132,8 +134,9 @@ namespace JaiSeqX
 
                         Environment.Exit(-1);
                     }
-
+                   
                     Player.BMSVisualizer.Init();
+                    
                     Player.BMSPlayer.LoadBMS(args[3], ref AAData);
 
                 }

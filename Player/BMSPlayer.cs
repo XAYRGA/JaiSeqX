@@ -64,6 +64,7 @@ namespace JaiSeqX.Player
 
         private static void doPlayback()
         {
+            SharpSLEngine.Init(); // Have to init the audio engine on the correct thread. oops. 
             while (true)
             {
                 try

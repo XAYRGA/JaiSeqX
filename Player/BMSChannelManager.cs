@@ -83,7 +83,7 @@ namespace JaiSeqX.Player
 
         public BMSChannelManager()
         {
-            SharpSLEngine.Init();
+            
             Cache = new SoundEffect[1024]; // I HOPE that the engine doesn't need more than 1024 sounds at once.
             CacheStrings = new string[1024]; // ^
 
