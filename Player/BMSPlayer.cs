@@ -40,10 +40,10 @@ namespace JaiSeqX.Player
 
             ChannelManager = new BMSChannelManager();
             bpm = 1000; // Dummy value, should be set by the root track
-            ppqn = 1; // Dummmy, ^ 
+            ppqn = 10; // Dummmy, ^ 
             updateTempo(); // Generate the trick length, also dummy.
             // Initialize first track.
-            var root = new Subroutine(ref BMSData, 0x000000); // Should always start at 0x000 of our data.
+            var root = new Subroutine(ref BMSData, 0x00); // Should always start at 0x000 of our data.
             subroutine_count = 1; 
             subroutines[0] = root; // stuff it into the subroutines array. 
 
@@ -104,6 +104,8 @@ namespace JaiSeqX.Player
                             ppqn = current_state.ppqn;
                             updateTempo();
                             break;
+                        
+
                         case JaiEventType.NOTE_ON:
                             {
                                 var bankdata = AAF.IBNK[current_state.voice_bank];
@@ -209,6 +211,23 @@ namespace JaiSeqX.Player
                                 Console.WriteLine("Track {0} jumps to 0x{1:X}", csub, current_state.jump_address);
                                 current_subroutine.jump(current_state.jump_address);
                                 break;
+                            }
+                        case JaiEventType.CALL:
+                            {
+                                
+                                Console.WriteLine("Track {0} unconditional call to 0x{1:X}" ,csub, current_state.jump_address);
+                                current_subroutine.AddrStack.Push((uint)current_subroutine.nextOpAddress());
+                                current_subroutine.jump(current_state.jump_address);
+                                break;
+                            }
+                        case JaiEventType.RET:
+                            {
+                                //Console.WriteLine("Track {0} return to 0x{1:X}");
+                                var retn = current_subroutine.AddrStack.Pop();
+                                Console.WriteLine("Track {0} return to 0x{1:X}",csub,retn);
+                                current_subroutine.jump((int)retn);
+                                
+                                    break;
                             }
                         case JaiEventType.DELAY: // handled internally. 
                             

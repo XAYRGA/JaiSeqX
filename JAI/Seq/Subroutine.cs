@@ -66,7 +66,7 @@ namespace JaiSeqX.JAI.Seq
         BeBinaryReader Sequence;
         byte[] SeqData;
 
-        Stack<uint> AddrStack;
+        public Stack<uint> AddrStack;
 
         public Queue<byte> OpcodeHistory;
         public Queue<int> OpcodeAddressStack;
@@ -111,6 +111,10 @@ namespace JaiSeqX.JAI.Seq
             Sequence.BaseStream.Position = pos;
         }
 
+        public int nextOpAddress()
+        {
+            return (int)Sequence.BaseStream.Position;
+        }
         public JaiEventType loadNextOp()
         {
             if (OpcodeAddressStack.Count == 16)
@@ -155,7 +159,7 @@ namespace JaiSeqX.JAI.Seq
                 {
                     /* Delays and waits */
                     case (byte)JaiSeqEvent.WAIT_16: // Wait (UInt16)
-                        State.delay = Sequence.ReadInt16(); // Add to the state delay
+                        State.delay = Sequence.ReadUInt16(); // Add to the state delay
                       
                         return JaiEventType.DELAY;
 
@@ -176,8 +180,16 @@ namespace JaiSeqX.JAI.Seq
                         return JaiEventType.JUMP;
 
                     case (byte)JaiSeqEvent.RET_COND:
-                        skip(1); 
-                        return JaiEventType.UNKNOWN;
+                        State.jump_mode = Sequence.ReadByte();
+                        
+                        return JaiEventType.RET;
+                    case (byte)JaiSeqEvent.CALL_COND:
+                        State.jump_mode = Sequence.ReadByte();
+                        State.jump_address = (int)Helpers.ReadUInt24BE(Sequence);
+                        return JaiEventType.CALL;
+                    case (byte)JaiSeqEvent.RET:
+                        return JaiEventType.RET;
+                   
 
 
                     /* Tempo Control */

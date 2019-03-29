@@ -24,7 +24,7 @@ namespace JaiSeqX
             args[0] = "visu";
             args[1] = "JaiInit.aaf";
             args[2] = "0";
-            args[3] = "bluebattle.bms";
+            args[3] = "sea_enemy.bms";
 #endif
 
             //Console.ReadLine();

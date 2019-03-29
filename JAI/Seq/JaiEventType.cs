@@ -18,6 +18,8 @@ namespace JaiSeqX.JAI.Seq
         JUMP = 0x07,
         PARAM = 0x08,
         PERF = 0x09,
+        CALL = 0x10,
+        RET = 0x11,
 
         HALT = 0xFC,
         PAUSE = 0xFD,

@@ -38,6 +38,7 @@ namespace JaiSeqX.JAI.Seq
         public int track_address;
 
         public int current_address;
+       
 
     }
 }
