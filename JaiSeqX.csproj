@@ -53,6 +53,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Input.Manipulations" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -96,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="JASM\JASMCodes.txt" />
+    <Content Include="jv.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\SdlDotNet.1.0.0\build\SdlDotNet.targets" Condition="Exists('packages\SdlDotNet.1.0.0\build\SdlDotNet.targets')" />

@@ -17,6 +17,18 @@ namespace JaiSeqX.Player
             voices = new SoundEffectInstance[16]; // Should only ever have 8 voices, but still. 
         }
 
+        public void silence()
+        {
+            for (int i = 0; i < voices.Length; i++)
+            {
+                if (voices[i]!=null)
+                {
+                    voices[i].Stop();
+                }
+            }
+        }
+
+
         public bool addVoice(int index, SoundEffectInstance voice) // to add a voice to a channel
         {
             if (index < voices.Length) // Make sure the index isn't stupid.
@@ -97,7 +109,7 @@ namespace JaiSeqX.Player
             if (chn.LastVoice != null)
             {
                 var voi = chn.LastVoice;
-
+                //Console.WriteLine("Add PitchBend: {0} {1} {2} ", channel, duration, bend);
                 bendPitchBase[channel] = voi.Pitch; // fuck
                 bending[channel] = true; // fuck
                 bendticks[channel] = 0; // fuck
@@ -153,10 +165,10 @@ namespace JaiSeqX.Player
                         var voice = bendChannel.LastVoice;
                         var basepitch = bendPitchBase[chn];
                         // var newpitch =  (float)Math.Pow(2,  / 12) ;
-                        double newpitch = Math.Pow(2,semitones / 12);
+                        //double newpitch = Math.Pow(2,-semitones / 12 );
 
                         //Console.WriteLine("BEND DEGREE {0} {1}", newpitch,semitones);
-                       // voice.Pitch = basepitch * (float)newpitch;
+                        //voice.Pitch = basepitch * (float)(newpitch);
                     }
 
                 }
@@ -206,6 +218,15 @@ namespace JaiSeqX.Player
             }
         }
 
+        public void silenceChannel(byte channel)
+        {
+            if (channels[channel] != null) // check if the channel exists
+            {
+                var chn = channels[channel]; // if it does, reference it
+                chn.silence();
+            }
+        }
+     
         public void stopVoice(byte channel, byte voice)
         {
             // see above, inverse.

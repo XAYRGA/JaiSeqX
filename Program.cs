@@ -18,6 +18,15 @@ namespace JaiSeqX
        
         static void Main(string[] args)
         {
+
+#if DEBUG
+            args = new string[4];
+            args[0] = "visu";
+            args[1] = "JaiInit.aaf";
+            args[2] = "0";
+            args[3] = "bluebattle.bms";
+#endif
+
             //Console.ReadLine();
             if (args.Length > 0)
             {
@@ -31,63 +40,119 @@ namespace JaiSeqX
 
                 }
 
+                if (args[0]=="play")
+                {
+
+                    JAIVersion SequencerVersion = JAIVersion.UNKNOWN;
+                    if (args.Length < 3)
+                    {
+                        Console.WriteLine("You need to specify JAIInitFile and JAIVersion");
+                        Console.WriteLine("JaiSeqX.exe play JaiInit.aaf 0 boolossus.bms yes");
+                        Environment.Exit(-1);
+                    }
+
+                    try
+                    {
+                        SequencerVersion = (JAIVersion)(Convert.ToUInt16(args[2]));
+                    }
+                    catch
+                    {
+                        Console.WriteLine("{0} is not a valid JAIVersion", args[2]);
+                    }
+                    if (SequencerVersion == JAIVersion.UNKNOWN)
+                    {
+                        Console.WriteLine("{0} is not a valid JAIVersion", args[2]);
+                    }
+
+                    if (SequencerVersion == JAIVersion.ONE)
+                    {
+                        var b = new AAFFile();
+                        b.LoadAAFile(args[1], JAIVersion.ONE);
+                        AAData = b;
+                    }
+                    else
+                    {
+                        var b = new BAAFile();
+                        b.LoadBAAFile(args[1], SequencerVersion);
+                        AAData = b;
+                    }
+                    // 
+
+                    if (args.Length < 4)
+                    {
+                        Console.WriteLine("No BMS file specified.");
+
+                        Environment.Exit(-1);
+                    }
+
+                    Player.BMSPlayer.LoadBMS(args[3], ref AAData);
+                }
+
+                if (args[0] == "visu")
+                {
+
+                    JAIVersion SequencerVersion = JAIVersion.UNKNOWN;
+                    if (args.Length < 3)
+                    {
+                        Console.WriteLine("You need to specify JAIInitFile and JAIVersion");
+                        Console.WriteLine("JaiSeqX.exe visu JaiInit.aaf 0 boolossus.bms yes");
+                        Environment.Exit(-1);
+                    }
+
+                    try
+                    {
+                        SequencerVersion = (JAIVersion)(Convert.ToUInt16(args[2]));
+                    }
+                    catch
+                    {
+                        Console.WriteLine("{0} is not a valid JAIVersion", args[2]);
+                    }
+                    if (SequencerVersion == JAIVersion.UNKNOWN)
+                    {
+                        Console.WriteLine("{0} is not a valid JAIVersion", args[2]);
+                    }
+
+                    if (SequencerVersion == JAIVersion.ONE)
+                    {
+                        var b = new AAFFile();
+                        b.LoadAAFile(args[1], JAIVersion.ONE);
+                        AAData = b;
+                    }
+                    else
+                    {
+                        var b = new BAAFile();
+                        b.LoadBAAFile(args[1], SequencerVersion);
+                        AAData = b;
+                    }
+                    // 
+
+                    if (args.Length < 4)
+                    {
+                        Console.WriteLine("No BMS file specified.");
+
+                        Environment.Exit(-1);
+                    }
+
+                    Player.BMSVisualizer.Init();
+                    Player.BMSPlayer.LoadBMS(args[3], ref AAData);
+
+                }
+            } else
+            {
+                Console.WriteLine("JaiSeqX [command] <args>");
+                Console.WriteLine();
+                Console.WriteLine("JaiSeqX mkjasm <file> -  Creates a .JASM (Jai Assembly) file from file.bms");
+                Console.WriteLine("\tJaiSeqX mkjasm file.bms\t");
+                Console.WriteLine();
+                Console.WriteLine("JaiSeqX play <aafFile> <JaiVersion> <BMS file> - Plays a BMS file with the specified JaiInit.aaf and version");
+                Console.WriteLine("\tJaiSeqX play JaiInit.aaf 0 file.bms");
+                Console.WriteLine("\t For JaiVersion info, see JaiVersion.cs or JV.txt! ");
+                Console.WriteLine();
+                Console.WriteLine("JaiSeqX visu <aafFile> <JaiVersion> <BMS file> - Plays a BMS file with visualizer, same as command above but with visualizer.");
+                Console.WriteLine("\tJaiSeqX play JaiInit.aaf 0 file.bms");
+                Console.WriteLine("\t For JaiVersion info, see JaiVersion.cs or JV.txt! ");
+       
             }
-
-
-
-
-            
-
- #if DEBUG
-             args = new string[2];
-             args[0] = "JaiInit.aaf";
-             args[1] = "0"; 
- #endif
-             JAIVersion SequencerVersion = JAIVersion.UNKNOWN; 
-            if (args.Length < 2)
-             {
-                 Console.WriteLine("You need to specify JAIInitFile and JAIVersion");
-                 Environment.Exit(-1);
-             }
-
-            try
-             {
-                 SequencerVersion = (JAIVersion)(Convert.ToUInt16(args[1]));
-             } catch
-             {
-                 Console.WriteLine("{0} is not a valid JAIVersion", args[1]);
-             }
-             if (SequencerVersion==JAIVersion.UNKNOWN)
-             {
-                 Console.WriteLine("{0} is not a valid JAIVersion", args[1]);
-             }
-
-             if (SequencerVersion==JAIVersion.ONE)
-             {
-                 var b = new AAFFile();
-                 b.LoadAAFile(args[0],JAIVersion.ONE);
-                 AAData = b;
-             } else
-             {
-                 var b = new BAAFile();
-                 b.LoadBAAFile(args[0], SequencerVersion);
-                 AAData = b;
-             }
-            // 
-
-
-
-
-
-            Player.BMSVisualizer.Init();
-
-            Console.ReadLine();
-
-            Player.BMSPlayer.LoadBMS("BlueBattle.bms", ref AAData);
-
-
-
-
 
         }
     }

@@ -35,7 +35,8 @@ namespace JaiSeqX.Player
             mutes = new bool[32];
             updated = new int[32];
 
-            mutes[9] = true;
+           // mutes[9] = true;
+           // mutes[13] = true;
 
             ChannelManager = new BMSChannelManager();
             bpm = 1000; // Dummy value, should be set by the root track
