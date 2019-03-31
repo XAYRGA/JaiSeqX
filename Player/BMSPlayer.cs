@@ -7,7 +7,8 @@ using JaiSeqX.JAI.Seq;
 using JaiSeqX.JAI;
 using System.IO;
 using System.Threading;
-using XAYRGA.SharpSL;
+using JaiSeqX.Player.BassBuff;
+
 
 namespace JaiSeqX.Player
 {
@@ -64,7 +65,7 @@ namespace JaiSeqX.Player
 
         private static void doPlayback()
         {
-            SharpSLEngine.Init(); // Have to init the audio engine on the correct thread. oops. 
+            Engine.Init();  // Have to init the audio engine on the correct thread. oops. 
             while (true)
             {
                 try

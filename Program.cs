@@ -20,13 +20,14 @@ namespace JaiSeqX
         {
 
 #if DEBUG
-            /*
+
+            
             args = new string[4];
             args[0] = "visu";
             args[1] = "JaiInit.aaf";
             args[2] = "0";
-            args[3] = "test.bms";
-            */
+            args[3] = "test.bmsw";
+             
 #endif
 
             
