@@ -10,28 +10,26 @@ namespace JaiSeqX.Player.BassBuff
 {
     public class SoundEffectInstance : IDisposable
     {
-        int handle = 0;
+        int handle = 0; // BASS Handle
       
         private float iPitch = 1;
         private float iVolume = 1;
-        private SYNCPROC Proc;
+
         private int syncHandle;
         private float baseSRate = 0;
         private bool looping;
+       
 
         public SoundEffectInstance(int bassHandle, bool loop, int loopstart, int loopend)
         {
-            handle = bassHandle;
-
-            Bass.BASS_ChannelGetAttribute(handle, BASSAttribute.BASS_ATTRIB_FREQ, ref baseSRate);
-            
-            
-            if (loop)
+            handle = bassHandle; // Store the handle
+            Bass.BASS_ChannelGetAttribute(handle, BASSAttribute.BASS_ATTRIB_FREQ, ref baseSRate); // Store the original sample rate (for pitch bending)
+                       
+            if (loop) // If we loop
             {
-                Proc = new SYNCPROC(DoLoop);
-                syncHandle = Bass.BASS_ChannelSetSync(handle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME, loopend, Proc, new IntPtr(loopstart));
+                syncHandle = Bass.BASS_ChannelSetSync(handle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME, loopend, Engine.globalLoopProc, new IntPtr(loopstart));// Set the global loop proc to take place at the loop end position, then return to the start.
             }
-            looping = loop;
+            looping = loop; // Loopyes
         }
 
         public float Pitch
@@ -42,16 +40,12 @@ namespace JaiSeqX.Player.BassBuff
             }
             set
             {//
-                Bass.BASS_ChannelSetAttribute(handle, BASSAttribute.BASS_ATTRIB_FREQ, baseSRate * value);
+                Bass.BASS_ChannelSetAttribute(handle, BASSAttribute.BASS_ATTRIB_FREQ, baseSRate * value); // Change the frequency of the sound
                 iPitch = value;
 
             }
         }
-
-        private void DoLoop(int syncHandle, int channel, int data, IntPtr user)
-        {
-            Bass.BASS_ChannelSetPosition(channel, user.ToInt64());
-        }
+   
 
 
         public float Volume
@@ -62,35 +56,31 @@ namespace JaiSeqX.Player.BassBuff
             }
             set
             {
-                Bass.BASS_ChannelSetAttribute(handle, BASSAttribute.BASS_ATTRIB_VOL, value);
+                Bass.BASS_ChannelSetAttribute(handle, BASSAttribute.BASS_ATTRIB_VOL, value); // Change the volume of the sound
                 iVolume = value;
             }
         }
         public void Play()
         {
-            Bass.BASS_ChannelSetAttribute(handle, BASSAttribute.BASS_ATTRIB_FREQ, baseSRate * iPitch);
-           // Console.WriteLine(Bass.BASS_ErrorGetCode());
-            Bass.BASS_ChannelPlay(handle, true);
-            //Console.WriteLine(Bass.BASS_ErrorGetCode());
-
-
-            // Bass.BASS_ChannelSetFX(tempoHandle, BASSFXType.BASS_FX_BFX_PITCHSHIFT, 1);
-
-
+            Bass.BASS_ChannelSetAttribute(handle, BASSAttribute.BASS_ATTRIB_FREQ, baseSRate * iPitch); // For good measure, unsure if needed.
+            Bass.BASS_ChannelPlay(handle, true); // Tell it to play
 
         }
         public void Stop()
         {
-            Bass.BASS_ChannelStop(handle);
+            
+            Bass.BASS_ChannelStop(handle); // Tell it to stop
         }
         public void Dispose()
         {
-            Stop();
-            if (looping)
+       
+            Stop(); // If it's being collected, stop it first.
+            if (looping) // If it loops
             {
+                // We need to deallocate the sync proc
                 Bass.BASS_ChannelRemoveSync(handle, syncHandle);
             }
-            Bass.BASS_StreamFree(handle);
+            Bass.BASS_StreamFree(handle); // Then finally, we can free the stream, as the sound is no longer used in any way. 
            // Bass.BASS_StreamFree(tempoHandle);
 
         }

@@ -14,25 +14,21 @@ namespace JaiSeqX.Player.BassBuff
 
     public class SoundEffect : IDisposable
     {
-        byte[] wdata;
-        IntPtr mDataHandle;
-        public bool loop;
-        public int loopstart;
-        public int loopend;
-        public string dwave;
+      
+        public bool loop; // Do we loop
+        public int loopstart; // Where do we start 
+        public int loopend; // Where do we end
+        public string dwave; // Wav PCM path
         public SoundEffect(string wav)
         {
-            wdata = File.ReadAllBytes(wav);
-            mDataHandle = Marshal.AllocHGlobal(wdata.Length);
-            Marshal.Copy(wdata, 0, mDataHandle, wdata.Length);
-            dwave = wav;
+            dwave = wav; // store pcm path
         }
 
         public SoundEffect(string wav, bool lo, int loops, int loope)
         {
-            wdata = File.ReadAllBytes(wav);
-            mDataHandle = Marshal.AllocHGlobal(wdata.Length);
-            Marshal.Copy(wdata, 0, mDataHandle, wdata.Length);
+         
+            // See comments above for info.
+
             loop = lo;
             loopstart = loops;
             loopend = loope;
@@ -42,17 +38,16 @@ namespace JaiSeqX.Player.BassBuff
 
         public SoundEffectInstance CreateInstance()
         {
-            var stream = Bass.BASS_StreamCreateFile(dwave, 0, 0, BASSFlag.BASS_DEFAULT);
-            
-
-            return new SoundEffectInstance(stream, loop, loopstart, loopend);
+            var stream = Bass.BASS_StreamCreateFile(dwave, 0, 0, BASSFlag.BASS_DEFAULT); // Allocate the new stream
+ 
+            return new SoundEffectInstance(stream, loop, loopstart, loopend); // Pass our instance parameters to the sound. 
 
         }
 
 
         public void Dispose()
         {
-            Marshal.FreeHGlobal(mDataHandle);
+         
         }
     }
 }

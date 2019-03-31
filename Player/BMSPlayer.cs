@@ -92,7 +92,7 @@ namespace JaiSeqX.Player
                     continue; // skip over this one.
                 }
                 var current_state = current_subroutine.State; // Just for helper
-                while (current_state.delay < 1) // we want to go until there's a delay. A delay counts as a BREAK command, all other commands are executed inline. 
+                while (current_state.delay < 1 & halts[csub]!=true) // we want to go until there's a delay. A delay counts as a BREAK command, all other commands are executed inline. 
                 {
                     updated[csub] = 3;
 
