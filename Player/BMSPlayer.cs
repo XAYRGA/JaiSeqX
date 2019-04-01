@@ -8,6 +8,8 @@ using JaiSeqX.JAI;
 using System.IO;
 using System.Threading;
 using JaiSeqX.Player.BassBuff;
+using SdlDotNet.Core;
+using System.Diagnostics;
 
 
 namespace JaiSeqX.Player
@@ -17,7 +19,7 @@ namespace JaiSeqX.Player
         static byte[] BMSData; // byte data of our music
         public static int bpm; // beats per minute
         public static int ppqn; // pulses per quarter note
-        public static int ticklen; // how long it takes before the thread continues
+        public static double ticklen; // how long it takes before the thread continues
         public static Subroutine[] subroutines; // Container for our subroutines
         static Thread playbackThread; // read name
         public static bool[] halts; // Halted tracks
@@ -26,9 +28,13 @@ namespace JaiSeqX.Player
         public static int subroutine_count; // Internal counter for track ID (for creating new tracks)
         public static BMSChannelManager ChannelManager;
         static AABase AAF;
+        private static Stopwatch tickTimer;
+        
+
 
         public static void LoadBMS(string file, ref AABase AudioData)
         {
+            Console.WriteLine("Init?");
             AAF = AudioData; // copy our data into here. 
             BMSData = File.ReadAllBytes(file); // Read the BMS file
             subroutines = new Subroutine[32]; // Initialize subroutine array. 
@@ -47,16 +53,19 @@ namespace JaiSeqX.Player
             var root = new Subroutine(ref BMSData, 0x00); // Should always start at 0x000 of our data.
             subroutine_count = 1; 
             subroutines[0] = root; // stuff it into the subroutines array. 
-
+            tickTimer = new Stopwatch();
+            Console.WriteLine("start thread?");
             playbackThread = new Thread(new ThreadStart(doPlayback));
             playbackThread.Start(); // go go go
         }
 
        
-        private static void updateTempo()
+        public static void updateTempo()
         {
             try {
-                ticklen = (60000 / (bpm)) / (ppqn);    // lots of divison :D        
+                ticklen = (60000f / (float)(bpm)) / ((float)ppqn);    // lots of divison :D  
+
+             
             } catch
             {
                 // uuuuUUGH. ZERO. 
@@ -65,22 +74,33 @@ namespace JaiSeqX.Player
 
         private static void doPlayback()
         {
-            Engine.Init();  // Have to init the audio engine on the correct thread. oops. 
+            tickTimer.Start();
+            Engine.Init();  // Initialize the audio engine
             while (true)
+            {
+                trySequencerTick();
+                Thread.Sleep(0);
+            }
+        }
+
+        private static void trySequencerTick()
+        {
+           // Console.WriteLine("A?");
+            if (tickTimer.ElapsedMilliseconds >= ticklen)
             {
                 try
                 {
                     sequencerTick(); // run the sequencer tick. 
                                      // Just going to leave this for timing.
-                    Thread.Sleep(ticklen); // sleeeeep 
-                } catch (Exception E)
+                }
+                catch (Exception E)
                 {
                     Console.WriteLine("SEQUENCER MISSED TICK");
                     Console.WriteLine(E.ToString());
                 }
+                tickTimer.Restart();
             }
         }
-
         private static void sequencerTick()
         {
             ChannelManager.onTick();
@@ -92,7 +112,7 @@ namespace JaiSeqX.Player
                     continue; // skip over this one.
                 }
                 var current_state = current_subroutine.State; // Just for helper
-                while (current_state.delay < 1 & halts[csub]!=true) // we want to go until there's a delay. A delay counts as a BREAK command, all other commands are executed inline. 
+                while (current_state.delay < 1 & halts[csub]==false) // we want to go until there's a delay. A delay counts as a BREAK command, all other commands are executed inline. 
                 {
                     updated[csub] = 3;
 
@@ -106,8 +126,6 @@ namespace JaiSeqX.Player
                             ppqn = current_state.ppqn;
                             updateTempo();
                             break;
-                        
-
                         case JaiEventType.NOTE_ON:
                             {
                                 var bankdata = AAF.IBNK[current_state.voice_bank];
@@ -138,10 +156,14 @@ namespace JaiSeqX.Player
                                                     var real_pitch = Math.Pow(2, ((note - wave.key) *pmul ) / 12) ;
                                                     var true_volume = (Math.Pow(((float)vel) / 127, 2) * vmul) * 0.5;
                                                     sound.Volume = (float)(true_volume * 0.6);
-                                                    
+                                                    sound.ShouldFade = true;
+                                                    sound.FadeOutMS = 30;
                                                     if (program.IsPercussion)
                                                     {
                                                         real_pitch = (float)(key.Pitch * program.Pitch);
+                                                        
+                                                        sound.ShouldFade = true;
+                                                        sound.FadeOutMS = 200; // no instant stops
                                                     }
                                                     sound.Pitch = (float) (real_pitch);
 

@@ -42,7 +42,16 @@ namespace JaiSeqX.Player
         {
             
             var channel = (byte)kbe.Key - 97; // "A" , 97 is A. the alphabet continues upward in sequence, so any other letter above that will give us a range in A.
-            
+            if (channel == -79)
+            {
+                BMSPlayer.bpm--;
+                BMSPlayer.updateTempo();
+
+            } else if (channel==-80) {
+                BMSPlayer.bpm++;
+                BMSPlayer.updateTempo();
+                Console.WriteLine("Add BPM");
+            }
             if (channel > 0 & channel < BMSPlayer.mutes.Length) // Don't go below array bounds or mute track 0.
             {
                 BMSPlayer.mutes[channel] = !BMSPlayer.mutes[channel]; // Toggle mute for that channel

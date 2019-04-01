@@ -39,7 +39,6 @@ namespace JaiSeqX.Player.BassBuff
         public SoundEffectInstance CreateInstance()
         {
             var stream = Bass.BASS_StreamCreateFile(dwave, 0, 0, BASSFlag.BASS_DEFAULT); // Allocate the new stream
- 
             return new SoundEffectInstance(stream, loop, loopstart, loopend); // Pass our instance parameters to the sound. 
 
         }
