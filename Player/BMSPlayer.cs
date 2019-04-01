@@ -34,7 +34,7 @@ namespace JaiSeqX.Player
 
         public static void LoadBMS(string file, ref AABase AudioData)
         {
-            Console.WriteLine("Init?");
+          
             AAF = AudioData; // copy our data into here. 
             BMSData = File.ReadAllBytes(file); // Read the BMS file
             subroutines = new Subroutine[32]; // Initialize subroutine array. 
@@ -64,7 +64,7 @@ namespace JaiSeqX.Player
         {
             try {
                 ticklen = (60000f / (float)(bpm)) / ((float)ppqn);    // lots of divison :D  
-
+               // Console.WriteLine("new ticksize {0} {1} {2}", ticklen, bpm, ppqn);
              
             } catch
             {
@@ -85,8 +85,10 @@ namespace JaiSeqX.Player
 
         private static void trySequencerTick()
         {
-           // Console.WriteLine("A?");
-            if (tickTimer.ElapsedMilliseconds >= ticklen)
+            // Console.WriteLine("A?");
+            var ts = tickTimer.ElapsedTicks;
+            var ms = (float)ts / (float)TimeSpan.TicksPerMillisecond;
+            if (ms>= ticklen)
             {
                 try
                 {
@@ -138,6 +140,7 @@ namespace JaiSeqX.Player
                                         var vel = current_state.vel;
                                         //Console.WriteLine("{2}: {0} {1}", note, vel,csub);
                                         var notedata = program.Keys[note]; // these are interpolated, no need for checks.
+                                        //Console.WriteLine("Requestr key {0}", note);
                                         var key = notedata.keys[vel]; // These too. 
                                         // Basically, if everything is valid up to this point, we should be good. (should, at least for the IBNK)
                                         if (key!=null)
@@ -255,6 +258,9 @@ namespace JaiSeqX.Player
                             }
                         case JaiEventType.DELAY: // handled internally. 
                             
+                            break;
+                        case JaiEventType.UNKNOWN:
+                            Console.WriteLine("Non-Fatal Opcode Miss: 0x{0:X}",current_subroutine.last_opcode);
                             break;
                         case JaiEventType.UNKNOWN_ALIGN_FAIL:
                             Console.WriteLine("==== Sequence Crash ====");

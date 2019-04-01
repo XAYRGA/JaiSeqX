@@ -74,7 +74,9 @@ namespace JaiSeqX.JAI.Seq
    
         private int baseAddress;
 
-        public JSequenceState State; 
+        public JSequenceState State;
+
+        public byte last_opcode;
 
         public Subroutine(ref byte[] BMSData,int BaseAddr)
         {
@@ -130,7 +132,7 @@ namespace JaiSeqX.JAI.Seq
 
             State.current_address = (int)Sequence.BaseStream.Position;
             byte current_opcode = Sequence.ReadByte(); // Reads the current byte in front of the cursor. 
-
+            last_opcode = current_opcode;
             OpcodeHistory.Enqueue(current_opcode); // push opcode to FIFO stack
 
            
@@ -205,7 +207,8 @@ namespace JaiSeqX.JAI.Seq
                             return JaiEventType.TIME_BASE;
                         }
                     case (byte)JaiSeqEvent.TIME_BASE: // Set ticks per quarter note.
-                        State.ppqn = Sequence.ReadInt16();
+                        State.ppqn =  (short)(Sequence.ReadInt16() - 40);
+                        Console.WriteLine("Timebase ppqn set {0}", State.ppqn);
                         return JaiEventType.TIME_BASE;
 
                     case (byte)JaiSeqEvent.J2_TEMPO: // Set BPM, Same format

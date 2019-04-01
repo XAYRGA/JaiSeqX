@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using SdlDotNet.Input;
+using System.Diagnostics;
 
 namespace JaiSeqX.Player
 {
@@ -19,6 +20,7 @@ namespace JaiSeqX.Player
         static Thread RenderThread; // 
         static Surface IVideoSurface;
         static SdlDotNet.Graphics.Font myfont;
+        static Process me;        
         public static void Init()
         {
 
@@ -29,7 +31,7 @@ namespace JaiSeqX.Player
             
             myfont = new SdlDotNet.Graphics.Font("tahoma.ttf", 12); // Load the font
             RenderThread = new Thread(new ThreadStart(startDrawWindowThread)); // Create render thread
-            
+            me = Process.GetCurrentProcess();
             RenderThread.Start(); // Start it
         }
 
@@ -42,16 +44,31 @@ namespace JaiSeqX.Player
         {
             
             var channel = (byte)kbe.Key - 97; // "A" , 97 is A. the alphabet continues upward in sequence, so any other letter above that will give us a range in A.
+            Console.WriteLine("key {0}",channel);
             if (channel == -79)
+            {
+                BMSPlayer.ppqn--;
+                BMSPlayer.updateTempo();
+
+            } else if (channel==-80) {
+                BMSPlayer.ppqn++;
+                BMSPlayer.updateTempo();
+     
+            }
+            else if (channel == -78)
+            {
+                BMSPlayer.bpm++;
+                BMSPlayer.updateTempo();
+
+            }
+            else if (channel == -77)
             {
                 BMSPlayer.bpm--;
                 BMSPlayer.updateTempo();
 
-            } else if (channel==-80) {
-                BMSPlayer.bpm++;
-                BMSPlayer.updateTempo();
-                Console.WriteLine("Add BPM");
             }
+
+
             if (channel > 0 & channel < BMSPlayer.mutes.Length) // Don't go below array bounds or mute track 0.
             {
                 BMSPlayer.mutes[channel] = !BMSPlayer.mutes[channel]; // Toggle mute for that channel
@@ -68,8 +85,30 @@ namespace JaiSeqX.Player
             
             Point HeaderPos = new Point(5, 5); // Point for header drawing
             var HeaderText = myfont.Render("JaiSeqX by XayrGA ", Color.White); // yay me.
+
+            Point RAMPos = new Point(150, 5); // Point for header drawing
+           
+            var ramstring = string.Format("MEM: {0}MB",me.PrivateMemorySize / (1024*1024));
+            var RAMText = myfont.Render(ramstring, Color.White); // yay me.
+            Video.Screen.Blit(RAMText, RAMPos);
+            RAMText.Dispose();
+
+            Point bpmpos = new Point(230, 5); // Point for header drawing
+            var bpmstring = string.Format("BPM: {0}bpm", BMSPlayer.bpm);
+            var bpmText = myfont.Render(bpmstring, Color.White); // yay me.
+            Video.Screen.Blit(bpmText, bpmpos);
+            bpmText.Dispose();
+
+
+            Point ppqnpos = new Point(320, 5); // Point for header drawing
+            var ppqnstring = string.Format("ppqn: {0}ppqn", BMSPlayer.ppqn);
+            var ppqnText = myfont.Render(ppqnstring, Color.White); // yay me.
+            Video.Screen.Blit(ppqnText, ppqnpos);
+            ppqnText.Dispose();
+
             Video.Screen.Blit(HeaderText, HeaderPos); // Render it to the screen
             HeaderText.Dispose(); // Don't need it any more.
+            RAMText.Dispose();
           
             for (int i = 0; i < BMSPlayer.subroutine_count; i++)
             {

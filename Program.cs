@@ -25,10 +25,10 @@ namespace JaiSeqX
 
 
             args = new string[4];
-            args[0] = "visu";
-            args[1] = "JaiInit.aaf";
-            args[2] = "0";
-            args[3] = "test.bms";
+            args[0] = "mkjasm";
+            args[1] = "sea.bms";
+            args[2] = "out.jasm";
+            args[3] = "sea_enemy.bms";
              
 #endif
 
