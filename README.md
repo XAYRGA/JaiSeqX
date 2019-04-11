@@ -22,11 +22,11 @@ It currently supports sequences from the following games:
 
 In the root application directory, you'll need to copy the following files:
 
-*JaiInit.AAF (Or the initialization file for your game)
+* JaiInit.AAF (Or the initialization file for your game)
 
-*"Banks" folder
+* "Banks" folder
 
-*"Waves" folder 
+* "Waves" folder 
   
 # Visualizer 
 JaiSeqX Comes with a visualizer to watch what the sequences are doing. Video Below:
