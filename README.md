@@ -17,6 +17,17 @@ It currently supports sequences from the following games:
 **ADSR is currently not implemented.**
 **Pitch bend is currently not implemented.**
   
+ 
+# Hey uh, how do i:
+
+In the root application directory, you'll need to copy the following files:
+
+*JaiInit.AAF (Or the initialization file for your game)
+
+*"Banks" folder
+
+*"Waves" folder 
+  
 # Visualizer 
 JaiSeqX Comes with a visualizer to watch what the sequences are doing. Video Below:
   
@@ -33,15 +44,6 @@ The visualizer in the current version has different commands. For example, you c
 You can also modify the tempo with the arrow keys. So if a song is too slow, you can use the UP and DOWN arrow keys to adjust the playback ppqn, and the LEFT and RIGHT arrow keys to adjust the BPM.  This information will be displayed at the top (Most recent version, not featured in the video) 
 
 
-# Hey uh, how do i:
-
-In the root application directory, you'll need to copy the following files:
-
-** JaiInit.AAF (Or the initialization file for your game)
-
-** "Banks" folder
-
-** "Waves" folder
 
 These must be in the same application directory as JaiSeqX to work properly. 
  
