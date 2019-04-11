@@ -24,12 +24,38 @@ JaiSeqX Comes with a visualizer to watch what the sequences are doing. Video Bel
   
 The visualizer in the current version has different commands. For example, you can mute channels by using the alphabet, where A = channel 0. Each key will toggle a mute, so.
  
-a = 0 
-b = 1 
-c = 2 
-d = 3 
-e = 4 .... and so on.
+* a = 0 
+* b = 1 
+* c = 2 
+* d = 3 
+* e = 4 .... and so on.
 
 You can also modify the tempo with the arrow keys. So if a song is too slow, you can use the UP and DOWN arrow keys to adjust the playback ppqn, and the LEFT and RIGHT arrow keys to adjust the BPM.  This information will be displayed at the top (Most recent version, not featured in the video) 
 
+
+# Hey uh, how do i:
+
+In the root application directory, you'll need to copy the following files:
+
+** JaiInit.AAF (Or the initialization file for your game)
+
+** "Banks" folder
+
+** "Waves" folder
+
+These must be in the same application directory as JaiSeqX to work properly. 
  
+# Special Thanks / Credits: 
+
+Jasper - https://github.com/magcius/  (Lots of personal help with this! Thank you so much!)
+
+Yoshimaster96 - https://github.com/Yoshimaster96/BMS_DEC/ (Code reference)
+
+RenolY2 - https://github.com/RenolY2/py-playBMS  (Code reference)
+ 
+Arookas - https://github.com/arookas (BMS Discoveries / Code reference)
+
+Xayrga - https://github.com/xayrga (duh)
+
+Simontime - https://github.com/simontime (Testing / tolerating) 
+
