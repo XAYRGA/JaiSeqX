@@ -216,8 +216,10 @@ namespace JaiSeqX.JAI.Types
                                 NewINST.Pitch = instReader.ReadSingle(); // 4 byte float pitch
                                 NewINST.Volume = instReader.ReadSingle(); // 4 byte float volume
                                 /* Lots of skipping, i havent added these yet, but i'll comment what they are. */
-                                instReader.ReadUInt32(); // offset to first oscillator table
-                                instReader.ReadUInt32(); // Offset to second oscillator count
+                                var poscioffs = instReader.ReadUInt32(); // offset to first oscillator table
+                                var poscicnt = instReader.ReadUInt32(); // Offset to second oscillator count
+                                //Console.WriteLine("Oscillator at 0x{0:X}, length {1}", poscioffs, poscicnt);
+                                //Console.ReadLine();
                                 instReader.ReadUInt32(); // Offset to first effect object
                                 instReader.ReadUInt32(); // offset to second effect object
                                 instReader.ReadUInt32(); // offset of first sensor object

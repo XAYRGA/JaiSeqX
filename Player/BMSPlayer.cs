@@ -169,6 +169,7 @@ namespace JaiSeqX.Player
                                                         sound.FadeOutMS = 200; // no instant stops
                                                     }
                                                     sound.Pitch = (float) (real_pitch);
+                                                    sound.mPitchBendBase = (float)real_pitch;
 
                                                     ChannelManager.startVoice(sound, (byte)csub, current_state.voice);
                                                     if (!mutes[csub]) // The sounds are created, so they're still startable even if they're not used. 
@@ -229,7 +230,7 @@ namespace JaiSeqX.Player
                                 if (current_state.perf==1) // Pitch bend
                                 {
                                     //Console.WriteLine("Pitch bend c {0} {1} {2}", csub, current_state.perf_value, current_state.perf_duration);
-                                    ChannelManager.doPitchBend((byte)csub, current_state.perf_value, current_state.perf_duration, current_state.perf_type);
+                                    ChannelManager.doPitchBend((byte)csub, current_state.perf_decimal, current_state.perf_duration, current_state.perf_type);
                                 }
                                 break;
                             }

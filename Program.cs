@@ -23,12 +23,13 @@ namespace JaiSeqX
 
 #if DEBUG
 
-
+            
             args = new string[4];
-            args[0] = "mkjasm";
-            args[1] = "sea.bms";
-            args[2] = "out.jasm";
-            args[3] = "sea_enemy.bms";
+            args[0] = "visu";
+            args[1] = "jaiinit.aaf";
+            args[2] = "0";
+            args[3] = "telesabattle.bms";
+            
              
 #endif
 

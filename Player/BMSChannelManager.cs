@@ -11,6 +11,7 @@ namespace JaiSeqX.Player
     {
         SoundEffectInstance[] voices;
         public SoundEffectInstance LastVoice;
+       
         public int ActiveVoices; 
         public BMSChannel()
         {
@@ -102,36 +103,22 @@ namespace JaiSeqX.Player
 
         }
 
-        public bool doPitchBend(byte channel, int bend, int duration, byte type)
+        public bool doPitchBend(byte channel, double bend, int duration, byte type)
         {
             var chn = channels[channel];
 
             if (chn.LastVoice != null)
             {
                 var voi = chn.LastVoice;
-                //Console.WriteLine("Add PitchBend: {0} {1} {2} ", channel, duration, bend);
-                bendPitchBase[channel] = voi.Pitch; // fuck
+               //  Console.WriteLine("Add PitchBend: {0} {1} {2} ", channel, duration, bend);
+            
                 bending[channel] = true; // fuck
                 bendticks[channel] = 0; // fuck
                 bendtargetricks[channel] = duration; // fuck 
 
-                float target = 0;
-                if (type == 1)
-                {
-                    target = (float)bend / 0xFF;
-                }
-                if (type == 2)
-                {
-                    target = (float)bend / 0x7F;
-                }
-                if (type == 3)
-                {
-                    target = (float)bend / 0x7FFF;
-                }
-
                 //Console.WriteLine("Add Target {0} ", target);
 
-                bendtarget[channel] = target; // fuck
+                bendtarget[channel] = bend; // fuck
 
                 return true;
             }
@@ -157,19 +144,22 @@ namespace JaiSeqX.Player
                     }
                     float bendPercent = ((float)ticks / targetTicks) < 1 ? ((float)ticks / targetTicks) : 1;
                     double semitones = bendtarget[chn] * bendPercent;
-
+                    //Console.WriteLine("BT: {0} {1}", chn, bendtarget[chn]);
                     if (bendChannel.LastVoice != null)
                     {
-                        // Console.WriteLine("doing it ");
+                        //Console.WriteLine("doing it ");
                         // var real_pitch = (float)Math.Pow(2, / 12f);
                         var voice = bendChannel.LastVoice;
-                        var basepitch = bendPitchBase[chn];
-                        // var newpitch =  (float)Math.Pow(2,  / 12) ;
-                        //double newpitch = Math.Pow(2,-semitones / 12 );
+
+                        // var newpitch =  (float)Math.Pow(2, semitones / 12) ;
+                        double newpitch = Math.Pow(1.0653f, (semitones *  64.0f)); // uuhhhhh
 
                         //Console.WriteLine("BEND DEGREE {0} {1}", newpitch,semitones);
                         //voice.Pitch = basepitch * (float)(newpitch);
-                    }
+
+                        voice.Pitch = (float)(voice.mPitchBendBase * newpitch);
+
+                     }
 
                 }
 

@@ -13,6 +13,7 @@ namespace JaiSeqX.Player.BassBuff
         int handle = 0; // BASS Handle
       
         private float iPitch = 1;
+        public float mPitchBendBase = 1;
         private float iVolume = 1;
 
         private int syncHandle;

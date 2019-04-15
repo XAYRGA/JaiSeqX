@@ -19,7 +19,7 @@ namespace JaiSeqX.JAI.Seq
         /* wait with variable-length arg */
         WAIT_VAR = 0xF0,
 
-        /* Perf is hard to enum, but here goes: */
+        /* perf / lerp */
         PERF_U8_NODUR = 0x94,
         PERF_U8_DUR_U8 = 0x96,
         PERF_U8_DUR_U16 = 0x97,
@@ -35,7 +35,7 @@ namespace JaiSeqX.JAI.Seq
 
         OPEN_TRACK = 0xC1,
 
-        /* open sibling track, seems unused */
+
         OPEN_TRACK_BROS = 0xC2,
         CALL = 0xC3,
         CALL_COND = 0xC4,
@@ -287,6 +287,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadByte();
                         State.perf_duration = 0;
                         State.perf_type = 1;
+                        State.perf_decimal = ((double)State.perf_value / 0xFFd);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_U8_DUR_U8:
@@ -294,6 +295,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadByte();
                         State.perf_duration = Sequence.ReadByte();
                         State.perf_type = 1;
+                        State.perf_decimal = ((double)State.perf_value / 0xFFd);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_U8_DUR_U16:
@@ -302,6 +304,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadByte();
                         State.perf_duration = Sequence.ReadUInt16();
                         State.perf_type = 1;
+                        State.perf_decimal = ((double)State.perf_value / 0xFFd);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S8_NODUR:
@@ -309,6 +312,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadSByte();
                         State.perf_duration = 0;
                         State.perf_type = 2;
+                        State.perf_decimal = ((double)(State.perf_value) / 0x7Fd );
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S8_DUR_U8:
@@ -316,6 +320,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadSByte();
                         State.perf_duration = Sequence.ReadByte();
                         State.perf_type = 2;
+                        State.perf_decimal = ((double)(State.perf_value) / 0x7Fd);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S8_DUR_U16:
@@ -323,6 +328,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadSByte();
                         State.perf_duration = Sequence.ReadUInt16();
                         State.perf_type = 2;
+                        State.perf_decimal = ((double)(State.perf_value) / 0x7Fd);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S16_NODUR:
@@ -330,6 +336,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadInt16();
                         State.perf_duration = 0;
                         State.perf_type = 3;
+                        State.perf_decimal = ((double)(State.perf_value) / 0x7FFFd);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S16_DUR_U8:
@@ -337,6 +344,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadInt16();
                         State.perf_duration = Sequence.ReadByte();
                         State.perf_type = 3;
+                        State.perf_decimal = ((double)(State.perf_value) / 0x7FFFd);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S16_DUR_U16:
@@ -344,7 +352,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadInt16();
                         State.perf_duration = Sequence.ReadUInt16();
                         State.perf_type = 3;
-
+                        State.perf_decimal = ((double)(State.perf_value) / 0x7FFFd);
                         return JaiEventType.PERF;
 
 
@@ -417,6 +425,8 @@ namespace JaiSeqX.JAI.Seq
                     case 0xD1:
                     case 0xD2:
                     case 0xD5:
+                    case 0xD9:
+
                     case 0xDE:
                     case 0xDA:
                    
