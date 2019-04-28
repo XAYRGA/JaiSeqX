@@ -128,6 +128,9 @@ namespace JaiSeqX.Player
                             ppqn = current_state.ppqn;
                             updateTempo();
                             break;
+                        case JaiEventType.DEBUG:
+                            //Console.WriteLine("Debug: Track is {0}",csub);
+                            break;
                         case JaiEventType.NOTE_ON:
                             {
                                 var bankdata = AAF.IBNK[current_state.voice_bank];

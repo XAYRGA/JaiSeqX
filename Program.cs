@@ -26,14 +26,14 @@ namespace JaiSeqX
             
             args = new string[4];
             args[0] = "visu";
-            args[1] = "jaiinit.aaf";
+            args[1] = "jaudio.aaf";
             args[2] = "0";
-            args[3] = "telesabattle.bms";
+            args[3] = "pirate.bms";
+            
             
              
 #endif
 
-            
             if (args.Length > 0)
             {
                 if (args[0] == "mkjasm")
@@ -138,6 +138,7 @@ namespace JaiSeqX
                         Environment.Exit(-1);
                     }
                     Player.BMSVisualizer.Init();
+                    //Console.ReadLine();
                     Player.BMSPlayer.LoadBMS(args[3], ref AAData);
 
                 }

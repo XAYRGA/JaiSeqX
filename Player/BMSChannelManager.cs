@@ -12,7 +12,27 @@ namespace JaiSeqX.Player
         SoundEffectInstance[] voices;
         public SoundEffectInstance LastVoice;
        
-        public int ActiveVoices; 
+        public int ActiveVoices;
+        private double inBendValue = 1;
+        public double bendValue {
+            get
+            {
+                return inBendValue;
+            }
+            set
+            {
+                for (int i=0; i < 8; i++ )
+                {
+                    var fucktheratboys = voices[i];
+                    if (fucktheratboys!=null)
+                    {
+                        fucktheratboys.Pitch = (float)(fucktheratboys.mPitchBendBase * value); 
+                    }
+                }
+                inBendValue = value; 
+            }            
+        }
+
         public BMSChannel()
         {
             voices = new SoundEffectInstance[16]; // Should only ever have 8 voices, but still. 
@@ -38,6 +58,8 @@ namespace JaiSeqX.Player
                 {
                     stopVoice(index); // Stop it if we do. 
                 }
+                // voice.Pitch = (float)(voice.mPitchBendBase * inBendValue);
+                inBendValue = 1; // Reset pitch bend???
                 voices[index] = voice; // Throw the voice into its index
                 LastVoice = voice;
                 ActiveVoices++;
@@ -144,23 +166,7 @@ namespace JaiSeqX.Player
                     }
                     float bendPercent = ((float)ticks / targetTicks) < 1 ? ((float)ticks / targetTicks) : 1;
                     double semitones = bendtarget[chn] * bendPercent;
-                    //Console.WriteLine("BT: {0} {1}", chn, bendtarget[chn]);
-                    if (bendChannel.LastVoice != null)
-                    {
-                        //Console.WriteLine("doing it ");
-                        // var real_pitch = (float)Math.Pow(2, / 12f);
-                        var voice = bendChannel.LastVoice;
-
-                        // var newpitch =  (float)Math.Pow(2, semitones / 12) ;
-                        double newpitch = Math.Pow(1.0653f, (semitones *  64.0f)); // uuhhhhh
-
-                        //Console.WriteLine("BEND DEGREE {0} {1}", newpitch,semitones);
-                        //voice.Pitch = basepitch * (float)(newpitch);
-
-                        voice.Pitch = (float)(voice.mPitchBendBase * newpitch);
-
-                     }
-
+                    bendChannel.bendValue = Math.Pow(2, ((semitones * 64)));
                 }
 
             }
@@ -188,8 +194,6 @@ namespace JaiSeqX.Player
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("loadSound {0}", file);
             Console.ForegroundColor = b;
-
-
 #endif
             CacheStrings[cacheHigh] = file; // otherwise, it's not loaded. so we need to store it in our cache
             Cache[cacheHigh] = new SoundEffect(file, lo, ls, le); // Load the WAV for it.

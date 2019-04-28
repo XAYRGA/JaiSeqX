@@ -20,7 +20,8 @@ namespace JaiSeqX.JAI.Seq
         PERF = 0x09,
         CALL = 0x10,
         RET = 0x11,
-
+        
+        DEBUG = 0xFB,
         HALT = 0xFC,
         PAUSE = 0xFD,
 

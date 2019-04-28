@@ -29,6 +29,7 @@ namespace JaiSeqX.Player.BassBuff
         {
             handle = bassHandle; // Store the handle
             Bass.BASS_ChannelGetAttribute(handle, BASSAttribute.BASS_ATTRIB_FREQ, ref baseSRate); // Store the original sample rate (for pitch bending)
+            
             var sz = Bass.BASS_ChannelGetLength(handle);
             
             if (loopend > sz | (loopend - loopstart) < 3000) // Hax until i figure out wtf is going on with looping. 
@@ -39,7 +40,7 @@ namespace JaiSeqX.Player.BassBuff
             //Console.WriteLine("{0} {1}", loopstart, loopend);
             if (loop) // If we loop
             {
-                syncHandle = Bass.BASS_ChannelSetSync(handle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME, loopend, Engine.globalLoopProc, new IntPtr(loopstart));// Set the global loop proc to take place at the loop end position, then return to the start.
+                syncHandle = Bass.BASS_ChannelSetSync(handle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME | BASSSync.BASS_SYNC_END , loopend, Engine.globalLoopProc, new IntPtr(loopstart));// Set the global loop proc to take place at the loop end position, then return to the start.
             }
             looping = loop; // Loopyes
         }

@@ -45,7 +45,7 @@ namespace JaiSeqX.JAI.Seq
         JUMP_COND = 0xC8,
 
       
-
+        
         TIME_BASE = 0xFD,
         TEMPO = 0xFE,
         FIN = 0xFF,
@@ -65,19 +65,12 @@ namespace JaiSeqX.JAI.Seq
     {
         BeBinaryReader Sequence;
         byte[] SeqData;
-
         public Stack<uint> AddrStack;
-
         public Queue<byte> OpcodeHistory;
         public Queue<int> OpcodeAddressStack;
-        
-   
         private int baseAddress;
-
         public JSequenceState State;
-
         public byte last_opcode;
-
         public Subroutine(ref byte[] BMSData,int BaseAddr)
         {
             State = new JSequenceState();
@@ -93,8 +86,6 @@ namespace JaiSeqX.JAI.Seq
             State = new JSequenceState();
 
             baseAddress = BaseAddr;
-          
-
         }
 
 
@@ -134,9 +125,6 @@ namespace JaiSeqX.JAI.Seq
             byte current_opcode = Sequence.ReadByte(); // Reads the current byte in front of the cursor. 
             last_opcode = current_opcode;
             OpcodeHistory.Enqueue(current_opcode); // push opcode to FIFO stack
-
-           
-            
             if (current_opcode < 0x80)
             {
                 State.note = current_opcode; // The note on event is laid out like a piano with 127 (0x7F1) keys. 
@@ -193,7 +181,6 @@ namespace JaiSeqX.JAI.Seq
                         return JaiEventType.RET;
                    
 
-
                     /* Tempo Control */
 
                     case (byte)JaiSeqEvent.J2_SET_ARTIC: // The very same.
@@ -208,12 +195,13 @@ namespace JaiSeqX.JAI.Seq
                         }
                     case (byte)JaiSeqEvent.TIME_BASE: // Set ticks per quarter note.
                         State.ppqn =  (short)(Sequence.ReadInt16() - 40);
+                        //State.bpm = 100;
                         Console.WriteLine("Timebase ppqn set {0}", State.ppqn);
                         return JaiEventType.TIME_BASE;
 
                     case (byte)JaiSeqEvent.J2_TEMPO: // Set BPM, Same format
                     case (byte)JaiSeqEvent.TEMPO: // Set BPM
-                        State.bpm = Sequence.ReadInt16();
+                        State.bpm = (short)(Sequence.ReadInt16() );
                         return JaiEventType.TIME_BASE;
 
                     /* Track Control */
@@ -357,17 +345,22 @@ namespace JaiSeqX.JAI.Seq
 
 
                     /* J2 Opcodes */
-                   
-                    
-                    /* Unsure as of yet, but we have to keep alignment */
 
+
+                    /* Unsure as of yet, but we have to keep alignment */
+                    case 0xE7:
+                        skip(2);
+                      //  Console.WriteLine(Sequence.ReadByte());
+                      //  Console.WriteLine(Sequence.ReadByte());
+
+                        return JaiEventType.DEBUG;
                     case 0xDD:
                         skip(3);
                         return JaiEventType.UNKNOWN;
                     case 0xEF:
                     case 0xF9:
                     case 0xE6:
-                    case 0xE7:
+                  
                         skip(2);
                         return JaiEventType.UNKNOWN;
                     case 0xA0:
@@ -434,11 +427,9 @@ namespace JaiSeqX.JAI.Seq
                         return JaiEventType.UNKNOWN;
                     case 0xF1:
                     case 0xF4:
-                    
-                    
-                    
                     case 0xD6:
                         skip(1);
+                        //Console.WriteLine(Sequence.ReadByte());
                         return JaiEventType.UNKNOWN;
 
 

@@ -82,8 +82,6 @@ namespace JaiSeqX.JAI.Types.WSYS
 
             int[] winfOffsets;
             int[] wbctOffsets;
-
-             
             {
                 // Load WINF offsets.     
                 WSYSReader.BaseStream.Position = BaseAddress + winfo_offset;

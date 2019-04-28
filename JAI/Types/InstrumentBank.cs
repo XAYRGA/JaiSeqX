@@ -213,12 +213,12 @@ namespace JaiSeqX.JAI.Types
                         case INST:
                             {
                                 instReader.ReadUInt32(); // The first 4 bytes following an instrument is always 0, for some reason.  Maybe reserved. 
-                                NewINST.Pitch = instReader.ReadSingle(); // 4 byte float pitch
+                                NewINST.Pitch = instReader.ReadSingle();  // 4 byte float pitch
                                 NewINST.Volume = instReader.ReadSingle(); // 4 byte float volume
                                 /* Lots of skipping, i havent added these yet, but i'll comment what they are. */
                                 var poscioffs = instReader.ReadUInt32(); // offset to first oscillator table
                                 var poscicnt = instReader.ReadUInt32(); // Offset to second oscillator count
-                                //Console.WriteLine("Oscillator at 0x{0:X}, length {1}", poscioffs, poscicnt);
+                               // Console.WriteLine("Oscillator at 0x{0:X}, length {1}", poscioffs, poscicnt);
                                 //Console.ReadLine();
                                 instReader.ReadUInt32(); // Offset to first effect object
                                 instReader.ReadUInt32(); // offset to second effect object
