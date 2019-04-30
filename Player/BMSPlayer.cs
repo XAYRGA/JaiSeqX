@@ -24,12 +24,14 @@ namespace JaiSeqX.Player
         static Thread playbackThread; // read name
         public static bool[] halts; // Halted tracks
         public static bool[] mutes;  // Muted tracks
+        public static float[] pans;
+        public static float[] volumes;
         public static int[] updated; 
         public static int subroutine_count; // Internal counter for track ID (for creating new tracks)
         public static BMSChannelManager ChannelManager;
         static AABase AAF;
         private static Stopwatch tickTimer;
-        
+               
 
 
         public static void LoadBMS(string file, ref AABase AudioData)
@@ -41,6 +43,18 @@ namespace JaiSeqX.Player
             halts = new bool[32];
             mutes = new bool[32];
             updated = new int[32];
+            pans = new float[32];
+            volumes = new float[32];
+
+            for (int i=0; i < volumes.Length; i++)
+            {
+                volumes[i] = 1f;
+            }
+     
+
+
+            
+
 
            // mutes[9] = true;
            // mutes[13] = true;
@@ -161,9 +175,9 @@ namespace JaiSeqX.Player
                                                     var vmul = program.Volume * key.Volume;
                                                     var real_pitch = Math.Pow(2, ((note - wave.key) *pmul ) / 12) ;
                                                     var true_volume = (Math.Pow(((float)vel) / 127, 2) * vmul) * 0.5;
-                                                    sound.Volume = (float)(true_volume * 0.6);
+                                                    sound.Volume = (float)(true_volume * 0.6) * volumes[csub];
                                                     sound.ShouldFade = true;
-                                                    sound.FadeOutMS = 30;
+                                                    sound.FadeOutMS = 100;
                                                     if (program.IsPercussion)
                                                     {
                                                         real_pitch = (float)(key.Pitch * program.Pitch);
@@ -173,7 +187,7 @@ namespace JaiSeqX.Player
                                                     }
                                                     sound.Pitch = (float) (real_pitch);
                                                     sound.mPitchBendBase = (float)real_pitch;
-
+                                                    sound.Pan = pans[csub];
                                                     ChannelManager.startVoice(sound, (byte)csub, current_state.voice);
                                                     if (!mutes[csub]) // The sounds are created, so they're still startable even if they're not used. 
                                                     {
@@ -230,11 +244,34 @@ namespace JaiSeqX.Player
                             }
                         case JaiEventType.PERF:
                             {
+                                // Console.WriteLine("PERF CHANGE: {0} {1} {2}", current_state.perf, current_state.perf_value, current_state.perf_decimal);
+
+                                if (current_state.perf == 0)
+                                {
+                                    var data = current_state.perf_decimal;
+                                    volumes[csub] = (float)data;
+                                }
+
+
                                 if (current_state.perf==1) // Pitch bend
                                 {
                                     //Console.WriteLine("Pitch bend c {0} {1} {2}", csub, current_state.perf_value, current_state.perf_duration);
                                     ChannelManager.doPitchBend((byte)csub, current_state.perf_decimal, current_state.perf_duration, current_state.perf_type);
+                                } 
+
+                                if (current_state.perf==3)
+                                {
+                                    var data = current_state.perf_decimal;
+                                    pans[csub] = (float)data - 0.1f; 
                                 }
+                                                                
+                               
+                                break;
+                            }
+                        case JaiEventType.PARAM:
+                            {
+
+                                Console.WriteLine("REQUEST PARAM CHANGE: {0} {1}", current_state.param, current_state.param_value);
                                 break;
                             }
                         case JaiEventType.JUMP:

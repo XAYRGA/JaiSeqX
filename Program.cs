@@ -26,12 +26,10 @@ namespace JaiSeqX
             
             args = new string[4];
             args[0] = "visu";
-            args[1] = "jaudio.aaf";
-            args[2] = "0";
-            args[3] = "pirate.bms";
-            
-            
-             
+            args[1] = "gckart.baa";
+            args[2] = "1";
+            args[3] = "0006.bms";
+
 #endif
 
             if (args.Length > 0)

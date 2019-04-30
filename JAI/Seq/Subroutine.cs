@@ -65,12 +65,19 @@ namespace JaiSeqX.JAI.Seq
     {
         BeBinaryReader Sequence;
         byte[] SeqData;
+
         public Stack<uint> AddrStack;
+
         public Queue<byte> OpcodeHistory;
         public Queue<int> OpcodeAddressStack;
+        
+   
         private int baseAddress;
+
         public JSequenceState State;
+
         public byte last_opcode;
+
         public Subroutine(ref byte[] BMSData,int BaseAddr)
         {
             State = new JSequenceState();
@@ -86,6 +93,8 @@ namespace JaiSeqX.JAI.Seq
             State = new JSequenceState();
 
             baseAddress = BaseAddr;
+          
+
         }
 
 
@@ -125,6 +134,9 @@ namespace JaiSeqX.JAI.Seq
             byte current_opcode = Sequence.ReadByte(); // Reads the current byte in front of the cursor. 
             last_opcode = current_opcode;
             OpcodeHistory.Enqueue(current_opcode); // push opcode to FIFO stack
+
+           
+            
             if (current_opcode < 0x80)
             {
                 State.note = current_opcode; // The note on event is laid out like a piano with 127 (0x7F1) keys. 
@@ -181,6 +193,7 @@ namespace JaiSeqX.JAI.Seq
                         return JaiEventType.RET;
                    
 
+
                     /* Tempo Control */
 
                     case (byte)JaiSeqEvent.J2_SET_ARTIC: // The very same.
@@ -194,7 +207,7 @@ namespace JaiSeqX.JAI.Seq
                             return JaiEventType.TIME_BASE;
                         }
                     case (byte)JaiSeqEvent.TIME_BASE: // Set ticks per quarter note.
-                        State.ppqn =  (short)(Sequence.ReadInt16() - 40);
+                        State.ppqn =  (short)(Sequence.ReadInt16() );
                         //State.bpm = 100;
                         Console.WriteLine("Timebase ppqn set {0}", State.ppqn);
                         return JaiEventType.TIME_BASE;
@@ -273,9 +286,10 @@ namespace JaiSeqX.JAI.Seq
                     case (byte)JaiSeqEvent.PERF_U8_NODUR:
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadByte();
+                        
                         State.perf_duration = 0;
                         State.perf_type = 1;
-                        State.perf_decimal = ((double)State.perf_value / 0xFFd);
+                        State.perf_decimal = ((double)State.perf_value / 0xFF);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_U8_DUR_U8:
@@ -283,7 +297,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadByte();
                         State.perf_duration = Sequence.ReadByte();
                         State.perf_type = 1;
-                        State.perf_decimal = ((double)State.perf_value / 0xFFd);
+                        State.perf_decimal = ((double)State.perf_value / 0xFF);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_U8_DUR_U16:
@@ -292,39 +306,47 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadByte();
                         State.perf_duration = Sequence.ReadUInt16();
                         State.perf_type = 1;
-                        State.perf_decimal = ((double)State.perf_value / 0xFFd);
+                        State.perf_decimal = ((double)State.perf_value / 0xFF);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S8_NODUR:
-                        State.perf = Sequence.ReadByte();
-                        State.perf_value = Sequence.ReadSByte();
-                        State.perf_duration = 0;
-                        State.perf_type = 2;
-                        State.perf_decimal = ((double)(State.perf_value) / 0x7Fd );
-                        return JaiEventType.PERF;
-
+                        {
+                            State.perf = Sequence.ReadByte();
+                            var b = Sequence.ReadByte(); // Lazy byte signage, apparently C#'s SByte is broken.
+                            State.perf_value = (b > 0x7F) ? b - 0xFF : b;
+                            State.perf_duration = 0;
+                            State.perf_type = 2;
+                            State.perf_decimal = ((double)(State.perf_value) / 0x7F);
+                            return JaiEventType.PERF;
+                        }
                     case (byte)JaiSeqEvent.PERF_S8_DUR_U8:
-                        State.perf = Sequence.ReadByte();
-                        State.perf_value = Sequence.ReadSByte();
-                        State.perf_duration = Sequence.ReadByte();
-                        State.perf_type = 2;
-                        State.perf_decimal = ((double)(State.perf_value) / 0x7Fd);
-                        return JaiEventType.PERF;
+                        {
+                            State.perf = Sequence.ReadByte();
+                            var b = Sequence.ReadByte(); // Lazy byte signage, apparently C#'s SByte is broken.
+                            State.perf_value = (b > 0x7F) ? b - 0xFF : b;
+                            State.perf_duration = Sequence.ReadByte();
+                            State.perf_type = 2;
+                            State.perf_decimal = ((double)(State.perf_value) / 0x7F);
+                            return JaiEventType.PERF;
+                        }
 
                     case (byte)JaiSeqEvent.PERF_S8_DUR_U16:
-                        State.perf = Sequence.ReadByte();
-                        State.perf_value = Sequence.ReadSByte();
-                        State.perf_duration = Sequence.ReadUInt16();
-                        State.perf_type = 2;
-                        State.perf_decimal = ((double)(State.perf_value) / 0x7Fd);
-                        return JaiEventType.PERF;
+                        {
+                            State.perf = Sequence.ReadByte();
+                            var b = Sequence.ReadByte(); // Lazy byte signage, apparently C#'s SByte is broken.
+                            State.perf_value = State.perf_value = (b > 0x7F) ? b - 0xFF : b;
+                            State.perf_duration = Sequence.ReadUInt16();
+                            State.perf_type = 2;
+                            State.perf_decimal = ((double)(State.perf_value) / 0x7F);
+                            return JaiEventType.PERF;
+                        }
 
                     case (byte)JaiSeqEvent.PERF_S16_NODUR:
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadInt16();
                         State.perf_duration = 0;
                         State.perf_type = 3;
-                        State.perf_decimal = ((double)(State.perf_value) / 0x7FFFd);
+                        State.perf_decimal = ((double)(State.perf_value) / 0x7FFF);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S16_DUR_U8:
@@ -332,7 +354,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadInt16();
                         State.perf_duration = Sequence.ReadByte();
                         State.perf_type = 3;
-                        State.perf_decimal = ((double)(State.perf_value) / 0x7FFFd);
+                        State.perf_decimal = ((double)(State.perf_value) / 0x7FFF);
                         return JaiEventType.PERF;
 
                     case (byte)JaiSeqEvent.PERF_S16_DUR_U16:
@@ -340,7 +362,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf_value = Sequence.ReadInt16();
                         State.perf_duration = Sequence.ReadUInt16();
                         State.perf_type = 3;
-                        State.perf_decimal = ((double)(State.perf_value) / 0x7FFFd);
+                        State.perf_decimal = ((double)(State.perf_value) / 0x7FFF);
                         return JaiEventType.PERF;
 
 
@@ -349,9 +371,9 @@ namespace JaiSeqX.JAI.Seq
 
                     /* Unsure as of yet, but we have to keep alignment */
                     case 0xE7:
-                        skip(2);
-                      //  Console.WriteLine(Sequence.ReadByte());
-                      //  Console.WriteLine(Sequence.ReadByte());
+                       skip(2);
+                       // Console.WriteLine(Sequence.ReadByte());
+                        //Console.WriteLine(Sequence.ReadByte());
 
                         return JaiEventType.DEBUG;
                     case 0xDD:
@@ -427,10 +449,11 @@ namespace JaiSeqX.JAI.Seq
                         return JaiEventType.UNKNOWN;
                     case 0xF1:
                     case 0xF4:
+
                     case 0xD6:
                         skip(1);
                         //Console.WriteLine(Sequence.ReadByte());
-                        return JaiEventType.UNKNOWN;
+                        return JaiEventType.DEBUG;
 
 
 

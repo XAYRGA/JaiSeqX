@@ -166,7 +166,7 @@ namespace JaiSeqX.Player
                     }
                     float bendPercent = ((float)ticks / targetTicks) < 1 ? ((float)ticks / targetTicks) : 1;
                     double semitones = bendtarget[chn] * bendPercent;
-                    bendChannel.bendValue = Math.Pow(2, ((semitones * 64)));
+                    bendChannel.bendValue = Math.Pow(2, ((semitones * 4)));
                 }
 
             }

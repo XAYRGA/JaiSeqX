@@ -182,12 +182,15 @@ namespace JaiSeqX.JAI.Types.WSYS
 
                     o_Wave.w_start = WSYSReader.ReadUInt32(); // 4 byte start in AW
                     o_Wave.w_size = WSYSReader.ReadUInt32(); // 4 byte size in AW 
-                    o_Wave.loop = WSYSReader.ReadUInt32() == UInt32.MaxValue ? true : false; // Weird looping flag?
-                    o_Wave.loop_start = WSYSReader.ReadInt32();
-                    o_Wave.loop_end = WSYSReader.ReadInt32();
+                    var b = WSYSReader.ReadUInt32();
+                    o_Wave.loop = b==UInt32.MaxValue ? true : false; // Weird looping flag?
+                    o_Wave.loop_start = ((WSYSReader.ReadInt32() / 9) * 16) ;
+                    o_Wave.loop_end = ((WSYSReader.ReadInt32()/9)  * 16) ;
+             
                     o_Wave.sampleCount = WSYSReader.ReadInt32(); // 4 byte sample cont
 
-
+                   // Console.WriteLine("L {0:X} (0x{1:X}), LS {2:X} , LE {3:X}, SC {4:X} SZ {5:X}", o_Wave.loop, b, o_Wave.loop_start, o_Wave.loop_end,o_Wave.sampleCount,o_Wave.w_size);
+                    //Console.ReadLine();
                     var name = string.Format("0x{0:X}.wav", o_Wave.id);
                     var name2 = string.Format("0x{0:X}.par", o_Wave.id);
                     if (!Directory.Exists("./WSYS_CACHE"))

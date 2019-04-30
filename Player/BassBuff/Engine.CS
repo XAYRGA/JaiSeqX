@@ -55,7 +55,7 @@ namespace JaiSeqX.Player.BassBuff
  
         private static void DoLoop(int syncHandle, int channel, int data, IntPtr user)
         {        
-                Bass.BASS_ChannelSetPosition(channel, user.ToInt64());
+                Bass.BASS_ChannelSetPosition(channel, user.ToInt64(), BASSMode.BASS_POS_BYTE);
         }
 
         private static void FadeCollect(int syncHandle, int channel, int data, IntPtr user)

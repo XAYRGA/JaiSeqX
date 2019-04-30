@@ -15,6 +15,8 @@ namespace JaiSeqX.Player.BassBuff
         private float iPitch = 1;
         public float mPitchBendBase = 1;
         private float iVolume = 1;
+        private float iPan = 0;
+       
 
         private int syncHandle;
         private float baseSRate = 0;
@@ -32,9 +34,9 @@ namespace JaiSeqX.Player.BassBuff
             
             var sz = Bass.BASS_ChannelGetLength(handle);
             
-            if (loopend > sz | (loopend - loopstart) < 3000) // Hax until i figure out wtf is going on with looping. 
+            //if (loopend > sz | (loopend - loopstart) < 3000) // Hax until i figure out wtf is going on with looping. 
             {
-               loopend = (int)sz;
+              // loopend = (int)sz;
              
             }
             //Console.WriteLine("{0} {1}", loopstart, loopend);
@@ -58,7 +60,23 @@ namespace JaiSeqX.Player.BassBuff
 
             }
         }
-   
+
+
+        public float Pan
+        {
+            get
+            {
+                return iPan;
+            }
+            set
+            {//
+                Bass.BASS_ChannelSetAttribute(handle, BASSAttribute.BASS_ATTRIB_PAN, value); // Change the frequency of the sound
+                iPan = value;
+
+            }
+        }
+
+
 
 
         public float Volume
