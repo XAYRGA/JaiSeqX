@@ -38,8 +38,19 @@ namespace JaiSeqX.JAI.Seq
 
         public int track_id; 
         public int track_address;
+        public int track_stack_depth;
+
 
         public int current_address;
+
+        public int[] registers;
+
+        public string message; 
+
+        public JSequenceState()
+        {
+            registers = new int[80];
+        }
        
 
     }

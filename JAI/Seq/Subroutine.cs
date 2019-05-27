@@ -30,12 +30,27 @@ namespace JaiSeqX.JAI.Seq
         PERF_S16_DUR_U8 = 0x9E,
         PERF_S16_DUR_U16 = 0x9F,
 
-        PARAM_SET_8 = 0xA4,
+        PARAM_SET = 0xA0,
+        ADDR = 0xA1,
+        MULR = 0xA2,
+        CMPR = 0xA3,
+        PARAM_SET_8 = 0xA4, 
+        ADD8 = 0xA5,
+        MUL8 = 0xA6,
+        CMP8 = 0xA7,
+        LOADTBL = 0xAA,
+        SUB = 0xAB,
         PARAM_SET_16 = 0xAC,
+        ADD16 = 0xAD,
+        MUL16 = 0xAE,
+        CMP16 = 0xAF,
+        LOAD_TABLE = 0xAA,
+        SUBTRACT = 0xAB,
+        BITWISE = 0xA9,
+   
+
 
         OPEN_TRACK = 0xC1,
-
-
         OPEN_TRACK_BROS = 0xC2,
         CALL = 0xC3,
         CALL_COND = 0xC4,
@@ -43,12 +58,25 @@ namespace JaiSeqX.JAI.Seq
         RET_COND = 0xC6,
         JUMP = 0xC7,
         JUMP_COND = 0xC8,
+        LOOP_COUNT = 0xC9,
+        PORTREAD = 0xCB,
+        PORTWRITE = 0xCC,
+        SPECIALWAIT = 0xCF,
+       
 
-      
-        
+        NAMEBUS = 0xD0,
+        ADSR = 0xD8,
+        BUSCONNECT = 0xDD,
+        INTERRUPT = 0xDF,
+        INTERRUPT_TIMER = 0xE4,
+        SYNC_CPU = 0xE7,
+        PANSWSET = 0xEF,
+        OSCILLATORFULL = 0xF2,  
+        PRINTF = 0xFB,
         TIME_BASE = 0xFD,
         TEMPO = 0xFE,
         FIN = 0xFF,
+
 
         /* "Improved" JaiSeq from TP / SMG / SMG2 seems to use this instead */
         J2_SET_PERF_8 = 0xB8,
@@ -207,7 +235,7 @@ namespace JaiSeqX.JAI.Seq
                             return JaiEventType.TIME_BASE;
                         }
                     case (byte)JaiSeqEvent.TIME_BASE: // Set ticks per quarter note.
-                        State.ppqn =  (short)(Sequence.ReadInt16() );
+                        State.ppqn =  (short)(Sequence.ReadInt16() - 30 );
                         //State.bpm = 100;
                         Console.WriteLine("Timebase ppqn set {0}", State.ppqn);
                         return JaiEventType.TIME_BASE;
@@ -276,6 +304,19 @@ namespace JaiSeqX.JAI.Seq
                             return JaiEventType.PROG_CHANGE;
                         }
                         return JaiEventType.PARAM;
+                    case (byte)JaiSeqEvent.PRINTF:
+                        var lastread = -1;
+                        string v = "";
+                        while (lastread!=0)
+                        {
+                            lastread = Sequence.ReadByte();
+                            v += (char)lastread;
+                        }
+                       // Sequence.ReadByte();
+                        Console.WriteLine(v);
+
+                        return JaiEventType.UNKNOWN;
+
                     /* PERF Control*/
                     /* Perf structure is as follows
                      * <byte> type 
@@ -386,7 +427,7 @@ namespace JaiSeqX.JAI.Seq
                         skip(2);
                         return JaiEventType.UNKNOWN;
                     case 0xA0:
-                    case 0xA1:
+                    case (byte)JaiSeqEvent.ADDR: // 
                         skip(2);
                         return JaiEventType.UNKNOWN;
                     case 0xA3:
@@ -405,6 +446,9 @@ namespace JaiSeqX.JAI.Seq
                         skip(4);
                         return JaiEventType.UNKNOWN;
                     case 0xAD:
+                       // State.delay += 0xFFFF;
+                       // Add (byte) register.  + (short) value
+                       // 
                         skip(3);
                         return JaiEventType.UNKNOWN;
                     case 0xAE:                        
@@ -454,15 +498,8 @@ namespace JaiSeqX.JAI.Seq
                         skip(1);
                         //Console.WriteLine(Sequence.ReadByte());
                         return JaiEventType.DEBUG;
-
-
-
                 }
-
-
             }
-
-
             return JaiEventType.UNKNOWN_ALIGN_FAIL;
         }
 

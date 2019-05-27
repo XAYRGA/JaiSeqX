@@ -8,6 +8,7 @@ namespace JaiSeqX.JAI.Seq
 {
     public enum JaiEventType
     {
+
         NOTE_ON = 0x00,
         NOTE_OFF = 0x01,
         DELAY = 0x02,
@@ -27,8 +28,5 @@ namespace JaiSeqX.JAI.Seq
 
         UNKNOWN_ALIGN_FAIL = 0xFE,
         UNKNOWN = 0xFF,
-
-
     }
-
 }

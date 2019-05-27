@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define JSQPlayer_StepDebugging
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -52,13 +54,6 @@ namespace JaiSeqX.Player
             }
      
 
-
-            
-
-
-           // mutes[9] = true;
-           // mutes[13] = true;
-
             ChannelManager = new BMSChannelManager();
             bpm = 1000; // Dummy value, should be set by the root track
             ppqn = 10; // Dummmy, ^ 
@@ -68,7 +63,7 @@ namespace JaiSeqX.Player
             subroutine_count = 1; 
             subroutines[0] = root; // stuff it into the subroutines array. 
             tickTimer = new Stopwatch();
-            Console.WriteLine("start thread?");
+        
             playbackThread = new Thread(new ThreadStart(doPlayback));
             playbackThread.Start(); // go go go
         }
@@ -101,7 +96,7 @@ namespace JaiSeqX.Player
         {
             // Console.WriteLine("A?");
             var ts = tickTimer.ElapsedTicks;
-            var ms = (float)ts / (float)TimeSpan.TicksPerMillisecond;
+            var ms = (double)ts / (double)TimeSpan.TicksPerMillisecond;
             if (ms>= ticklen)
             {
                 try
@@ -133,8 +128,18 @@ namespace JaiSeqX.Player
                     updated[csub] = 3;
 
                     var opcode = current_subroutine.loadNextOp(); // loads the next opcode
-                    /* State machine for sequencer */ 
-                 
+                                                                  /* State machine for sequencer */
+
+
+
+#if JSQPlayer_StepDebugging
+                    Console.WriteLine("TRK {0} | POS {1:X} | OP {2}", csub, current_subroutine.State.current_address, opcode);
+                    Console.ReadKey();
+
+                    
+
+
+#endif
                     switch (opcode)
                     {
                         case JaiEventType.TIME_BASE:
@@ -150,6 +155,9 @@ namespace JaiSeqX.Player
                                 var bankdata = AAF.IBNK[current_state.voice_bank];
                                 if (bankdata!=null)
                                 {
+
+
+
                                     var program = bankdata.Instruments[current_state.voice_program];
                                     if (program!=null)
                                     {
@@ -177,7 +185,7 @@ namespace JaiSeqX.Player
                                                     var true_volume = (Math.Pow(((float)vel) / 127, 2) * vmul) * 0.5;
                                                     sound.Volume = (float)(true_volume * 0.6) * volumes[csub];
                                                     sound.ShouldFade = true;
-                                                    sound.FadeOutMS = 100;
+                                                    sound.FadeOutMS = 60;
                                                     if (program.IsPercussion)
                                                     {
                                                         real_pitch = (float)(key.Pitch * program.Pitch);
@@ -276,6 +284,7 @@ namespace JaiSeqX.Player
                             }
                         case JaiEventType.JUMP:
                             {
+                                
                                 Console.WriteLine("Track {0} jumps to 0x{1:X}", csub, current_state.jump_address);
                                 current_subroutine.jump(current_state.jump_address);
                                 break;
@@ -284,6 +293,20 @@ namespace JaiSeqX.Player
                             {
                                 
                                 Console.WriteLine("Track {0} unconditional call to 0x{1:X}" ,csub, current_state.jump_address);
+                                current_state.track_stack_depth++;
+                                if (current_state.track_stack_depth > 16)
+                                {
+                                    Console.WriteLine("==== Sequence Crash ====");
+                                    Console.BackgroundColor = ConsoleColor.Red;
+                                    Console.ForegroundColor = ConsoleColor.Yellow;
+                                    Console.WriteLine("JSequenceStack overflow: Return map size exceeded 16");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                    Console.BackgroundColor = ConsoleColor.Black;
+                                    Console.WriteLine("Track Number: {0}", csub);
+                                    Console.WriteLine("Stack: \n");
+                                    Helpers.printJaiSeqStack(current_subroutine);
+                                    while (true) { Console.ReadLine(); }
+                                }
                                 current_subroutine.AddrStack.Push((uint)current_subroutine.nextOpAddress());
                                 current_subroutine.jump(current_state.jump_address);
                                 break;
@@ -291,6 +314,7 @@ namespace JaiSeqX.Player
                         case JaiEventType.RET:
                             {
                                 //Console.WriteLine("Track {0} return to 0x{1:X}");
+                                current_state.track_stack_depth--;
                                 var retn = current_subroutine.AddrStack.Pop();
                                 Console.WriteLine("Track {0} return to 0x{1:X}",csub,retn);
                                 current_subroutine.jump((int)retn);

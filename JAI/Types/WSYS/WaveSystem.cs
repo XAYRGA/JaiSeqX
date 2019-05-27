@@ -184,8 +184,8 @@ namespace JaiSeqX.JAI.Types.WSYS
                     o_Wave.w_size = WSYSReader.ReadUInt32(); // 4 byte size in AW 
                     var b = WSYSReader.ReadUInt32();
                     o_Wave.loop = b==UInt32.MaxValue ? true : false; // Weird looping flag?
-                    o_Wave.loop_start = ((WSYSReader.ReadInt32() / 9) * 16) ;
-                    o_Wave.loop_end = ((WSYSReader.ReadInt32()/9)  * 16) ;
+                    o_Wave.loop_start = (((WSYSReader.ReadInt32() / 9) ) * 16) ;
+                    o_Wave.loop_end = (((WSYSReader.ReadInt32()/9) )  * 16) ;
              
                     o_Wave.sampleCount = WSYSReader.ReadInt32(); // 4 byte sample cont
 

@@ -1,4 +1,7 @@
-﻿using System;
+﻿
+
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +14,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using SdlDotNet.Core;
 
+
+
+
 namespace JaiSeqX
 {
     public static class JaiSeqX
@@ -19,19 +25,17 @@ namespace JaiSeqX
        
         static void Main(string[] args)
         {
-           
 
+         
+/*
 #if DEBUG
-
-            
             args = new string[4];
             args[0] = "visu";
-            args[1] = "gckart.baa";
-            args[2] = "1";
-            args[3] = "0006.bms";
-
+            args[1] = "jaudio.aaf";
+            args[2] = "0";
+            args[3] = "enemy2.bms";
 #endif
-
+*/
             if (args.Length > 0)
             {
                 if (args[0] == "mkjasm")
