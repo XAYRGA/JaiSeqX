@@ -235,7 +235,7 @@ namespace JaiSeqX.JAI.Seq
                             return JaiEventType.TIME_BASE;
                         }
                     case (byte)JaiSeqEvent.TIME_BASE: // Set ticks per quarter note.
-                        State.ppqn =  (short)(Sequence.ReadInt16() - 30 );
+                        State.ppqn =  (short)(Sequence.ReadInt16()  );
                         //State.bpm = 100;
                         Console.WriteLine("Timebase ppqn set {0}", State.ppqn);
                         return JaiEventType.TIME_BASE;
@@ -418,6 +418,7 @@ namespace JaiSeqX.JAI.Seq
 
                         return JaiEventType.DEBUG;
                     case 0xDD:
+                    case 0xED:
                         skip(3);
                         return JaiEventType.UNKNOWN;
                     case 0xEF:
@@ -498,6 +499,8 @@ namespace JaiSeqX.JAI.Seq
                         skip(1);
                         //Console.WriteLine(Sequence.ReadByte());
                         return JaiEventType.DEBUG;
+                    case 0xBC:
+                        return JaiEventType.UNKNOWN;
                 }
             }
             return JaiEventType.UNKNOWN_ALIGN_FAIL;

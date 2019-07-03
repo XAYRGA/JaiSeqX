@@ -33,6 +33,7 @@ namespace JaiSeqX.Player
         public static BMSChannelManager ChannelManager;
         static AABase AAF;
         private static Stopwatch tickTimer;
+        private static int allticks = 0;
                
 
 
@@ -57,6 +58,7 @@ namespace JaiSeqX.Player
             ChannelManager = new BMSChannelManager();
             bpm = 1000; // Dummy value, should be set by the root track
             ppqn = 10; // Dummmy, ^ 
+            
             updateTempo(); // Generate the trick length, also dummy.
             // Initialize first track.
             var root = new Subroutine(ref BMSData, 0x00); // Should always start at 0x000 of our data.
@@ -72,9 +74,14 @@ namespace JaiSeqX.Player
         public static void updateTempo()
         {
             try {
+
+           
+
                 ticklen = (60000f / (float)(bpm)) / ((float)ppqn);    // lots of divison :D  
-               // Console.WriteLine("new ticksize {0} {1} {2}", ticklen, bpm, ppqn);
-             
+                allticks = (int)(tickTimer.ElapsedMilliseconds / ticklen);
+                Console.WriteLine("new TL {0} at T {1}", ticklen, allticks);
+                // Console.WriteLine("new ticksize {0} {1} {2}", ticklen, bpm, ppqn);
+
             } catch
             {
                 // uuuuUUGH. ZERO. 
@@ -88,19 +95,18 @@ namespace JaiSeqX.Player
             while (true)
             {
                 trySequencerTick();
-                Thread.Sleep(0);
+                Thread.Sleep(2);
             }
         }
 
         private static void trySequencerTick()
         {
-            // Console.WriteLine("A?");
-            var ts = tickTimer.ElapsedTicks;
-            var ms = (double)ts / (double)TimeSpan.TicksPerMillisecond;
-            if (ms>= ticklen)
-            {
+            var ts = tickTimer.ElapsedMilliseconds;
+            var tt_n = ts / ticklen;
+            while (allticks < tt_n) { 
                 try
                 {
+                    tt_n = ts / ticklen; // whoops, update timing every tick just in case timing changes.
                     sequencerTick(); // run the sequencer tick. 
                                      // Just going to leave this for timing.
                 }
@@ -109,11 +115,14 @@ namespace JaiSeqX.Player
                     Console.WriteLine("SEQUENCER MISSED TICK");
                     Console.WriteLine(E.ToString());
                 }
-                tickTimer.Restart();
             }
         }
         private static void sequencerTick()
         {
+        
+            allticks++;
+  
+     
             ChannelManager.onTick();
             for (int csub = 0; csub < subroutine_count; csub++)
             {
@@ -145,7 +154,11 @@ namespace JaiSeqX.Player
                         case JaiEventType.TIME_BASE:
                             bpm = current_state.bpm;
                             ppqn = current_state.ppqn;
+                           
+                           
                             updateTempo();
+
+                         
                             break;
                         case JaiEventType.DEBUG:
                             //Console.WriteLine("Debug: Track is {0}",csub);
@@ -185,7 +198,7 @@ namespace JaiSeqX.Player
                                                     var true_volume = (Math.Pow(((float)vel) / 127, 2) * vmul) * 0.5;
                                                     sound.Volume = (float)(true_volume * 0.6) * volumes[csub];
                                                     sound.ShouldFade = true;
-                                                    sound.FadeOutMS = 60;
+                                                    sound.FadeOutMS = 30;
                                                     if (program.IsPercussion)
                                                     {
                                                         real_pitch = (float)(key.Pitch * program.Pitch);

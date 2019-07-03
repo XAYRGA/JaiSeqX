@@ -27,15 +27,15 @@ namespace JaiSeqX
         {
 
          
-/*
+
 #if DEBUG
             args = new string[4];
             args[0] = "visu";
-            args[1] = "jaudio.aaf";
+            args[1] = "jaiinit_sms.aaf";
             args[2] = "0";
-            args[3] = "enemy2.bms";
+            args[3] = "iplrom.bms.bak";
 #endif
-*/
+          
             if (args.Length > 0)
             {
                 if (args[0] == "mkjasm")
@@ -140,7 +140,7 @@ namespace JaiSeqX
                         Environment.Exit(-1);
                     }
                     Player.BMSVisualizer.Init();
-                    //Console.ReadLine();
+                    
                     Player.BMSPlayer.LoadBMS(args[3], ref AAData);
 
                 }
