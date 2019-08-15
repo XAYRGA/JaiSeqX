@@ -1,6 +1,6 @@
 BASS 2.4
 Copyright (c) 1999-2019 Un4seen Developments Ltd. All rights reserved.
-
+test 
 Files that you should have found in the BASS package
 ====================================================
 Win32 version
