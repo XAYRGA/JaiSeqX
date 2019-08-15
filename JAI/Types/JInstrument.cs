@@ -7,16 +7,16 @@ using System.IO;
 using Be.IO;
 namespace JaiSeqX.JAI.Types
 {
-    public class InstrumentKey
+    public class JInstrumentKeys
     {
         public float Volume = 1;
         public float Pitch = 1;
-        public InstrumentKeyVelocity[] keys; 
+        public JInstrumentKeyVelocityRange[] keys; 
 
     }
 
 
-    public class InstrumentKeyVelocity
+    public class JInstrumentKeyVelocityRange
     {
         public float Volume;
         public float Pitch;
@@ -27,7 +27,7 @@ namespace JaiSeqX.JAI.Types
     }
 
 
-    public class Instrument
+    public class JInstrument
     {
         public int id;
         public float Volume;
@@ -39,7 +39,7 @@ namespace JaiSeqX.JAI.Types
         public int oscillator = 0;
         public bool IsPercussion; 
        
-        public InstrumentKey[] Keys; 
+        public JInstrumentKeys[] Keys; 
 
     }
 }

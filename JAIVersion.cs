@@ -13,15 +13,13 @@ namespace JaiSeqX
         // Super Mario Sunshine
         // Pikmin
         // Pikmin 2
+        // Legend of Zelda: Windwaker 
         ONE = 0x00, 
-        
         // Games that use JAIV2 
         // Mario Kart Double Dash
         TWO = 0x01,
-
         // Games that use JAIV3 
         // Super Mario Galaxy 1 & 2 
-        // Legend of Zelda: Windwaker 
         // Legend of Zelda: Twilight Princess
         THREE = 0x02, 
 

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JaiSeqX.JAI.Types.WSYS
+namespace JaiSeqX.JAI.Types
 {
-    public class WSYSWave
+    public class JWave
     {
         public int id;
         public ushort format;
@@ -22,9 +22,7 @@ namespace JaiSeqX.JAI.Types.WSYS
         public int loop_start;
         public int loop_end;
 
-
         public string pcmpath;
 
     }
-
 }
