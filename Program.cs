@@ -21,7 +21,7 @@ namespace JaiSeqX
 {
     public static class JaiSeqX
     {
-        public static AABase AAData;
+     
        
         static void Main(string[] args)
         {

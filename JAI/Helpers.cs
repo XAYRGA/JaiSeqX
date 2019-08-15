@@ -269,7 +269,7 @@ namespace JaiSeqX.JAI
 
 
 
-        public static void printJaiSeqStack(JAI.Seq.Subroutine Seq)
+        /*public static void printJaiSeqStack(JAI.Seq.Subroutine Seq)
         {
             var opstack = Seq.OpcodeHistory;
             var postack = Seq.OpcodeAddressStack;
@@ -305,6 +305,7 @@ namespace JaiSeqX.JAI
                 Console.WriteLine("\t({2:X}) 0x{1:X}: 0x{0:X}", finalCall, finalCallAddr,depth);
             }
         }
+        */
 
     }
 }

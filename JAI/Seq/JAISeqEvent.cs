@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace JaiSeqX.JAI.Seq
 {
-    public enum JaiEventType
+    public enum JaiEvent
     {
 
         NOTE_ON = 0x00,
