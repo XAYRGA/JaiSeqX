@@ -71,7 +71,7 @@ namespace JaiSeqX.JAI
          * I just modified it to work with BMSXPX / JaiSeqX
          */
 
-        static ushort[] afccoef = new ushort[16]
+     static ushort[] afccoef = new ushort[16]
       {
             0,
             0x0800,

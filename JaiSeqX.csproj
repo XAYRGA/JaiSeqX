@@ -57,12 +57,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="JAIVersion.cs" />
     <Compile Include="JAI\Helpers.cs" />
     <Compile Include="JAI\JASystem.cs" />
-    <Compile Include="JAI\Seq\JaiEventType.cs" />
-    <Compile Include="JAI\Seq\JSequenceState.cs" />
-    <Compile Include="JAI\Seq\Subroutine.cs" />
+    <Compile Include="JAI\Seq\JAISeqEvent.cs" />
+    <Content Include="JAI\Seq\Subroutine.cs" />
     <Compile Include="JAI\Types\JInstrument.cs" />
     <Compile Include="JAI\Types\JIBank.cs" />
     <Compile Include="JAI\Types\JOscillator.cs" />

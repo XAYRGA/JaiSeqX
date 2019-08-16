@@ -14,15 +14,17 @@ namespace JaiSeqX.JAI.Types
         public double sampleRate;
         public int sampleCount;
 
-
-        public uint w_start;
-        public uint w_size;
+        public string wsysFile; 
+        public uint wsys_start;
+        public uint wsys_size;
 
         public bool loop;
         public int loop_start;
         public int loop_end;
 
-        public string pcmpath;
+        public string fsPath;
+
+        public byte[] pcmData;
 
     }
 }
