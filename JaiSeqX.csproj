@@ -59,6 +59,8 @@
   <ItemGroup>
     <Compile Include="JAI\Helpers.cs" />
     <Compile Include="JAI\JASystem.cs" />
+    <Compile Include="JAI\Loaders\JASystemVersionDetector.cs" />
+    <Compile Include="JAI\Loaders\JAV1_IBNKLoader.cs" />
     <Compile Include="JAI\Seq\JAISeqEvent.cs" />
     <Content Include="JAI\Seq\Subroutine.cs" />
     <Compile Include="JAI\Types\JInstrument.cs" />
@@ -79,9 +81,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="JAI\Loaders\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="bass.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

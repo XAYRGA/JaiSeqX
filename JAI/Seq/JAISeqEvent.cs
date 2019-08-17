@@ -71,16 +71,19 @@ namespace JaiSeqX.JAI.Seq
 
         BITWISE = 0xA9,
         CONNECT_NAME = 0xD0,
-        WRITE_PARENT_PORT = 0xD1,
-        WRITE_CHILD_PORT = 0xD2, 
+        WRITE_PARENT_PORT = 0xD1, // <byte destination_port> <byte value>  // have no clue
+        WRITE_CHILD_PORT = 0xD2,  // <byte destination_port> <byte value>  // have no clue. 
+        PAUSE_STATUS = 0xD3, // <byte status> 
+        SET_LAST_NOTE = 0xD4, // <byte note> 
         SIMPLE_ADSR = 0xD8,
-        CLOSE_TRACK = 0xDA,
+        CLOSE_TRACK = 0xDA, // <byte track-id> 
         BUSCONNECT = 0xDD,
         INTERRUPT = 0xDF,
+       
         INTERRUPT_TIMER = 0xE4, // 
         SYNC_CPU = 0xE7, // <short max_wait> 
         PANSWEEPSET = 0xEF, // <byte speed>?
-        OSCILLATORFULL = 0xF2,
+        OSCILLATORFULL = 0xF2, 
         VOLUME_MODE = 0xF3, // <byte mode>
         PRINTF = 0xFB, // READ UNTIL 0x00, advance one byte.
         NOP = 0xFC, // NO ARGS
