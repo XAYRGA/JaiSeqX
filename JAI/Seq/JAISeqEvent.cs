@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace JaiSeqX.JAI.Seq
 {
 
-    public enum JAISeqEvent2
+    public enum JAISeqEvent
     {
 
         /* wait with u8 arg */
@@ -20,7 +20,7 @@ namespace JaiSeqX.JAI.Seq
         WAIT_REGISTER = 0xCF, // WAIT <byte register> 
 
         OPEN_TRACK = 0xC1, // OPENTRACK <byte track id> <int24 address>
-        OPEN_TRACK_BROS = 0xC2, 
+        OPEN_TRACK_BROS = 0xC2, // Never used?
         
         CALL = 0xC3, // <int32 address>
         CALL_CONDITIONAL = 0xC4,  // CALL <byte condition> <int24 address>
@@ -31,131 +31,73 @@ namespace JaiSeqX.JAI.Seq
         LOOPS = 0xC9, // Loops?
         LOOPE = 0xCA, // LoopE
         READPORT = 0xCB, // <byte flags> <byte destination register> 
-        PORTWRITE = 0xCC,
-        CHECK_PORT_IMPORT = 0xCD,
+        WRITEPORT = 0xCC, // <byte port> <byte value>
+        CHECK_PORT_IMPORT = 0xCD, 
         CHECK_PORT_EXPORT = 0xCE, 
         // Wait register (0xCF), never used. 
 
-        
+
 
         /* writeRegParam */
-        PARAM_SET = 0xA0,
-            ADDR = 0xA1,
-            MULR = 0xA2,
-            CMPR = 0xA3,
-        PARAM_SET_8 = 0xA4,
-            ADD8 = 0xA5,
-            MUL8 = 0xA6,
-            CMP8 = 0xA7,
+        PARAM_SET_R = 0xA0, // byte source register, byte destination register
+            ADDR = 0xA1, // <byte destination_reg> <byte source_reg>
+            MULR = 0xA2, // <byte destination_reg> <byte source_reg>
+            CMPR = 0xA3,// <byte destination_reg> <byte source_reg>
+        PARAM_SET_8 = 0xA4, // <byte register> <byte value>
+            ADD8 = 0xA5, // <byte destination_reg> <byte value>
+            MUL8 = 0xA6, // <byte destination_reg> <byte value>
+            CMP8 = 0xA7, // <byte destination_reg> <byte value>
         LOADTBL = 0xAA,
         SUBTRACT = 0xAB,
-        PARAM_SET_16 = 0xAC,
-            ADD16 = 0xAD,
-            MUL16 = 0xAE,
-            CMP16 = 0xAF,
-        LOAD_TABLE = 0xAA,
+        PARAM_SET_16 = 0xAC, // <byte register> <short value>
+            ADD16 = 0xAD, // <byte destination_reg> <short value>
+            MUL16 = 0xAE, // <byte destination_reg> <short value>
+            CMP16 = 0xAF, // <byte destination_reg> <short value>
+        //**************//
+
+
+        /* perf / lerp */
+        PERF_U8_NODUR = 0x94, // <byte param> <byte value>
+        PERF_U8_DUR_U8 = 0x96, // <byte param> <byte value> <byte duration_ticks>
+        PERF_U8_DUR_U16 = 0x97,// <byte param> <byte value> <short duration_ticks>
+        PERF_S8_NODUR = 0x98, // <byte param> <sbyte value> 
+        PERF_S8_DUR_U8 = 0x9A, // <byte param> <sbyte value> <byte duration_ticks>
+        PERF_S8_DUR_U16 = 0x9B, // <byte param> <sbyte value> <short duration_ticks>
+        PERF_S16_NODUR = 0x9C, // <byte param> <short value>
+        PERF_S16_DUR_U8 = 0x9E, // <byte param> <short value> <byte duration_ticks>
+        PERF_S16_DUR_U16 = 0x9F, // <byte param> <short value> <short duration_ticks>
+
+        //************//
+
         BITWISE = 0xA9,
-
-
         CONNECT_NAME = 0xD0,
         WRITE_PARENT_PORT = 0xD1,
         WRITE_CHILD_PORT = 0xD2, 
-
         SIMPLE_ADSR = 0xD8,
-
+        CLOSE_TRACK = 0xDA,
         BUSCONNECT = 0xDD,
         INTERRUPT = 0xDF,
-        INTERRUPT_TIMER = 0xE4,
-        SYNC_CPU = 0xE7,
-        PANSWSET = 0xEF,
+        INTERRUPT_TIMER = 0xE4, // 
+        SYNC_CPU = 0xE7, // <short max_wait> 
+        PANSWEEPSET = 0xEF, // <byte speed>?
         OSCILLATORFULL = 0xF2,
-        PRINTF = 0xFB,
-        NOP = 0xFC,
-        TEMPO = 0xFD,
-        TIME_BASE = 0xFE,
-        FIN = 0xFF,
+        VOLUME_MODE = 0xF3, // <byte mode>
+        PRINTF = 0xFB, // READ UNTIL 0x00, advance one byte.
+        NOP = 0xFC, // NO ARGS
+        TEMPO = 0xFD, // Short tempo
+        TIME_BASE = 0xFE, // <short timebase>
+        FIN = 0xFF, // NO ARGS
 
-
+        // Thanks, Jasper!
         /* "Improved" JaiSeq from TP / SMG / SMG2 seems to use this instead */
-        J2_SET_PERF_8 = 0xB8,
-        J2_SET_PERF_16 = 0xB9,
+        J2_SET_PERF_8 = 0xB8, // <byte register> <byte value>
+        J2_SET_PERF_16 = 0xB9, // <byte register> <short value>
         /* Set "articulation"? Used for setting timebase. */
-        J2_SET_ARTIC = 0xD8,
-        J2_TEMPO = 0xE0,
-        J2_SET_BANK = 0xE2,
-        J2_SET_PROG = 0xE3,
+        J2_SET_ARTIC = 0xD8, // <short timebase>
+        J2_TEMPO = 0xE0, // <short tempo>
+        J2_SET_BANK = 0xE2, // <byte bank>
+        J2_SET_PROG = 0xE3, // <byte program>
 
-    }
-
-    public enum JAISeqEvent
-    {
-
-
-        /* wait with variable-length arg */
-      
-
-        /* perf / lerp */
-        PERF_U8_NODUR = 0x94,
-        PERF_U8_DUR_U8 = 0x96,
-        PERF_U8_DUR_U16 = 0x97,
-        PERF_S8_NODUR = 0x98,
-        PERF_S8_DUR_U8 = 0x9A,
-        PERF_S8_DUR_U16 = 0x9B,
-        PERF_S16_NODUR = 0x9C,
-        PERF_S16_DUR_U8 = 0x9E,
-        PERF_S16_DUR_U16 = 0x9F,
-
-
-
-
-
-        OPEN_TRACK = 0xC1,
-        OPEN_TRACK_BROS = 0xC2,
-        CALL = 0xC3,
-        CALL_COND = 0xC4,
-        RET = 0xC5,
-        RET_COND = 0xC6,
-        JUMP = 0xC7,
-        JUMP_COND = 0xC8,
-        LOOP_S = 0xC9,
-        READPORT = 0xCA,
-        PORTWRITE = 0xCB,
-        CHECK_PORT_IMPORT = 0xCC,
-        CHECK_PORT_EXPORT = 0xCD,
-        WAIT_REGISTER = 0xCE,
-        CONNECT_NAME = 0xCF,
-        PARENT_WRITE_PORT = 0xD0,
-        CHILD_WRITE_PORT = 0xD1,
-        CONNECT_CLOSE = 0xE6,
-        CONNECT_OPEN = 0xE5, 
-        INT_TIMER = 0xE4,
-
-
-
-
-        NAMEBUS = 0xD0,
-        ADSR = 0xD8,
-        BUSCONNECT = 0xDD,
-        INTERRUPT = 0xDF,
-        INTERRUPT_TIMER = 0xE4,
-        SYNC_CPU = 0xE7,
-        PANSWSET = 0xEF,
-        OSCILLATORFULL = 0xF2,
-        PRINTF = 0xFB,
-        NOP = 0xFC,
-        TEMPO = 0xFD,
-        TIME_BASE = 0xFE,
-        FIN = 0xFF,
-
-
-        /* "Improved" JaiSeq from TP / SMG / SMG2 seems to use this instead */
-        J2_SET_PERF_8 = 0xB8,
-        J2_SET_PERF_16 = 0xB9,
-        /* Set "articulation"? Used for setting timebase. */
-        J2_SET_ARTIC = 0xD8,
-        J2_TEMPO = 0xE0,
-        J2_SET_BANK = 0xE2,
-        J2_SET_PROG = 0xE3,
     }
 
 }
