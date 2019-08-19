@@ -31,11 +31,13 @@ namespace JaiSeqX
 #if DEBUG
             args = new string[4];
             args[0] = "visu";
-            args[1] = "jaiinit_sms.aaf";
+            args[1] = "jaiinit.baa";
             args[2] = "0";
             args[3] = "iplrom.bms.bak";
 #endif
-          
+            var w = File.ReadAllBytes(args[1]);
+            Console.WriteLine(JAI.Loaders.JASystemVersionDetector.checkVersion(ref w));
+            Console.ReadLine();
           
 
         }

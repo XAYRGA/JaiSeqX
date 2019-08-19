@@ -46,7 +46,7 @@ namespace JaiSeqX.JAI.Loaders
         }
 
 
-        public static JAIVersion checkVersion(byte[] data)
+        public static JAIVersion checkVersion(ref byte[] data)
         {
             var JStream = new MemoryStream(data);
             var JReader = new BeBinaryReader(JStream);
@@ -55,8 +55,8 @@ namespace JaiSeqX.JAI.Loaders
             {
                 // There are two versions of this format, and no differentiating charactersistics in the header -- only in the data. 
                 // So we'll have to seek each chunk until we can find the data we're looking for
-               
-                while (true)
+                var cookie = true;
+                while (cookie)
                 {
                     var ChunkType = JReader.ReadUInt32();
                     switch (ChunkType)
@@ -68,7 +68,7 @@ namespace JaiSeqX.JAI.Loaders
                                 JReader.ReadInt32(); // Flags
                                 break;
                             }
-                        case 1651403552:
+                        case 1651403552: // bnk
                             {
                                 var id = JReader.ReadInt32(); // Unused
                                 var offset = JReader.ReadInt32(); // Offset of ibank data
@@ -77,8 +77,8 @@ namespace JaiSeqX.JAI.Loaders
                                 // JAI1-5 had the new BAA format, but still used the same IBNK format, which always 100% of the time has "BANK" 0x20 bytes after it.
                                 // This means that if BANK is after it, then its JAI1-5, otherwise, it's not, but it still had the BAA header, which leaves the only remaining possibility JAIV2.
                                 JReader.ReadBytes(0x20); // Skip 0x20 bytes.
-                                var idata = JReader.ReadInt32();
-                                if (idata == 0x42414E4B)
+                                var idata = JReader.ReadInt32(); 
+                                if (idata == 0x42414E4B) // Should read BANK.
                                 {
                                     JReader.Close();
                                     JStream.Close();
@@ -97,7 +97,7 @@ namespace JaiSeqX.JAI.Loaders
                     }
                 }
                 // I have to have this, 
-                // It seems C# doesn't understand that that look will never break until it either returns or errors.
+                // It seems C# doesn't understand that that loop will never break until it either returns or errors.
                 return JAIVersion.ONE;
             } else
             {
