@@ -35,8 +35,10 @@ namespace JaiSeqX
             args[2] = "0";
             args[3] = "iplrom.bms.bak";
 #endif
-            var w = File.ReadAllBytes(args[1]);
-            Console.WriteLine(JAI.Loaders.JASystemVersionDetector.checkVersion(ref w));
+            var w = File.OpenRead("jaiinit.aaf");
+            var stm = new Be.IO.BeBinaryReader(w);
+            JAI.Loaders.JAV1_IBankLoader.loadIBNK(stm, 0x55C0);
+           
             Console.ReadLine();
           
 

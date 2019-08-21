@@ -11,17 +11,19 @@ namespace JaiSeqX.JAI.Types
     {
         public float Volume = 1;
         public float Pitch = 1;
+        public int baseKey;
         public JInstrumentKeyVelocity[] Velocities; 
     }
 
 
     public class JInstrumentKeyVelocity
     {
+        public int baseVel;
         public float Volume;
         public float Pitch;
-        public uint wave;
-        public uint wsysid;
-        public uint velocity;
+        public int wave;
+        public int wsysid;
+        public int velocity;
     }
 
 
