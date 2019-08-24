@@ -42,7 +42,7 @@ namespace JaiSeqX.Player.BassBuff
             //Console.WriteLine("{0} {1}", loopstart, loopend);
             if (loop) // If we loop
             {
-                syncHandle = Bass.BASS_ChannelSetSync(handle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME | BASSSync.BASS_SYNC_END , loopend, Engine.globalLoopProc, new IntPtr(loopstart));// Set the global loop proc to take place at the loop end position, then return to the start.
+                syncHandle = Bass.BASS_ChannelSetSync(handle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME , loopend, Engine.globalLoopProc, new IntPtr(loopstart));// Set the global loop proc to take place at the loop end position, then return to the start.
             }
             looping = loop; // Loopyes
         }

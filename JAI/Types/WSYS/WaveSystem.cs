@@ -165,11 +165,13 @@ namespace JaiSeqX.JAI.Types.WSYS
                     o_Wave.format = WSYSReader.ReadByte(); // Tells what format it's in, usually type 5 AFC (ADPCM) 
                     o_Wave.key = WSYSReader.ReadByte(); // Tells the base key for this wave (0-127 usually) 
                     WSYSReader.ReadByte(); // I have no clue what this byte does. 
-                    var srate = WSYSReader.ReadBytes(4);
+                    //var srate = WSYSReader.ReadBytes(4);
 
-                    o_Wave.sampleRate = ((srate[1] << 8) | srate[2]) / 2;
+                    o_Wave.sampleRate = WSYSReader.ReadSingle();
 
-
+                    /*
+                     * oh. its a float.
+                     * oops
                     if (o_Wave.format == 5)
                     {
                         o_Wave.sampleRate = 32000; /// ????
@@ -179,13 +181,14 @@ namespace JaiSeqX.JAI.Types.WSYS
                     {
                         o_Wave.sampleRate = 44100; // I guess set the srate to 44100? 
                     }
+                    */
 
                     o_Wave.w_start = WSYSReader.ReadUInt32(); // 4 byte start in AW
                     o_Wave.w_size = WSYSReader.ReadUInt32(); // 4 byte size in AW 
                     var b = WSYSReader.ReadUInt32();
                     o_Wave.loop = b==UInt32.MaxValue ? true : false; // Weird looping flag?
-                    o_Wave.loop_start = (((WSYSReader.ReadInt32() / 9) ) * 16) ;
-                    o_Wave.loop_end = (((WSYSReader.ReadInt32()/9) )  * 16) ;
+                    o_Wave.loop_start = (int)Math.Floor(((WSYSReader.ReadInt32() / 8f) ) * 16f) ;
+                    o_Wave.loop_end = (int)Math.Floor(((WSYSReader.ReadInt32()/8f) )  * 16f) ;
              
                     o_Wave.sampleCount = WSYSReader.ReadInt32(); // 4 byte sample cont
 

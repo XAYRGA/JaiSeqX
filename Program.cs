@@ -31,9 +31,9 @@ namespace JaiSeqX
 #if DEBUG
             args = new string[4];
             args[0] = "visu";
-            args[1] = "jaiinit_sms.aaf";
+            args[1] = "jaudio.aaf";
             args[2] = "0";
-            args[3] = "iplrom.bms.bak";
+            args[3] = "pirate_5.bms";
 #endif
           
             if (args.Length > 0)
