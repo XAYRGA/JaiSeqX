@@ -59,6 +59,17 @@ namespace JaiSeqX.JAI
 
 
 
+        public static int[] readInt32Array(BeBinaryReader binStream, int count)
+        {
+            var b = new int[count];
+            for (int i = 0; i < count; i++)
+            {
+                b[i] = binStream.ReadInt32();
+            }
+
+            return b;
+        }
+
 
 
 
@@ -71,7 +82,7 @@ namespace JaiSeqX.JAI
          * I just modified it to work with BMSXPX / JaiSeqX
          */
 
-     static ushort[] afccoef = new ushort[16]
+        static ushort[] afccoef = new ushort[16]
       {
             0,
             0x0800,

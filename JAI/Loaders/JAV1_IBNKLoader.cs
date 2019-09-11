@@ -31,7 +31,6 @@ namespace JaiSeqX.JAI.Loaders
             binStream.BaseStream.Position = Base;
             long anchor = 0; // Return / Seekback anchor
             var HeaderData = 0; // Temporary storage for each sanity check.
-            Console.WriteLine("0x{0:X}", binStream.ReadInt32());
             binStream.BaseStream.Seek(-4, SeekOrigin.Current);
             if (binStream.ReadInt32() != IBNK) // Check if first 4 bytes are IBNK
                 throw new InvalidDataException("Data is not an IBANK");
@@ -60,10 +59,7 @@ namespace JaiSeqX.JAI.Loaders
                 throw new InvalidDataException("Data is not a BANK");
             var InstrumentPoiners = new int[0xF0]; // Table of pointers for the instruments;
             var Instruments = new JInstrument[0xF0];
-            for (int i=0; i < 0xF0; i++)
-            {
-                InstrumentPoiners[i] = binStream.ReadInt32(); // Load the pointers first.
-            }
+            InstrumentPoiners = Helpers.readInt32Array(binStream, 0xF0); //  Read instrument pointers.
             for (int i=0; i < 0xF0; i++)
             {
                 binStream.BaseStream.Position = InstrumentPoiners[i] + Base; // Seek to pointer position
@@ -120,10 +116,7 @@ namespace JaiSeqX.JAI.Loaders
             int keyregCount = binStream.ReadInt32(); // Read number of key regions
             JInstrumentKey[] keys = new JInstrumentKey[0x81]; // Always go for one more.
             int[] keyRegionPointers = new int[keyregCount];
-            for (int i=0; i < keyregCount; i++)
-            {
-                keyRegionPointers[i] = binStream.ReadInt32(); // Store the pointers for each key region
-            }
+            keyRegionPointers = Helpers.readInt32Array(binStream, keyregCount);
             var keyLow = 0; // For region spanning. 
             for (int i=0; i < keyregCount; i++) // Loop through all pointers.
             {
@@ -158,10 +151,7 @@ namespace JaiSeqX.JAI.Loaders
             binStream.BaseStream.Seek(3, SeekOrigin.Current); ; // Skip 3 bytes
             var velRegCount = binStream.ReadInt32(); // Grab vel region count
             int[] velRegPointers = new int[velRegCount]; // Create Pointer array
-            for (int i=0; i < velRegCount; i++)
-            {
-                velRegPointers[i] = binStream.ReadInt32(); // Read all pointers
-            }
+            velRegPointers = Helpers.readInt32Array(binStream, velRegCount);
             var velLow = 0;  // Again, these are regions -- see LoadInstrument for this exact code ( a few lines above ) 
             for (int i=0; i < velRegCount; i++)
             {
@@ -226,11 +216,7 @@ namespace JaiSeqX.JAI.Loaders
             Inst.Volume = 1.0f;
             JInstrumentKey[] keys = new JInstrumentKey[100];
             int[] keyPointers = new int[100];
-            for (int i = 0; i < 100; i++)
-            {
-                keyPointers[i] = binStream.ReadInt32(); // Store the pointers for each key region
-            }
-
+            keyPointers = Helpers.readInt32Array(binStream, 100); // read the pointers.
           
             for (int i = 0; i < 100; i++) // Loop through all pointers.
             {

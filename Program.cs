@@ -35,9 +35,14 @@ namespace JaiSeqX
             args[2] = "0";
             args[3] = "iplrom.bms.bak";
 #endif
-            var w = File.OpenRead("jaiinit.aaf");
-            var stm = new Be.IO.BeBinaryReader(w);
-            JAI.Loaders.JAV1_IBankLoader.loadIBNK(stm, 0x55C0);
+            var w = File.ReadAllBytes("jaiinit.aaf");
+            var b = new JAI.Loaders.JAV1_AAFLoader();
+            var wat = b.load(ref w);
+            for  (int i=0;  i <  wat.Length; i++)
+            {
+                Console.WriteLine("{0} {1:X} {2:X} {3}", wat[i].type, wat[i].start, wat[i].size,wat[i].order);
+            }
+
            
             Console.ReadLine();
           

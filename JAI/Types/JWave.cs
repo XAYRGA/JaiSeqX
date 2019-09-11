@@ -15,8 +15,8 @@ namespace JaiSeqX.JAI.Types
         public int sampleCount;
 
         public string wsysFile; 
-        public uint wsys_start;
-        public uint wsys_size;
+        public int wsys_start;
+        public int wsys_size;
 
         public bool loop;
         public int loop_start;

@@ -10,17 +10,14 @@ namespace JaiSeqX.JAI.Types
 
     public class JWaveGroup
     {
+        public string awFile;
         public JWave[] Waves;
+        public Dictionary<int, JWave> WaveByID;
     }
     public class JWaveSystem
     {
-        JWaveGroup[] Groups;
-        JWave[] LoadedWaves; 
-
-        public static void loadGroup(byte grp)
-        {
-
-
-        }
+        public int id;
+        public JWaveGroup[] Groups;
+        public JWave[] LoadedWaves; 
     }
 }
