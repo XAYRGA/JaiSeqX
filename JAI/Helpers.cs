@@ -41,23 +41,6 @@ namespace JaiSeqX.JAI
             return fade;
         }
 
-        public static string readArchiveName(BinaryReader aafRead)
-        {
-            var ofs = aafRead.BaseStream.Position;
-            byte nextbyte;
-            byte[] name = new byte[0x70];
-
-            int count = 0;
-            while ((nextbyte = aafRead.ReadByte()) != 0xFF & nextbyte != 0x00)
-            {
-                name[count] = nextbyte;
-                count++;
-            }
-            aafRead.BaseStream.Seek(ofs + 0x70, SeekOrigin.Begin);
-            return Encoding.ASCII.GetString(name, 0, count);
-        }
-
-
 
         public static int[] readInt32Array(BeBinaryReader binStream, int count)
         {

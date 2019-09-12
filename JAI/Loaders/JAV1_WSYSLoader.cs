@@ -9,7 +9,7 @@ using Be.IO;
 
 namespace JaiSeqX.JAI.Loaders
 {
-    internal class  C_DF
+    internal class  C_DFEntry // Helper class for  returning all data when reading each entry inside of the C_DF.
     {
         public short awid;
         public short waveid;
@@ -17,30 +17,14 @@ namespace JaiSeqX.JAI.Loaders
 
     class JAV1_WSYSLoader
     {
-        private const int WSYS = 0x57535953;
-        private const int SCNE = 0x53434E45;
-        private const int C_DF = 0x432D4446;
-
-        public int[] readWINF(BeBinaryReader binSteam,int Base)
-        {
-            var HEAD = binSteam.ReadInt32();
-            var LENGTH = binSteam.ReadInt32();                  
-            return Helpers.readInt32Array(binSteam, LENGTH);
-
-        }
-
-        public int[] readWBCT(BeBinaryReader binSteam, int Base)
-        {
-            var HEAD = binSteam.ReadInt32();
-            var unk = binSteam.ReadInt32();
-            var LENGTH = binSteam.ReadInt32();      
-            return Helpers.readInt32Array(binSteam, LENGTH);
-
-        }
 
 
         /* STRUCTURE OF A WSYS */
-        /*
+        /* ******************************
+         * ** NO POINTERS ARE ABSOLUTE **
+         * ** ALL ARE RELATIVE TO WSYS **
+         * ******************************
+         * 
             0x00 - int32 0x57535953  ('WSYS')
             0x04 - int32 size
             0x08 - int32 global_id
@@ -110,61 +94,101 @@ namespace JaiSeqX.JAI.Loaders
 
         */
 
+        private const int WSYS = 0x57535953;
+        private const int SCNE = 0x53434E45;
+        private const int C_DF = 0x432D4446;
+
+        public int[] readWINF(BeBinaryReader binSteam, int Base)
+        {
+            var HEAD = binSteam.ReadInt32(); // Read the header (WINF)
+            var LENGTH = binSteam.ReadInt32(); // Read the count of how many pointers we have
+            return Helpers.readInt32Array(binSteam, LENGTH); // Read all of the pointers, and return.
+
+        }
+
+        public int[] readWBCT(BeBinaryReader binSteam, int Base)
+        {
+            var HEAD = binSteam.ReadInt32(); // Read the header 
+            var unk = binSteam.ReadInt32(); // Read unknown 4 bytes
+            var LENGTH = binSteam.ReadInt32(); // Read the count of how mamny pointers we have
+            return Helpers.readInt32Array(binSteam, LENGTH); // Read all of the pointers, and return. 
+
+        }
+
+
+        public string readArchiveName(BinaryReader aafRead)
+        {
+            var ofs = aafRead.BaseStream.Position; // Store where we started 
+            byte nextbyte; // Blank byte
+            byte[] name = new byte[0x70]; // Array for the name
+
+            int count = 0; // How many we've done
+            while ((nextbyte = aafRead.ReadByte()) != 0xFF & nextbyte != 0x00) // Read until we've read 0 or FF
+            {
+                name[count] = nextbyte; // Store into byte array
+                count++; // Count  how many valid bytes  we've read.
+            }
+            aafRead.BaseStream.Seek(ofs + 0x70, SeekOrigin.Begin); // Seek 0x70 bytes, because thats the statically allocated space for the wavegroup path. 
+            return Encoding.ASCII.GetString(name, 0, count); // Return a string with the name, but only of the valid bytes we've read. 
+        }
+
 
         public JWaveSystem loadWSYS(BeBinaryReader binStream, int Base)
         {
             var newWSYS = new JWaveSystem();
-
-            if (binStream.ReadInt32() != WSYS) // Check if first 4 bytes are IBNK
+            binStream.BaseStream.Position = Base;
+            if (binStream.ReadInt32() != WSYS) // Check if first 4 bytes are WSYS
                 throw new InvalidDataException("Data is not an WSYS");
-            var wsysSize = binStream.ReadInt32();
-            var wsysID = binStream.ReadInt32();
-            var unk1 = binStream.ReadInt32();
+            var wsysSize = binStream.ReadInt32(); // Read the size of the WSYS
+            var wsysID = binStream.ReadInt32(); // Read WSYS ID
+            var unk1 = binStream.ReadInt32(); // Unused?
             var waveINF = binStream.ReadInt32(); // Offset to  WINF
-            var waveBCT = binStream.ReadInt32(); // Offset to wbct 
-            /* Should probably squish this into a different function.*/
-            binStream.BaseStream.Position = waveINF + Base;
-            var winfoPointers = readWINF(binStream, Base); // load the pointers for the winf
-            binStream.BaseStream.Position = waveBCT + Base;
-            var wbctPointers = readWBCT(binStream, Base); // load the pointers for the wbct
+            var waveBCT = binStream.ReadInt32(); // Offset to WBCT
+            /* Should probably squish this into a different function. And I did. */
+            binStream.BaseStream.Position = waveINF + Base; // Seek to  WINF relative to base.  
+            var winfoPointers = readWINF(binStream, Base); // Read the waveGroup pointers
+            binStream.BaseStream.Position = waveBCT + Base; // Seek to the WBCT
+            var wbctPointers = readWBCT(binStream, Base); // load the pointers for the wbct (Wave ID's)
             JWaveGroup[] WSYSGroups = new JWaveGroup[winfoPointers.Length]; // The count of waveInfo's determines the amount of groups -- there is one WINF entry per group. 
 
             for (int i=0; i <  WSYSGroups.Length; i++)
             {
-                binStream.BaseStream.Position = Base + winfoPointers[i];
-                WSYSGroups[i] = readWaveGroup(binStream, Base);
+                binStream.BaseStream.Position = Base + winfoPointers[i]; // Seek to the wavegroup base.
+                WSYSGroups[i] = readWaveGroup(binStream, Base); // load the WaveGroup
             }
             for (int i=0; i < WSYSGroups.Length; i++)
             {
-                var currentWG = WSYSGroups[i];
-                binStream.BaseStream.Position = Base + winfoPointers[i];
-                var scenes = loadScene(binStream, Base);
+                var currentWG = WSYSGroups[i]; // After they've been loaded, we need to load their wave ID's
+                binStream.BaseStream.Position = Base + wbctPointers[i]; // this is achieve by the WBCT, which points to a SCNE
+                var scenes = loadScene(binStream, Base); // Load the SCNE object
                 {
-                    binStream.BaseStream.Position = scenes[0];  // oh boy.  
-                    var IDMap = loadC_DF(binStream, Base);
-                    for (int b=0; b < IDMap.Length;b++)
+                    binStream.BaseStream.Position = scenes[0] + Base;  // The SCNE contains pointers to C-DF, C-EX, and C-ST -- we only know that C-DF works.  
+                    var IDMap = loadC_DF(binStream, Base); // load the C_DF, which gives us  an array of C_DF entries, containing awID and WaveID. 
+                    for (int b=0; b < IDMap.Length;b++)  // We need to loop over the map of ID's
                     {
-                        currentWG.Waves[i].id = IDMap[i].waveid;
-                        currentWG.WaveByID[IDMap[i].waveid] = currentWG.Waves[i];
+                        currentWG.Waves[i].id = IDMap[i].waveid; // SCNE and WaveGroup are  1 to 1, meanin the first entry in one lines up with the other. 
+                        // So we'll want to move the waveid into the wave object itself for convience. 
+                        currentWG.WaveByID[IDMap[i].waveid] = currentWG.Waves[i]; // Basically making a copy of the wave object, so  it can be found by its ID instead of entry index.
                     }
                 }
             }
-            newWSYS.id = wsysID;
-            newWSYS.Groups = WSYSGroups;
+            newWSYS.id = wsysID; // We loaded the ID from above, store it
+            newWSYS.Groups = WSYSGroups; // We need to store the groups too, so let's do that.
             return newWSYS;
         }
 
         private JWaveGroup readWaveGroup(BeBinaryReader binStream, int Base)
         {
-            var newWG = new JWaveGroup();
-            newWG.awFile = Helpers.readArchiveName(binStream);
-            var waveCount = binStream.ReadInt32();
-            int[] WaveOffsets = Helpers.readInt32Array(binStream, waveCount);
-            newWG.Waves = new JWave[waveCount];
+            var newWG = new JWaveGroup(); // Create new Wavegroup object
+            newWG.WaveByID = new Dictionary<int, JWave>(); // Initialize the dictionary (map) for the wave id's (used later)
+            newWG.awFile = readArchiveName(binStream); // Exec helper functionn, which reads 0x70 bytes and trims off the fat. 
+            var waveCount = binStream.ReadInt32(); // Read the wave count
+            int[] WaveOffsets = Helpers.readInt32Array(binStream, waveCount); // Read waveCount int32's
+            newWG.Waves = new JWave[waveCount]; // make an array with all of the wave counts, this is to store the waves we will read
             for (int i = 0; i <  waveCount; i++)
             {
-                binStream.BaseStream.Position = Base + WaveOffsets[i];
-                newWG.Waves[i] = loadWave(binStream, Base);
+                binStream.BaseStream.Position = Base + WaveOffsets[i]; // Seek to the offset of each eave
+                newWG.Waves[i] = loadWave(binStream, Base); // Then tell it to load. 
             }
             return newWG;
         }
@@ -177,19 +201,20 @@ namespace JaiSeqX.JAI.Loaders
             return Helpers.readInt32Array(binStream, 3);  // C-DF, C-EX, C-ST
         }
 
-        private C_DF[] loadC_DF(BeBinaryReader binStream, int Base)
+        private C_DFEntry[] loadC_DF(BeBinaryReader binStream, int Base)
         {
             binStream.ReadInt32(); // should be C-DF.
-            var count = binStream.ReadInt32();
-            var Offsets = Helpers.readInt32Array(binStream, count);
-            var idmap = new C_DF[count];
+            var count = binStream.ReadInt32(); // Read the count
+            Console.WriteLine("{0:X}" , binStream.BaseStream.Position); // DEBUG DEEEEBUG
+            var Offsets = Helpers.readInt32Array(binStream, count); // Read all offsets, (count int32's)
+            var idmap = new C_DFEntry[count]; // New array to store all the waveid's in
             for (int i=0; i <  count; i++)
             {
-                binStream.BaseStream.Position = Offsets[i] + Base;
-                idmap[i] = new C_DF
+                binStream.BaseStream.Position = Offsets[i] + Base; // Seek to each c_DF entry
+                idmap[i] = new C_DFEntry
                 {
-                    awid = binStream.ReadInt16(),
-                    waveid = binStream.ReadInt16()
+                    awid = binStream.ReadInt16(), // read AW ID
+                    waveid = binStream.ReadInt16() // Read Wave ID
                 };
             }
 
@@ -200,17 +225,17 @@ namespace JaiSeqX.JAI.Loaders
         {
             var newWave = new JWave();
             binStream.ReadByte(); // First byte unknown?
-            newWave.format = binStream.ReadByte();
-            newWave.key = binStream.ReadByte();
+            newWave.format = binStream.ReadByte(); // Read wave format, usually 5
+            newWave.key = binStream.ReadByte(); // Read the base tuning key
             //Console.WriteLine(newWave.key);
             binStream.ReadByte(); // fourth byte unknown?
-            newWave.sampleRate = binStream.ReadSingle();
-            newWave.wsys_start = binStream.ReadInt32();
-            newWave.wsys_size = binStream.ReadInt32();
-            newWave.loop = binStream.ReadUInt32() == UInt32.MaxValue ? true : false;
-            newWave.loop_start = binStream.ReadInt32();
-            newWave.loop_end = binStream.ReadInt32();
-            newWave.sampleCount = binStream.ReadInt32();
+            newWave.sampleRate = binStream.ReadSingle(); // Read the samplerate
+            newWave.wsys_start = binStream.ReadInt32(); // Read the offset in the AW
+            newWave.wsys_size = binStream.ReadInt32(); // Read the length in the AW
+            newWave.loop = binStream.ReadUInt32() == UInt32.MaxValue ? true : false; // Check if it loops?
+            newWave.loop_start = binStream.ReadInt32(); // Even if looping is disabled, it should still read loops
+            newWave.loop_end = binStream.ReadInt32(); // Sample index of loop end
+            newWave.sampleCount = binStream.ReadInt32(); // Sample count
             return newWave;
         }
     }

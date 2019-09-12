@@ -13,7 +13,7 @@ using System.Drawing;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using SdlDotNet.Core;
-
+using Be.IO;
 
 
 
@@ -37,10 +37,20 @@ namespace JaiSeqX
 #endif
             var w = File.ReadAllBytes("jaiinit.aaf");
             var b = new JAI.Loaders.JAV1_AAFLoader();
+            var wx = new MemoryStream(w);
+            var bread = new BeBinaryReader(wx);
             var wat = b.load(ref w);
             for  (int i=0;  i <  wat.Length; i++)
             {
+                var data = wat[i];
                 Console.WriteLine("{0} {1:X} {2:X} {3}", wat[i].type, wat[i].start, wat[i].size,wat[i].order);
+                if (data.type==JAI.Types.JAIInitSectionType.WSYS)
+                {
+                    var vb = new JAI.Loaders.JAV1_WSYSLoader();
+                    bread.BaseStream.Position = data.start;
+                    vb.loadWSYS(bread, data.start);
+                }
+                
             }
 
            
