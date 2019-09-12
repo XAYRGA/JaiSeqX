@@ -39,6 +39,78 @@ namespace JaiSeqX.JAI.Loaders
         }
 
 
+        /* STRUCTURE OF A WSYS */
+        /*
+            0x00 - int32 0x57535953  ('WSYS')
+            0x04 - int32 size
+            0x08 - int32 global_id
+            0x0C - int32 unused 
+            0x10 - int32 Offset to WINF
+            0x14 - int32 Offset to WBCT
+            
+            STRUCTURE OF WINF
+            0x00 - int32 ? ('WINF')
+            0x04 - int32 count // SHOULD ALWAYS BE THE SAME  COUNT AS THE WBCT.
+            0x08 - *int32[count] (WaveGroup)Pointers
+
+            STRUCTURE OF WBCT  
+            0x00 - int32 ('WBCT')
+            0x04 - int32 unknown
+            0x08 - int32 count // SHOULD ALWAYS BE THE SAME COUNT AS THE WINF. 
+            0x0C - *int32[count] (SCNE)Pointers
+
+            STRUCTURE OF SCNE
+            0x00 - int32 ('SCNE')
+            0x04 - long 0;
+            0x0C - pointer to C-DF
+            0x10 - pointer to C-EX // Goes completely unused?
+            0x14 - pointer to C-ST // Goes completely unused? 
+
+            STRUCTURE OF C_DF 
+            0x00 - int32 ('C-DF')
+            0x04 - int32 count
+            0x08 - *int32[count] (waveID)Pointers
+
+            STRUCTURE OF (waveID) 
+            0x02 - short awID
+            0x04 - short waveID
+            
+            
+            STRUCTURE OF 'WaveGroup'  
+            0x00 - byte[0x70] ArchiveName
+            0x70 - int32 waveCount 
+            0x74 - *int32[waveCount] (wave)Pointers
+            
+            STRUCTURE OF 'wave'
+            0x00 - byte unknown
+            0x01 - byte format
+            0x02 - byte baseKey  
+            0x03 - byte unknown 
+            0x04 - float sampleRate 
+            0x08 - int32 start
+            0x0C - int32 length 
+            0x10 - int32 loop >  0  ?  true : false 
+            0x14 - int32 loop_start
+            0x18 - int32 loop_end 
+            0x1C  - int32 sampleCount 
+
+
+            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+             ~~ IMPORTANT NOTES ABOUT SCNE AND WAVEGROUPS ~~
+             The SCNE and WaveGroups are parallel. 
+             this means, that SCNE[1] pairs with WaveGroup[1].
+             So, when  you load the waves from the WaveGroup, 
+             the first entry in the SCNE's C-DF matches
+             with the first wave in the WaveGroup. 
+             This means: 
+             SCNE.C-DF[1] matches with WaveGroup.Waves[1]. 
+             Also indicating,  that the first Wave-ID in the 
+             C-DF matches with the first wave in the WaveGroup
+
+
+        */
+
+
         public JWaveSystem loadWSYS(BeBinaryReader binStream, int Base)
         {
             var newWSYS = new JWaveSystem();
@@ -62,7 +134,6 @@ namespace JaiSeqX.JAI.Loaders
                 binStream.BaseStream.Position = Base + winfoPointers[i];
                 WSYSGroups[i] = readWaveGroup(binStream, Base);
             }
-
             for (int i=0; i < WSYSGroups.Length; i++)
             {
                 var currentWG = WSYSGroups[i];
@@ -76,14 +147,10 @@ namespace JaiSeqX.JAI.Loaders
                         currentWG.Waves[i].id = IDMap[i].waveid;
                         currentWG.WaveByID[IDMap[i].waveid] = currentWG.Waves[i];
                     }
-
                 }
-                
             }
-
             newWSYS.id = wsysID;
             newWSYS.Groups = WSYSGroups;
-
             return newWSYS;
         }
 
