@@ -65,7 +65,8 @@
     <Compile Include="JAI\Loaders\JAV1_IBNKLoader.cs" />
     <Compile Include="JAI\Loaders\JAV1_WSYSLoader.cs" />
     <Compile Include="JAI\Seq\JAISeqEvent.cs" />
-    <Content Include="JAI\Seq\Subroutine.cs" />
+    <Compile Include="JAI\Seq\JAISeqExecutionFrame.cs" />
+    <Compile Include="JAI\Seq\Subroutine.cs" />
     <Compile Include="JAI\Types\JAIInitSection.cs" />
     <Compile Include="JAI\Types\JInstrument.cs" />
     <Compile Include="JAI\Types\JIBank.cs" />

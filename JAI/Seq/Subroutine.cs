@@ -13,38 +13,38 @@ namespace JaiSeqX.JAI.Seq
     
     public class Subroutine
     {
-        BeBinaryReader Sequence;
-        byte[] SeqData;
+       
+        byte[] SeqData; // Full .BMS  file.  
+        BeBinaryReader Sequence; // Reader for SeqData
+        private int baseAddress; // The address at which this subroutine starts in the file.
+        public byte last_opcode; // The last opcode that was executed. 
 
-        public Stack<uint> AddrStack;
+        public int[] Registers;  // JAISeq Registers.
+        public int[] Ports;  //  Ports, for ReadPort and WritePort -- used for interfacing with external data or game events.
+        public Stack<uint> AddrStack; // JAISeq return stack, depth of 8, used for CALL and RETURN commands.
 
-        public Queue<byte> OpcodeHistory;
-        public Queue<int> OpcodeAddressStack;
-        
-   
-        private int baseAddress;
+        public Queue<JAISeqExecutionFrame> history; // Execution history. 
+ 
+        public int[] rI; // Internal Integer registers  -- for interfacing with sequence. 
+        public float[] rF; // Internal Float registers -- for interfacing with sequence.
 
-        public JSequenceState State;
-
-        public byte last_opcode;
+        public int pc
+        {
+            get
+            {
+                return (int)Sequence.BaseStream.Position;
+            }
+        }
+        public int pcl;
 
         public Subroutine(ref byte[] BMSData,int BaseAddr)
         {
-            State = new JSequenceState();
-            SeqData = BMSData;
-
-            AddrStack = new Stack<uint>(64); // 64 unit stack? 
-            OpcodeHistory = new Queue<byte>(16);
-            OpcodeAddressStack = new Queue<int>(16);
-
-            Sequence = new BeBinaryReader(new MemoryStream(BMSData));
-            Sequence.BaseStream.Position = BaseAddr;
-
-            State = new JSequenceState();
-
-            baseAddress = BaseAddr;
-          
-
+            SeqData = BMSData; // 
+            AddrStack = new Stack<uint>(8); // JaiSeq has a stack depth of 8
+            history = new Queue<JAISeqExecutionFrame>(16); // Ill keep an opcode depth of 16      
+            Sequence = new BeBinaryReader(new MemoryStream(BMSData)); // Make a reader for this. 
+            Sequence.BaseStream.Position = BaseAddr; // Set its position to the base address. 
+            baseAddress = BaseAddr; // store the base address
         }
 
 
@@ -63,31 +63,17 @@ namespace JaiSeqX.JAI.Seq
             Sequence.BaseStream.Position = pos;
         }
 
-        public int nextOpAddress()
+        public JAISeqEvent loadNextOp()
         {
-            return (int)Sequence.BaseStream.Position;
-        }
-        public JaiEventType loadNextOp()
-        {
-            if (OpcodeAddressStack.Count == 16)
-            {
-                OpcodeAddressStack.Dequeue();
-            }
-            if (OpcodeHistory.Count == 16)
-            {
-                OpcodeHistory.Dequeue(); 
-            }
-
-            OpcodeAddressStack.Enqueue((int)Sequence.BaseStream.Position); // push address to FIFO stack. 
-
-            State.current_address = (int)Sequence.BaseStream.Position;
+            if (history.Count == 16)  // Opstack is full
+                history.Dequeue(); // push the one off the end. 
+            var historyPos = (int)Sequence.BaseStream.Position; // store push address for FIFO stack. 
+            pcl = (int)Sequence.BaseStream.Position; // Store the last known program counter.  
             byte current_opcode = Sequence.ReadByte(); // Reads the current byte in front of the cursor. 
             last_opcode = current_opcode;
-            OpcodeHistory.Enqueue(current_opcode); // push opcode to FIFO stack
+            history.Enqueue(new JAISeqExecutionFrame { opcode = last_opcode,  address = historyPos} ); // push opcode to FIFO stack
 
-           
-            
-            if (current_opcode < 0x80)
+            if (current_opcode < 0x80)  // anything 0x80  or under is a NOTE_ON, this lines up with MIDI notes.
             {
                 State.note = current_opcode; // The note on event is laid out like a piano with 127 (0x7F1) keys. 
                 // So this means that the first 0x80 bytes are just pressing the individual keys.
