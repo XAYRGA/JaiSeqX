@@ -9,6 +9,10 @@ namespace JaiSeqX.JAI.Seq
 
     public enum JAISeqEvent
     {
+        UNKNOWN = 0x00,
+        NOTE_ON = 0x01,
+        NOTE_OFF = 0x02,
+        MISS = 0x03,
 
         /* wait with u8 arg */
         WAIT_8 = 0x80, // WAIT <byte wait time>
@@ -28,8 +32,8 @@ namespace JaiSeqX.JAI.Seq
         RETURN_CONDITIONAL = 0xC6, // RETURN <byte condition> 
         JUMP = 0xC7, // JUMP <int32 address>
         JUMP_CONDITIONAL = 0xC8, // JUMP <byte condition> <int24 address>
-        LOOPS = 0xC9, // Loops?
-        LOOPE = 0xCA, // LoopE
+        LOOPS = 0xC9, // Loop Start 
+        LOOPE = 0xCA, // Loop End / Do Loop 
         READPORT = 0xCB, // <byte flags> <byte destination register> 
         WRITEPORT = 0xCC, // <byte port> <byte value>
         CHECK_PORT_IMPORT = 0xCD, 
@@ -93,8 +97,8 @@ namespace JaiSeqX.JAI.Seq
 
         // Thanks, Jasper!
         /* "Improved" JaiSeq from TP / SMG / SMG2 seems to use this instead */
-        J2_SET_PERF_8 = 0xB8, // <byte register> <byte value>
-        J2_SET_PERF_16 = 0xB9, // <byte register> <short value>
+        J2_SET_PARAM_8 = 0xB8, // <byte register> <byte value>
+        J2_SET_PARAM_16 = 0xB9, // <byte register> <short value>
         /* Set "articulation"? Used for setting timebase. */
         J2_SET_ARTIC = 0xD8, // <short timebase>
         J2_TEMPO = 0xE0, // <short tempo>
