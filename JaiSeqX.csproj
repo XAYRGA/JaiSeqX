@@ -68,6 +68,10 @@
     <Compile Include="JAI\Seq\JAISeqExecutionFrame.cs" />
     <Compile Include="JAI\Seq\JAISeqRegisterMap.cs" />
     <Compile Include="JAI\Seq\JAISeqSubroutine.cs" />
+    <Compile Include="JAI\Seq\JAISeq_Arithmetic.cs" />
+    <Compile Include="JAI\Seq\JAISeq_Flow.cs" />
+    <Compile Include="JAI\Seq\JAISeq_Param.cs" />
+    <Compile Include="JAI\Seq\JAISeq_Perf.cs" />
     <Compile Include="JAI\Types\JAIInitSection.cs" />
     <Compile Include="JAI\Types\JInstrument.cs" />
     <Compile Include="JAI\Types\JIBank.cs" />
