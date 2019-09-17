@@ -199,7 +199,6 @@ namespace JaiSeqX.JAI.Seq
                     case 0xBE: // Completely unknown
                     case (byte)JAISeqEvent.WRITE_CHILD_PORT:
                     case (byte)JAISeqEvent.WRITE_PARENT_PORT:
-                    case (byte)JAISeqEvent.WRITEPORT:
                         skip(2);
                         return JAISeqEvent.UNKNOWN;
                     /* One byte unknowns */

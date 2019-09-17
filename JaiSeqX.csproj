@@ -87,6 +87,7 @@
     <Content Include="bass_fx.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="JAI\Seq\seqdoc.txt" />
     <Content Include="tahoma.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -22,6 +22,17 @@ namespace JaiSeqX.JAI.Seq
                         Registers[dest_reg] = Ports[port_id]; // Do move operation
                         return JAISeqEvent.READPORT;
                     }
+
+                case (byte)JAISeqEvent.WRITEPORT:
+                    {
+                        var port_id = Sequence.ReadByte();
+                        var source_reg = Sequence.ReadByte();
+                        rI[0] = port_id;
+                        rI[1] = source_reg;
+                        Ports[port_id] = Registers[source_reg];
+
+                        return JAISeqEvent.WRITEPORT;
+                    }
                 /* Tempo Control */
                 case (byte)JAISeqEvent.J2_SET_ARTIC: // The very same.
                     {
