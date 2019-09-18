@@ -14,7 +14,6 @@ namespace JaiSeqX.JAI.Seq
             switch (currnet_opcode)
             {
 
-
                 /* Open and close track */
                 case (byte)JAISeqEvent.OPEN_TRACK:
                     {

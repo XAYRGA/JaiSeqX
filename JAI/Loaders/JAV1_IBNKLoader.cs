@@ -135,6 +135,53 @@ namespace JaiSeqX.JAI.Loaders
             return Inst;
         }
 
+        public static JOscillatorVector[] readOscVector(BeBinaryReader binStream, int Base)
+        {
+            var len = 0;
+            // This function cheats a little bit :) 
+            // We dive in not knowing the length of the table -- the table is stopped whenever one of the MODE bytes is more than 0xB. 
+            var seekBase = binStream.BaseStream.Position;
+            for (int i=0; i < 10; i++)
+            {
+                var mode = binStream.ReadInt16(); // reads the first 2 bytes of the table
+                if (mode < 0xB) // This determines the mode, the mode will always be less than 0xB -- unless its telling the table to end. 
+                {
+                    len++; // If it is, then we definitely want to read this entry, so we increment the counter
+                    binStream.ReadInt32(); // Then skip the actual entry data
+                }
+                else // The value was over 10 
+                {
+                    break;  // So we need to stop the loop
+                }
+            }
+            binStream.BaseStream.Position = seekBase;  // After we have an idea how big the table is -- we want to seek back to the beginning of it.
+            JOscillatorVector[] OscVecs = new JOscillatorVector[len]; // And create an array the size of our length.
+            for (int i=0; i < len;i++)
+            {
+                OscVecs[i] = new JOscillatorVector
+                {
+                    mode = binStream.ReadInt16(), // Read the values of each into their places
+                    time = binStream.ReadInt16(),
+                    value = binStream.ReadInt16()
+                };
+            }
+            return OscVecs; // finally, return. 
+        }
+
+        public static JOscillator loadOscillator(BeBinaryReader binStream, int Base)
+        {
+            var Osc = new JOscillator(); // Create new oscillator
+            var target = binStream.ReadByte(); // load target -- what is it affecting?
+            binStream.BaseStream.Seek(3, SeekOrigin.Current); // read 3 bytes?
+            Osc.rate = binStream.ReadSingle(); // Read the rate at which the oscillator progresses -- this will be relative to the number of ticks per beat.
+            var attackSustainTableOffset = binStream.ReadInt32(); // Offset of AD table
+            var releaseDecayTableOffset = binStream.ReadInt32(); // Offset of SR table
+            Osc.Width = binStream.ReadSingle(); // We should load these next, this is the width, ergo the value of the oscillator at 32768. 
+            Osc.Vertex = binStream.ReadSingle();  // This is the vertex, the oscillator will always cross this point. 
+            // To determine the value of an oscillator, it's Vertex + Width*(value/32768) -- each vector should progress the value, depending on the mode. 
+            Osc.target = (JOscillatorTarget)target;
+            return Osc;
+        }
         /* 
             JAIV1 KeyRegion Structure
             0x00 byte baseKey 

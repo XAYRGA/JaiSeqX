@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ namespace JaiSeqX.JAI.Types
 {
     public class JOscillator
     {
-        public byte target;
+        public JOscillatorTarget target;
         public float rate;
         public JOscillatorVector[] vectors;
         public float Width;
@@ -31,5 +31,13 @@ namespace JaiSeqX.JAI.Types
         Loop = 5,
         Hold = 6,
         Stop = 7,
+    }
+    public enum JOscillatorTarget
+    {
+        Volume = 1,
+        Pitch = 2,
+        Pan = 3,
+        FX  = 4,
+        Dolby = 5
     }
 }
