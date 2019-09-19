@@ -10,14 +10,25 @@ namespace JaiSeqX.JAI.Types
     {
         public JOscillatorTarget target;
         public float rate;
-        public JOscillatorVector[] vectors;
+        public JOscillatorVector[] ASVector;
+        public JOscillatorVector[] DRVector;
         public float Width;
         public float Vertex;
+
+        public float outValue;
+        private short position;
+        private JOscillatorVector currentVector;
+        private JOscillatorVector[] currentMap;
+
+        private void advance()
+        {
+
+        }
     }
 
     public class JOscillatorVector
     {
-        public short mode;
+        public JOscillatorVectorMode mode;
         public short time;
         public short value;
     }
@@ -32,6 +43,7 @@ namespace JaiSeqX.JAI.Types
         Hold = 6,
         Stop = 7,
     }
+
     public enum JOscillatorTarget
     {
         Volume = 1,

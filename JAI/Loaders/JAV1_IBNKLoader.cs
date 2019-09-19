@@ -160,7 +160,7 @@ namespace JaiSeqX.JAI.Loaders
             {
                 OscVecs[i] = new JOscillatorVector
                 {
-                    mode = binStream.ReadInt16(), // Read the values of each into their places
+                    mode = (JOscillatorVectorMode)binStream.ReadInt16(), // Read the values of each into their places
                     time = binStream.ReadInt16(),
                     value = binStream.ReadInt16()
                 };
@@ -179,6 +179,28 @@ namespace JaiSeqX.JAI.Loaders
             Osc.Width = binStream.ReadSingle(); // We should load these next, this is the width, ergo the value of the oscillator at 32768. 
             Osc.Vertex = binStream.ReadSingle();  // This is the vertex, the oscillator will always cross this point. 
             // To determine the value of an oscillator, it's Vertex + Width*(value/32768) -- each vector should progress the value, depending on the mode. 
+            if (attackSustainTableOffset > 0)
+            {
+                binStream.BaseStream.Position = attackSustainTableOffset + Base;
+                Osc.ASVector = readOscVector(binStream, Base);
+            }
+            if (releaseDecayTableOffset > 0)
+            {
+                binStream.BaseStream.Position = attackSustainTableOffset + Base;
+                Osc.DRVector = readOscVector(binStream, Base);
+#if DEBUG
+                for (int i=0; i < Osc.DRVector.Length; i++)
+                {
+                    var entry = Osc.DRVector[i];
+                    if (entry.mode==JOscillatorVectorMode.Loop)
+                    {
+                        Console.WriteLine("[!] WARNING [!] ModeLoop is enabled in this instrument, but on the release loop. This is a bad idea! The instrument may never release.\n\nGood luck, have fun.");
+                    }
+                }
+
+#endif
+            }
+
             Osc.target = (JOscillatorTarget)target;
             return Osc;
         }
