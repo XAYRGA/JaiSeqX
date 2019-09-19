@@ -32,13 +32,9 @@ namespace JaiSeqX.JAI.Types
         public int id;
         public float Volume;
         public float Pitch;
-        public short attack = 0;
-        public short decay = 0;
-        public short sustain = 0;
-        public short release = 0;
-        public int oscillator = 0;
+        public byte oscillatorCount;
+        public JOscillator[] oscillators;     
         public bool IsPercussion; 
-       
         public JInstrumentKey[] Keys; 
 
     }

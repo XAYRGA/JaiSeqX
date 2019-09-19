@@ -50,7 +50,32 @@ namespace JaiSeqX
                     bread.BaseStream.Position = data.start;
                     vb.loadWSYS(bread, data.start);
                 }
-                
+                if (data.type == JAI.Types.JAIInitSectionType.IBNK)
+                {
+                    var vb = new JAI.Loaders.JAV1_IBankLoader();
+                    bread.BaseStream.Position = data.start;
+                    var ibnk = vb.loadIBNK(bread, data.start);
+                    for (int x=0; x < ibnk.Instruments.Length; x++)
+                    {
+                        var cinst = ibnk.Instruments[x];
+                       
+                        if (cinst!=null  && cinst.oscillators.Length > 0)
+                        {
+                            var cosc = cinst.oscillators[0];
+                            if (cosc.ASVector.Length > 4)
+                            {
+                                cosc.attack();
+                                while (true)
+                                {
+                                    Console.WriteLine("OSCILLATOR BREAK MODE 2");
+                                    cosc.advance();
+                                    Console.ReadLine();
+                                }
+                            }
+                        }
+                    }
+                    
+                }
             }
 
            

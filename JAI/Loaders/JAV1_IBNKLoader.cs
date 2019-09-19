@@ -9,7 +9,7 @@ using Be.IO;
 
 namespace JaiSeqX.JAI.Loaders
 {
-    public static class JAV1_IBankLoader
+    public class JAV1_IBankLoader
     {
         private const int IBNK = 0x49424e4b;
         private const int BANK = 0x42414E4B;
@@ -25,13 +25,13 @@ namespace JaiSeqX.JAI.Loaders
             0x10 byte[0x14] padding; 
             0x24 TYPE BANK
         */
-        public static JIBank loadIBNK(BeBinaryReader binStream,int Base)
+        public JIBank loadIBNK(BeBinaryReader binStream,int Base)
         {
             var RetIBNK = new JIBank();
             binStream.BaseStream.Position = Base;
             long anchor = 0; // Return / Seekback anchor
             var HeaderData = 0; // Temporary storage for each sanity check.
-            binStream.BaseStream.Seek(-4, SeekOrigin.Current);
+            //binStream.BaseStream.Seek(-4, SeekOrigin.Current);
             if (binStream.ReadInt32() != IBNK) // Check if first 4 bytes are IBNK
                 throw new InvalidDataException("Data is not an IBANK");
             var SectionSize = binStream.ReadUInt32(); // Read IBNK Size
@@ -53,7 +53,7 @@ namespace JaiSeqX.JAI.Loaders
             0x04 int32[0xF0] InstrumentPointers
             ---- NOTE: If the instrument pointer is 0, then the instrument for that index is NULL!
         */
-        public static JInstrument[] loadBank(BeBinaryReader binStream, int Base)
+        public JInstrument[] loadBank(BeBinaryReader binStream, int Base)
         {
             if (binStream.ReadUInt32() != BANK) // Check if first 4 bytes are BANK
                 throw new InvalidDataException("Data is not a BANK");
@@ -97,7 +97,7 @@ namespace JaiSeqX.JAI.Loaders
 
         */
 
-        public static JInstrument loadInstrument(BeBinaryReader binStream, int Base)
+        public JInstrument loadInstrument(BeBinaryReader binStream, int Base)
         {
             var Inst = new JInstrument();
             if (binStream.ReadUInt32() != INST) // Check if first 4 bytes are INST
@@ -105,9 +105,8 @@ namespace JaiSeqX.JAI.Loaders
             binStream.ReadUInt32(); // oh god oh god oh god its null
             Inst.Pitch = binStream.ReadSingle();
             Inst.Volume = binStream.ReadSingle();
-
-            binStream.ReadUInt32(); // *NOT IMPLEMENTED* //
-            binStream.ReadUInt32(); // *NOT IMPLEMENTED* //
+            var osc1Offset = binStream.ReadUInt32(); 
+            var osc2Offset = binStream.ReadUInt32(); 
             binStream.ReadUInt32(); // *NOT IMPLEMENTED* //
             binStream.ReadUInt32(); // *NOT IMPLEMENTED* //
             binStream.ReadUInt32(); // *NOT IMPLEMENTED* //
@@ -132,10 +131,23 @@ namespace JaiSeqX.JAI.Loaders
                 keyLow = bkey.baseKey; // Store our last key 
             }
             Inst.Keys = keys;
+            byte oscCount = (byte)((osc1Offset == 0 ? 0 : 1) + osc2Offset == 0 ? 0 : 1); // Add if the offsets are nonzero together.
+            Inst.oscillatorCount = oscCount; // Redundant?
+            Inst.oscillators = new JOscillator[oscCount]; // new oscillator array
+            if (osc1Offset!=0) // if the oscillator isnt null
+            {
+                binStream.BaseStream.Position = osc1Offset + Base; // seek to it's position
+                Inst.oscillators[0] = loadOscillator(binStream, Base); // then load it.
+            }
+            if (osc2Offset != 0) // if the second oscillator isn't null
+            {
+                binStream.BaseStream.Position = osc2Offset + Base; // seek to its position
+                Inst.oscillators[1] = loadOscillator(binStream, Base); // and load it.
+            }
             return Inst;
         }
 
-        public static JOscillatorVector[] readOscVector(BeBinaryReader binStream, int Base)
+        public JOscillatorVector[] readOscVector(BeBinaryReader binStream, int Base)
         {
             var len = 0;
             // This function cheats a little bit :) 
@@ -144,9 +156,10 @@ namespace JaiSeqX.JAI.Loaders
             for (int i=0; i < 10; i++)
             {
                 var mode = binStream.ReadInt16(); // reads the first 2 bytes of the table
+                len++; // The reason we do this, is because we still need to read the loop flag, or stop flag.
                 if (mode < 0xB) // This determines the mode, the mode will always be less than 0xB -- unless its telling the table to end. 
                 {
-                    len++; // If it is, then we definitely want to read this entry, so we increment the counter
+                    // If it is, then we definitely want to read this entry, so we increment the counter
                     binStream.ReadInt32(); // Then skip the actual entry data
                 }
                 else // The value was over 10 
@@ -161,14 +174,25 @@ namespace JaiSeqX.JAI.Loaders
                 OscVecs[i] = new JOscillatorVector
                 {
                     mode = (JOscillatorVectorMode)binStream.ReadInt16(), // Read the values of each into their places
-                    time = binStream.ReadInt16(),
-                    value = binStream.ReadInt16()
+                    time = binStream.ReadInt16(), // read time 
+                    value = binStream.ReadInt16() // read value
                 };
+            }
+            
+            for (int i=1; i < len; i++) // a third __fucking iteration__ on these stupid vectors.
+            {
+                var current = OscVecs[i]; // Grab current oscillator vector, notice the for loop starts at 1
+                var prev = OscVecs[i - 1]; // Grab the previous object
+                if (current.time < prev.time) // if its time is greater than ours
+                {
+                    OscVecs[i - 1] = current; // shift us down
+                    OscVecs[i] = prev; // shift it up
+                }
             }
             return OscVecs; // finally, return. 
         }
 
-        public static JOscillator loadOscillator(BeBinaryReader binStream, int Base)
+        public JOscillator loadOscillator(BeBinaryReader binStream, int Base)
         {
             var Osc = new JOscillator(); // Create new oscillator
             var target = binStream.ReadByte(); // load target -- what is it affecting?
@@ -179,15 +203,15 @@ namespace JaiSeqX.JAI.Loaders
             Osc.Width = binStream.ReadSingle(); // We should load these next, this is the width, ergo the value of the oscillator at 32768. 
             Osc.Vertex = binStream.ReadSingle();  // This is the vertex, the oscillator will always cross this point. 
             // To determine the value of an oscillator, it's Vertex + Width*(value/32768) -- each vector should progress the value, depending on the mode. 
-            if (attackSustainTableOffset > 0)
+            if (attackSustainTableOffset > 0) // first is AS table
             {
-                binStream.BaseStream.Position = attackSustainTableOffset + Base;
-                Osc.ASVector = readOscVector(binStream, Base);
+                binStream.BaseStream.Position = attackSustainTableOffset + Base; // Seek to the vector table
+                Osc.ASVector = readOscVector(binStream, Base); // Load the table
             }
-            if (releaseDecayTableOffset > 0)
+            if (releaseDecayTableOffset > 0) // Next is RD table
             {
-                binStream.BaseStream.Position = attackSustainTableOffset + Base;
-                Osc.DRVector = readOscVector(binStream, Base);
+                binStream.BaseStream.Position = attackSustainTableOffset + Base; // Seek to the vector and load it
+                Osc.DRVector = readOscVector(binStream, Base); // loadddd
 #if DEBUG
                 for (int i=0; i < Osc.DRVector.Length; i++)
                 {
@@ -197,10 +221,8 @@ namespace JaiSeqX.JAI.Loaders
                         Console.WriteLine("[!] WARNING [!] ModeLoop is enabled in this instrument, but on the release loop. This is a bad idea! The instrument may never release.\n\nGood luck, have fun.");
                     }
                 }
-
 #endif
             }
-
             Osc.target = (JOscillatorTarget)target;
             return Osc;
         }
@@ -211,7 +233,7 @@ namespace JaiSeqX.JAI.Loaders
             0x04 int32 velocityRegionCount
             *VelocityRegion[velocityRegionCount] velocities;
         */
-        public static JInstrumentKey readKeyRegion(BeBinaryReader binStream, int Base)
+        public JInstrumentKey readKeyRegion(BeBinaryReader binStream, int Base)
         {
             JInstrumentKey newKey = new JInstrumentKey();
             newKey.Velocities = new JInstrumentKeyVelocity[0x81]; // Create region array
@@ -248,7 +270,7 @@ namespace JaiSeqX.JAI.Loaders
            0x11 float Pitch;
         */
 
-        public static JInstrumentKeyVelocity readKeyVelRegion(BeBinaryReader binStream, int Base)
+        public JInstrumentKeyVelocity readKeyVelRegion(BeBinaryReader binStream, int Base)
         {
             JInstrumentKeyVelocity newReg = new JInstrumentKeyVelocity();
             newReg.baseVel = binStream.ReadByte();
@@ -276,7 +298,7 @@ namespace JaiSeqX.JAI.Loaders
 
         */
 
-        public static JInstrument loadPercussionInstrument(BeBinaryReader binStream, int Base)
+        public JInstrument loadPercussionInstrument(BeBinaryReader binStream, int Base)
         {
             var Inst = new JInstrument();
             if (binStream.ReadUInt32() != PER2) // Check if first 4 bytes are PER2
@@ -295,28 +317,26 @@ namespace JaiSeqX.JAI.Loaders
                 }
                 binStream.BaseStream.Position = keyPointers[i] + Base; // Set position to key pointer pos (relative to base)     
                 var newKey = new JInstrumentKey();
-                newKey.Pitch = binStream.ReadSingle();
-                newKey.Volume = binStream.ReadSingle();
-                binStream.BaseStream.Seek(8, SeekOrigin.Current);
-                var velRegCount = binStream.ReadInt32();
-                int[] velRegPointers = new int[velRegCount]; // Create Pointer array
-                for (int b = 0; b < velRegCount; b++)
-                {
-                    velRegPointers[i] = binStream.ReadInt32(); // Read all pointers
-                }
+                newKey.Pitch = binStream.ReadSingle(); // read the pitch
+                newKey.Volume = binStream.ReadSingle(); // read the volume
+                binStream.BaseStream.Seek(8, SeekOrigin.Current); // runtime values, skip
+                var velRegCount = binStream.ReadInt32(); // read count of regions we have
+                newKey.Velocities = new JInstrumentKeyVelocity[0xff]; // 0xFF just in case.
+                int[] velRegPointers = Helpers.readInt32Array(binStream,velRegCount);
+             
                 var velLow = 0;  // Again, these are regions -- see LoadInstrument for this exact code ( a few lines above ) 
                 for (int b = 0; b < velRegCount; b++)
                 {
-                    binStream.BaseStream.Position = velRegPointers[i] + Base;
+                    binStream.BaseStream.Position = velRegPointers[b] + Base;
                     var breg = readKeyVelRegion(binStream, Base);  // Read the vel region.
-                    for (int c = 0; b < breg.baseVel - velLow; c++)
+                    for (int c = 0; c < breg.baseVel - velLow; c++)
                     {
                         //  They're velocity regions, so we're going to have a toothy / gappy piano. So we need to span the missing gaps with the previous region config.
                         // This means that if the last key was 4, and the next key was 8 -- whatever parameters 4 had will span keys 4 5 6 and 7. 
-                        newKey.Velocities[b] = breg;
+                        newKey.Velocities[c] = breg; // store the  region
                         newKey.Velocities[127] = breg;
                     }
-                    velLow = breg.baseVel;
+                    velLow = breg.baseVel; // store the velocity for spanning
                 }
             }
             Inst.Keys = keys;
