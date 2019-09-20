@@ -33,11 +33,11 @@ namespace JaiSeqX.JAI.Types
             {
                 position += rate; // advance at the rate of the oscillator
                 duration += rate; // same with the duration
-                /*
+                
                 Console.Write(currentVector.mode);
                 Console.Write(" ");
-                Console.WriteLine(" {0} {1} {2}", position, duration, currentVector.time);
-                */
+                Console.WriteLine(" {0} {1} {2} {3}", position, duration, currentVector.time,currentVector.value);
+                //*/
                 if (currentVector.time <= position) // check if the position of the vector has exceeded our tie
                 {
                     vectorPosition++; // if it did we need to advance to the next vector
@@ -111,10 +111,10 @@ namespace JaiSeqX.JAI.Types
         public void release()
         {
             if (DRVector == null) { state = 0; return; }
-            if (lastVector==null)
+            if (lastVector == null)
             {
-                lastVector = zeroVector; 
-            }
+                lastVector = zeroVector; // Definitely needed, release oscillators are ... ugh >.>
+            }            
             currentVectorSet = DRVector;
             currentVector = currentVectorSet[0];
             position = 0;

@@ -131,7 +131,11 @@ namespace JaiSeqX.JAI.Loaders
                 keyLow = bkey.baseKey; // Store our last key 
             }
             Inst.Keys = keys;
-            byte oscCount = (byte)((osc1Offset == 0 ? 0 : 1) + osc2Offset == 0 ? 0 : 1); // Add if the offsets are nonzero together.
+            byte oscCount = 0;
+            if (osc1Offset > 0)
+                oscCount++;
+            if (osc2Offset > 0)
+                oscCount++;
             Inst.oscillatorCount = oscCount; // Redundant?
             Inst.oscillators = new JOscillator[oscCount]; // new oscillator array
             if (osc1Offset!=0) // if the oscillator isnt null
@@ -178,17 +182,23 @@ namespace JaiSeqX.JAI.Loaders
                     value = binStream.ReadInt16() // read value
                 };
             }
-            
-            for (int i=1; i < len; i++) // a third __fucking iteration__ on these stupid vectors.
+            // todo: Figure out why this doesn't sort right? 
+             
+            for (int i=0; i < len - 1; i++) // a third __fucking iteration__ on these stupid vectors.
             {
-                var current = OscVecs[i]; // Grab current oscillator vector, notice the for loop starts at 1
-                var prev = OscVecs[i - 1]; // Grab the previous object
-                if (current.time < prev.time) // if its time is greater than ours
+                for (int j = 0; j < len - 1; j++)
                 {
-                    OscVecs[i - 1] = current; // shift us down
-                    OscVecs[i] = prev; // shift it up
+                    var current = OscVecs[i]; // Grab current oscillator vector, notice the for loop starts at 1
+                    var cmp = OscVecs[j]; // Grab the previous object
+
+                    if (cmp.time > current.time) // if its time is greater than ours
+                    {
+                        OscVecs[j] = current; // shift us down
+                        OscVecs[i] = cmp; // shift it up
+                    }
                 }
-            }
+            } //*/
+
             return OscVecs; // finally, return. 
         }
 

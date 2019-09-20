@@ -59,17 +59,28 @@ namespace JaiSeqX
                     {
                         var cinst = ibnk.Instruments[x];
                        
-                        if (cinst!=null  && cinst.oscillators.Length > 0)
+                        if (cinst!=null  && cinst.oscillatorCount > 0)
                         {
                             var cosc = cinst.oscillators[0];
-                            if (cosc.ASVector.Length > 4)
+                            if (cosc.ASVector.Length > 1)
                             {
                                 cosc.attack();
+                                Console.WriteLine("OSCILLATOR BREAK MODE 2");
                                 while (true)
                                 {
-                                    Console.WriteLine("OSCILLATOR BREAK MODE 2");
+                              
                                     cosc.advance();
-                                    Console.ReadLine();
+                                    var xv = Console.ReadKey();
+                                    if (xv.Key==ConsoleKey.C)
+                                    {
+                                        Console.WriteLine("Oscillator skipped.");
+                                        break;
+                                    }
+                                    if (xv.Key==ConsoleKey.R)
+                                    {
+                                        cosc.release();
+                                        Console.WriteLine("oscillator swap vector: release");
+                                    }
                                 }
                             }
                         }
