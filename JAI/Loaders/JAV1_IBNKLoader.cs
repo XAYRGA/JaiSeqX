@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define OSCILLATOR_DEBUG
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,6 +26,8 @@ namespace JaiSeqX.JAI.Loaders
             0x10 byte[0x14] padding; 
             0x24 TYPE BANK
         */
+        private short currentInstID = 0; // runtime runtime runtime 
+        private short currentBankID = 0; // also runtime -- just for tracking
         public JIBank loadIBNK(BeBinaryReader binStream,int Base)
         {
             var RetIBNK = new JIBank();
@@ -36,6 +39,7 @@ namespace JaiSeqX.JAI.Loaders
                 throw new InvalidDataException("Data is not an IBANK");
             var SectionSize = binStream.ReadUInt32(); // Read IBNK Size
             var IBankID = binStream.ReadInt32(); // Read the global IBankID
+            currentBankID =(short)IBankID;
             var IBankFlags = binStream.ReadUInt32(); // Flags?
             binStream.BaseStream.Seek(0x10, SeekOrigin.Current); // Skip Padding
             anchor = binStream.BaseStream.Position;
@@ -65,6 +69,7 @@ namespace JaiSeqX.JAI.Loaders
                 binStream.BaseStream.Position = InstrumentPoiners[i] + Base; // Seek to pointer position
                 var type = binStream.ReadInt32(); // Read type
                 binStream.BaseStream.Seek(-4, SeekOrigin.Current); // Seek back 4 bytes to undo header read. 
+                currentInstID = (short)i;
                 switch (type)
                 {
                     case INST:
@@ -168,25 +173,31 @@ namespace JaiSeqX.JAI.Loaders
                 }
                 else // The value was over 10 
                 {
+           
                     break;  // So we need to stop the loop
                 }
             }
             binStream.BaseStream.Position = seekBase;  // After we have an idea how big the table is -- we want to seek back to the beginning of it.
             JOscillatorVector[] OscVecs = new JOscillatorVector[len]; // And create an array the size of our length.
-            for (int i=0; i < len;i++)
+
+            for (int i=0; i < len - 1;i++) // we read - 1 because we don't want to read the end value yet
             {
-                OscVecs[i] = new JOscillatorVector
+              
+                var vector = new JOscillatorVector
                 {
                     mode = (JOscillatorVectorMode)binStream.ReadInt16(), // Read the values of each into their places
                     time = binStream.ReadInt16(), // read time 
                     value = binStream.ReadInt16() // read value
                 };
-            }
+                OscVecs[i] = vector;
+            } // Go down below for the last vector, after sorting
+
             // todo: Figure out why this doesn't sort right? 
              
+            // -1 is so we don't sort the last object in the array, because its null. We're sorting from the bottom up.
             for (int i=0; i < len - 1; i++) // a third __fucking iteration__ on these stupid vectors.
             {
-                for (int j = 0; j < len - 1; j++)
+                for (int j = 0; j < len -1 ; j++)
                 {
                     var current = OscVecs[i]; // Grab current oscillator vector, notice the for loop starts at 1
                     var cmp = OscVecs[j]; // Grab the previous object
@@ -198,6 +209,19 @@ namespace JaiSeqX.JAI.Loaders
                     }
                 }
             } //*/
+
+            // Now that we've sorted the vectors because nintendo packs them out of fucking order.
+            // We can add the hold / stop vector :D
+            // We havent advanced any more bytes by the way, so we're still at the end of that vector array from before.
+
+            var lastVector = OscVecs[OscVecs.Length - 2]; // -2 gets the last indexed object.
+            // This is disgusting, i know.
+            OscVecs[OscVecs.Length - 1] = new JOscillatorVector
+            {
+                mode = (JOscillatorVectorMode)binStream.ReadInt16(), // Read the values of each into their places
+                time = (short)(lastVector.time), // read time 
+                value = lastVector.value // read value
+            };
 
             return OscVecs; // finally, return. 
         }
@@ -217,12 +241,33 @@ namespace JaiSeqX.JAI.Loaders
             {
                 binStream.BaseStream.Position = attackSustainTableOffset + Base; // Seek to the vector table
                 Osc.ASVector = readOscVector(binStream, Base); // Load the table
+#if OSCILLATOR_DEBUG // Code below is NOT commented because its for debugging only
+                var b = File.OpenWrite("oscs/" + currentBankID + "_" + currentInstID + "_atk.csv");
+                var header = "time,value,op\r\n";
+                var headera = Encoding.ASCII.GetBytes(header);
+                b.Write(headera, 0, headera.Length);
+                for (int i = 0; i < Osc.ASVector.Length; i++)
+                {
+                    var vector = Osc.ASVector[i];
+                    var add = "";
+                    if (vector.mode > JOscillatorVectorMode.SampleCell)
+                    {
+                        add = "," + vector.mode.ToString();
+
+                    }
+                    var asd = "" + vector.time + "," + vector.value + add + "\r\n";
+                    var astro = Encoding.ASCII.GetBytes(asd);
+                    b.Write(astro, 0, astro.Length);
+                }
+                b.Close();
+#endif
             }
+
             if (releaseDecayTableOffset > 0) // Next is RD table
             {
-                binStream.BaseStream.Position = attackSustainTableOffset + Base; // Seek to the vector and load it
+                binStream.BaseStream.Position = releaseDecayTableOffset + Base; // Seek to the vector and load it
                 Osc.DRVector = readOscVector(binStream, Base); // loadddd
-#if DEBUG
+#if OSCILLATOR_DEBUG // Code below is NOT commented because its for debugging only
                 for (int i=0; i < Osc.DRVector.Length; i++)
                 {
                     var entry = Osc.DRVector[i];
@@ -231,6 +276,25 @@ namespace JaiSeqX.JAI.Loaders
                         Console.WriteLine("[!] WARNING [!] ModeLoop is enabled in this instrument, but on the release loop. This is a bad idea! The instrument may never release.\n\nGood luck, have fun.");
                     }
                 }
+                var b = File.OpenWrite("oscs/" + currentBankID + "_" + currentInstID + "_rel.csv");
+                var header = "time,value,op\r\n";
+                var headera = Encoding.ASCII.GetBytes(header);
+                b.Write(headera, 0, headera.Length);
+                for (int i = 0; i < Osc.DRVector.Length; i++)
+                {
+                    var vector = Osc.DRVector[i];
+                    var add = "";
+                    if (vector.mode > JOscillatorVectorMode.SampleCell)
+                    {
+                        add = "," + vector.mode.ToString();
+
+                    }
+                    var asd = "" + vector.time + "," + vector.value +add + "\r\n";
+                    var astro = Encoding.ASCII.GetBytes(asd);
+                    b.Write(astro, 0, astro.Length);
+                }
+
+                b.Close();
 #endif
             }
             Osc.target = (JOscillatorTarget)target;

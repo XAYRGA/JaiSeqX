@@ -16,7 +16,7 @@ namespace JaiSeqX.JAI.Types
         public float Width;
         public float Vertex;
 
-        private byte state;
+        private JOScillatorState state;
         private JOscillatorVector[] currentVectorSet;
 
         private JOscillatorVector lastVector;
@@ -29,11 +29,11 @@ namespace JaiSeqX.JAI.Types
 
         public void advance()
         {
-            if (state == 1 )
+            if (state == JOScillatorState.Playing )
             {
                 position += rate; // advance at the rate of the oscillator
                 duration += rate; // same with the duration
-                
+                /*
                 Console.Write(currentVector.mode);
                 Console.Write(" ");
                 Console.WriteLine(" {0} {1} {2} {3}", position, duration, currentVector.time,currentVector.value);
@@ -60,7 +60,7 @@ namespace JaiSeqX.JAI.Types
                         case JOscillatorVectorMode.Hold: // if it is a hold
                             {
                                 //Console.WriteLine("OSCILLATOR TRIGGER HOLD");
-                                state = 2; // State 2 tells us to keep the oscillators value, but stop oscillating.
+                                state = JOScillatorState.Held; // State 2 tells us to keep the oscillators value, but stop oscillating.
                                 /* Will keep this  commmented for now -- need to do some testing to see how it sounds. 
                                 // Because this will continue, we'll need to keep the previous vector data :) 
                                 vectorPosition++; // so we advance the vector one more timem
@@ -79,7 +79,7 @@ namespace JaiSeqX.JAI.Types
                         case JOscillatorVectorMode.Stop: // Stop tells us to stop completely, and reset the instrument -- changes are discarded.
                             {
                                 // find a way to reset value?
-                                state = 3; // State 3
+                                state = JOScillatorState.Stopped; // State 3
                                 return;
                             }
                     }
@@ -105,7 +105,7 @@ namespace JaiSeqX.JAI.Types
             position = 0;
             duration = 0;
             vectorPosition = 0;
-            state = 1;
+            state = JOScillatorState.Playing;
         }
 
         public void release()
@@ -120,7 +120,7 @@ namespace JaiSeqX.JAI.Types
             position = 0;
             duration = 0;
             vectorPosition = 0;
-            state = 1;
+            state = JOScillatorState.Playing;
         }
     }
 
@@ -129,6 +129,14 @@ namespace JaiSeqX.JAI.Types
         public JOscillatorVectorMode mode;
         public short time;
         public short value;
+    }
+
+    public enum JOScillatorState
+    {
+        Stopped = 0 ,
+        Playing = 1, 
+        Held = 2,
+            
     }
 
     public enum JOscillatorVectorMode

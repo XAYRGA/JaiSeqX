@@ -55,10 +55,11 @@ namespace JaiSeqX
                     var vb = new JAI.Loaders.JAV1_IBankLoader();
                     bread.BaseStream.Position = data.start;
                     var ibnk = vb.loadIBNK(bread, data.start);
+                    
                     for (int x=0; x < ibnk.Instruments.Length; x++)
                     {
                         var cinst = ibnk.Instruments[x];
-                       
+                       /*
                         if (cinst!=null  && cinst.oscillatorCount > 0)
                         {
                             var cosc = cinst.oscillators[0];
@@ -84,7 +85,9 @@ namespace JaiSeqX
                                 }
                             }
                         }
+                        //*/
                     }
+                    
                     
                 }
             }
