@@ -55,6 +55,7 @@ namespace JaiSeqX.JAI.Types
                             {
                                 vectorPosition = 0; // go back to the beginning of this vector map
                                 position = 0; // then reset our time so all of the events play again
+                                this.advance(); // need to advance the oscillator one after we reset the position, loops should be seamless.
                                 break; // then we can drop out of this switch case.
                             }
                         case JOscillatorVectorMode.Hold: // if it is a hold
