@@ -125,6 +125,12 @@ namespace JaiSeqX.Player
 
         }
 
+
+        float Lerp(float firstFloat, float secondFloat, float by)
+        {
+             return firstFloat * (1 - by) + secondFloat * by;
+        }
+
         public bool doPitchBend(byte channel, double bend, int duration, byte type)
         {
             var chn = channels[channel];
@@ -157,6 +163,7 @@ namespace JaiSeqX.Player
                 if (bending[chn])
                 {
                     var bendChannel = channels[chn];
+                    /*
                     bendticks[chn]++;
                     var ticks = bendticks[chn];
                     var targetTicks = bendtargetricks[chn];
@@ -166,7 +173,16 @@ namespace JaiSeqX.Player
                     }
                     float bendPercent = ((float)ticks / targetTicks) < 1 ? ((float)ticks / targetTicks) : 1;
                     double semitones = bendtarget[chn] * bendPercent;
-                    bendChannel.bendValue = Math.Pow(2, ((semitones * 4)));
+                    double finalBendValue = Math.Pow(2, ((semitones * )));
+                    */
+
+                    int ticks = bendtargetricks[chn];
+                    double semitones = bendtarget[chn];
+                    double finalValue = Math.Pow(2, ((semitones* 4)));
+
+                    bendChannel.bendValue = Lerp((float)bendChannel.bendValue, (float) finalValue, 0.5f);
+
+
                 }
 
             }
