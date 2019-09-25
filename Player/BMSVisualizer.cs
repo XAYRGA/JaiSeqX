@@ -150,7 +150,15 @@ namespace JaiSeqX.Player
                         var wtf = new SdlDotNet.Graphics.Primitives.Box(sdest, new Size(25, 25));
                         wtf.Draw(IVideoSurface, Color.Red, false, true);
                     }
-                    
+
+                    var sdest2 = dest;
+                    sdest2.Offset(140 + 300 + (int)(BMSPlayer.ChannelManager.channels[i].bendValue * 150) , 0);
+                    var wtf2 = new SdlDotNet.Graphics.Primitives.Box(sdest2, new Size(25, 25));
+                    wtf2.Draw(IVideoSurface, Color.Red, false, true);
+
+                   
+
+
 
                 }
 

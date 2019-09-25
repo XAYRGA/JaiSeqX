@@ -140,7 +140,7 @@ namespace JaiSeqX
                         Environment.Exit(-1);
                     }
                     Player.BMSVisualizer.Init();
-                    
+                    //Console.ReadLine();
                     Player.BMSPlayer.LoadBMS(args[3], ref AAData);
 
                 }

@@ -198,7 +198,7 @@ namespace JaiSeqX.Player
                                                     var true_volume = (Math.Pow(((float)vel) / 127, 2) * vmul) * 0.5;
                                                     sound.Volume = (float)(true_volume * 0.6) * volumes[csub];
                                                     sound.ShouldFade = true;
-                                                    sound.FadeOutMS = 30;
+                                                    sound.FadeOutMS = 120;
                                                     if (program.IsPercussion)
                                                     {
                                                         real_pitch = (float)(key.Pitch * program.Pitch);

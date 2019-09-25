@@ -63,6 +63,7 @@ namespace JaiSeqX.Player
                 voices[index] = voice; // Throw the voice into its index
                 LastVoice = voice;
                 ActiveVoices++;
+                
                 return true; // success
             }
             return false;
@@ -163,8 +164,10 @@ namespace JaiSeqX.Player
                 if (bending[chn])
                 {
                     var bendChannel = channels[chn];
-                    /*
                     bendticks[chn]++;
+                    var targetTicks = bendtargetricks[chn];
+                    /*
+                  
                     var ticks = bendticks[chn];
                     var targetTicks = bendtargetricks[chn];
                     if (ticks > targetTicks)
@@ -176,12 +179,16 @@ namespace JaiSeqX.Player
                     double finalBendValue = Math.Pow(2, ((semitones * )));
                     */
 
-                    int ticks = bendtargetricks[chn];
+                    var ticks = bendticks[chn];
                     double semitones = bendtarget[chn];
                     double finalValue = Math.Pow(2, ((semitones* 4)));
+                    //Console.WriteLine(targetTicks);
+                    bendChannel.bendValue = Lerp((float)bendChannel.bendValue, (float) finalValue, 1f);
 
-                    bendChannel.bendValue = Lerp((float)bendChannel.bendValue, (float) finalValue, 0.5f);
-
+                    if (ticks > targetTicks)
+                    {
+                        bending[chn] = false;
+                    }
 
                 }
 
