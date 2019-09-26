@@ -58,12 +58,13 @@ namespace JaiSeqX.Player
                 {
                     stopVoice(index); // Stop it if we do. 
                 }
-                // voice.Pitch = (float)(voice.mPitchBendBase * inBendValue);
-                inBendValue = 1; // Reset pitch bend???
+                //voice.Pitch = (float)(voice.mPitchBendBase * inBendValue;
+                // Reset pitch bend???
+                
                 voices[index] = voice; // Throw the voice into its index
                 LastVoice = voice;
                 ActiveVoices++;
-                
+                voice.Pitch = (float)(voice.mPitchBendBase * inBendValue);
                 return true; // success
             }
             return false;
@@ -101,7 +102,8 @@ namespace JaiSeqX.Player
         double[] bendtarget;
         int[] bendtargetricks;
         int[] bendticks;
-
+        int[] bendTargetInt;
+        byte[] bendOctaves;
 
         float[] bendPitchBase;
 
@@ -118,10 +120,14 @@ namespace JaiSeqX.Player
             bendPitchBase = new float[32];
             bendticks = new int[32];
             bendtargetricks = new int[32];
+            bendTargetInt = new int[32];
+            bendOctaves = new byte[32];
+
 
             for (int i = 0; i < channels.Length; i++)
             {
                 channels[i] = new BMSChannel();  // Preallocating the channels
+                bendOctaves[i] = 12;
             }
 
         }
@@ -132,7 +138,7 @@ namespace JaiSeqX.Player
              return firstFloat * (1 - by) + secondFloat * by;
         }
 
-        public bool doPitchBend(byte channel, double bend, int duration, byte type)
+        public bool doPitchBend(byte channel, double bend, int duration, byte type, int target, byte oct)
         {
             var chn = channels[channel];
 
@@ -148,6 +154,8 @@ namespace JaiSeqX.Player
                 //Console.WriteLine("Add Target {0} ", target);
 
                 bendtarget[channel] = bend; // fuck
+                bendTargetInt[channel] = target;
+                bendOctaves[channel] = oct;
 
                 return true;
             }
@@ -180,8 +188,10 @@ namespace JaiSeqX.Player
                     */
 
                     var ticks = bendticks[chn];
-                    double semitones = bendtarget[chn];
-                    double finalValue = Math.Pow(2, ((semitones* 4)));
+                    double semitones = bendTargetInt[chn];
+                    //double semitones = bendtarget[chn];
+                    //double finalValue = Math.Pow(2 , (semitones * bendOctaves[chn]) / 12);
+                    double finalValue = Math.Pow(2, ((semitones)) / (4096 * (14 - bendOctaves[chn]) )); // I DONT KNOW WHATS GOING ON ANY MORE
                     //Console.WriteLine(targetTicks);
                     bendChannel.bendValue = Lerp((float)bendChannel.bendValue, (float) finalValue, 1f);
 

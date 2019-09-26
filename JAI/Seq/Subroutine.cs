@@ -106,6 +106,8 @@ namespace JaiSeqX.JAI.Seq
 
         public byte last_opcode;
 
+        public byte octave = 12;
+
         public Subroutine(ref byte[] BMSData,int BaseAddr)
         {
             State = new JSequenceState();

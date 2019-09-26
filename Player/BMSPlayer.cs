@@ -277,7 +277,7 @@ namespace JaiSeqX.Player
                                 if (current_state.perf==1) // Pitch bend
                                 {
                                     //Console.WriteLine("Pitch bend c {0} {1} {2}", csub, current_state.perf_value, current_state.perf_duration);
-                                    ChannelManager.doPitchBend((byte)csub, current_state.perf_decimal, current_state.perf_duration, current_state.perf_type);
+                                    ChannelManager.doPitchBend((byte)csub, current_state.perf_decimal, current_state.perf_duration, current_state.perf_type, current_state.perf_value,current_subroutine.octave);
                                 } 
 
                                 if (current_state.perf==3)
@@ -292,7 +292,11 @@ namespace JaiSeqX.Player
                         case JaiEventType.PARAM:
                             {
 
-                                Console.WriteLine("REQUEST PARAM CHANGE: {0} {1}", current_state.param, current_state.param_value);
+                                Console.WriteLine("REQUEST PARAM CHANGE: TRK: {2} , {0} {1}", current_state.param, current_state.param_value,csub);
+                                if (current_state.param==7)
+                                {
+                                    current_subroutine.octave = (byte)current_state.param_value;
+                                }
                                 break;
                             }
                         case JaiEventType.JUMP:

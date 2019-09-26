@@ -31,9 +31,9 @@ namespace JaiSeqX
 #if DEBUG
             args = new string[4];
             args[0] = "visu";
-            args[1] = "jaiinit_sms.aaf";
+            args[1] = "jaiinit.aaf";
             args[2] = "0";
-            args[3] = "test.bms";
+            args[3] = "StuffRoll.bms";
 #endif
           
             if (args.Length > 0)
@@ -140,7 +140,7 @@ namespace JaiSeqX
                         Environment.Exit(-1);
                     }
                     Player.BMSVisualizer.Init();
-                    //Console.ReadLine();
+                   // Console.ReadLine();
                     Player.BMSPlayer.LoadBMS(args[3], ref AAData);
 
                 }
