@@ -13,7 +13,9 @@ namespace JaiSeqX.Player
         public SoundEffectInstance LastVoice;
        
         public int ActiveVoices;
+        public byte lastBendMode = 12;
         private double inBendValue = 1;
+        private double inBendValue2 = 1;
         public double bendValue {
             get
             {
@@ -26,11 +28,32 @@ namespace JaiSeqX.Player
                     var fucktheratboys = voices[i];
                     if (fucktheratboys!=null)
                     {
-                        fucktheratboys.Pitch = (float)(fucktheratboys.mPitchBendBase * value); 
+                        fucktheratboys.Pitch = (float)(fucktheratboys.mPitchBendBase * value * inBendValue2 ); 
                     }
                 }
                 inBendValue = value; 
             }            
+        }
+
+
+        public double bendValue2
+        {
+            get
+            {
+                return inBendValue2;
+            }
+            set
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    var fucktheratboys = voices[i];
+                    if (fucktheratboys != null)
+                    {
+                        fucktheratboys.Pitch = (float)(fucktheratboys.mPitchBendBase * value*inBendValue );
+                    }
+                }
+                inBendValue = value;
+            }
         }
 
         public BMSChannel()
@@ -64,6 +87,10 @@ namespace JaiSeqX.Player
                 voices[index] = voice; // Throw the voice into its index
                 LastVoice = voice;
                 ActiveVoices++;
+                if (lastBendMode != 2)
+                {
+                    inBendValue = 1;
+                }
                 voice.Pitch = (float)(voice.mPitchBendBase * inBendValue);
                 return true; // success
             }
@@ -107,6 +134,8 @@ namespace JaiSeqX.Player
 
         float[] bendPitchBase;
 
+
+        private byte[] bendCoefLUT;
         public BMSChannelManager()
         {
             
@@ -124,6 +153,12 @@ namespace JaiSeqX.Player
             bendOctaves = new byte[32];
 
 
+            bendCoefLUT = new byte[100];
+
+            bendCoefLUT[12] = 2;
+            bendCoefLUT[8] = 2;
+            bendCoefLUT[2] = 12;
+
             for (int i = 0; i < channels.Length; i++)
             {
                 channels[i] = new BMSChannel();  // Preallocating the channels
@@ -133,7 +168,7 @@ namespace JaiSeqX.Player
         }
 
 
-        float Lerp(float firstFloat, float secondFloat, float by)
+        public float Lerp(float firstFloat, float secondFloat, float by)
         {
              return firstFloat * (1 - by) + secondFloat * by;
         }
@@ -163,15 +198,21 @@ namespace JaiSeqX.Player
             return false;
         }
 
+
+      
+
         public bool onTick()
         {
             for (int chn = 0; chn < channels.Length; chn++)
             {
                 // bend 
 
+
+                var bendChannel = channels[chn];
+                bendChannel.lastBendMode = bendOctaves[chn];
                 if (bending[chn])
                 {
-                    var bendChannel = channels[chn];
+                  
                     bendticks[chn]++;
                     var targetTicks = bendtargetricks[chn];
                     /*
@@ -186,12 +227,13 @@ namespace JaiSeqX.Player
                     double semitones = bendtarget[chn] * bendPercent;
                     double finalBendValue = Math.Pow(2, ((semitones * )));
                     */
-
+                 
                     var ticks = bendticks[chn];
                     double semitones = bendTargetInt[chn];
                     //double semitones = bendtarget[chn];
                     //double finalValue = Math.Pow(2 , (semitones * bendOctaves[chn]) / 12);
-                    double finalValue = Math.Pow(2, ((semitones)) / (4096 * (14 - bendOctaves[chn]) )); // I DONT KNOW WHATS GOING ON ANY MORE
+                    int bendCoef = bendCoefLUT[bendOctaves[chn]];
+                    double finalValue = Math.Pow(2, ((semitones)) / (4096 *  bendCoef )); // I DONT KNOW WHATS GOING ON ANY MORE
                     //Console.WriteLine(targetTicks);
                     bendChannel.bendValue = Lerp((float)bendChannel.bendValue, (float) finalValue, 1f);
 

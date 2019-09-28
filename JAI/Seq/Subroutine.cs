@@ -330,7 +330,7 @@ namespace JaiSeqX.JAI.Seq
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadByte();
                         
-                        State.perf_duration = 0;
+                        State.perf_duration = 4;
                         State.perf_type = 1;
                         State.perf_decimal = ((double)State.perf_value / 0xFF);
                         return JaiEventType.PERF;
@@ -357,7 +357,7 @@ namespace JaiSeqX.JAI.Seq
                             State.perf = Sequence.ReadByte();
                             var b = Sequence.ReadByte(); // Lazy byte signage, apparently C#'s SByte is broken.
                             State.perf_value = (b > 0x7F) ? b - 0xFF : b;
-                            State.perf_duration = 0;
+                            State.perf_duration = 4;
                             State.perf_type = 2;
                             State.perf_decimal = ((double)(State.perf_value) / 0x7F);
                             return JaiEventType.PERF;
@@ -387,7 +387,7 @@ namespace JaiSeqX.JAI.Seq
                     case (byte)JaiSeqEvent.PERF_S16_NODUR:
                         State.perf = Sequence.ReadByte();
                         State.perf_value = Sequence.ReadInt16();
-                        State.perf_duration = 0;
+                        State.perf_duration = 4;
                         State.perf_type = 3;
                         State.perf_decimal = ((double)(State.perf_value) / 0x7FFF);
                         return JaiEventType.PERF;

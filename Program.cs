@@ -33,7 +33,7 @@ namespace JaiSeqX
             args[0] = "visu";
             args[1] = "jaiinit.aaf";
             args[2] = "0";
-            args[3] = "StuffRoll.bms";
+            args[3] = "babybattle.bms";
 #endif
           
             if (args.Length > 0)

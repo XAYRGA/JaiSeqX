@@ -198,7 +198,7 @@ namespace JaiSeqX.Player
                                                     var true_volume = (Math.Pow(((float)vel) / 127, 2) * vmul) * 0.5;
                                                     sound.Volume = (float)(true_volume * 0.6) * volumes[csub];
                                                     sound.ShouldFade = true;
-                                                    sound.FadeOutMS = 120;
+                                                    sound.FadeOutMS = 30;
                                                     if (program.IsPercussion)
                                                     {
                                                         real_pitch = (float)(key.Pitch * program.Pitch);
@@ -272,12 +272,13 @@ namespace JaiSeqX.Player
                                     var data = current_state.perf_decimal;
                                     volumes[csub] = (float)data;
                                 }
-
+                                if (current_state.perf == 9) { }
 
                                 if (current_state.perf==1) // Pitch bend
                                 {
                                     //Console.WriteLine("Pitch bend c {0} {1} {2}", csub, current_state.perf_value, current_state.perf_duration);
                                     ChannelManager.doPitchBend((byte)csub, current_state.perf_decimal, current_state.perf_duration, current_state.perf_type, current_state.perf_value,current_subroutine.octave);
+                                 
                                 } 
 
                                 if (current_state.perf==3)
