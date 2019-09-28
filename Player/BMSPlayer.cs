@@ -1,4 +1,4 @@
-﻿//#define JSQPlayer_StepDebugging
+﻿
 
 using System;
 using System.Collections.Generic;
@@ -53,7 +53,6 @@ namespace JaiSeqX.Player
             {
                 volumes[i] = 1f;
             }
-     
 
             ChannelManager = new BMSChannelManager();
             bpm = 1000; // Dummy value, should be set by the root track
@@ -152,8 +151,11 @@ namespace JaiSeqX.Player
                     switch (opcode)
                     {
                         case JaiEventType.TIME_BASE:
-                            bpm = current_state.bpm;
-                            ppqn = current_state.ppqn;
+                            if (csub == 0)
+                            {
+                                bpm = current_state.bpm;
+                                ppqn = current_state.ppqn;
+                            }
                            
                            
                             updateTempo();
@@ -194,7 +196,8 @@ namespace JaiSeqX.Player
                                                     var sound = ChannelManager.loadSound(wave.pcmpath,wave.loop,wave.loop_start,wave.loop_end).CreateInstance();
                                                     var pmul = program.Pitch * key.Pitch;
                                                     var vmul = program.Volume * key.Volume;
-                                                    var real_pitch = Math.Pow(2, ((note - wave.key) *pmul ) / 12) ;
+                                                    //Console.WriteLine(pmul);
+                                                    var real_pitch = Math.Pow(2, ( (note - wave.key)  ) / 12f) * (pmul);
                                                     var true_volume = (Math.Pow(((float)vel) / 127, 2) * vmul) * 0.5;
                                                     sound.Volume = (float)(true_volume * 0.6) * volumes[csub];
                                                     sound.ShouldFade = true;

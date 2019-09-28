@@ -1,6 +1,4 @@
 ﻿
-
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,9 +29,9 @@ namespace JaiSeqX
 #if DEBUG
             args = new string[4];
             args[0] = "visu";
-            args[1] = "jaiinit.aaf";
-            args[2] = "0";
-            args[3] = "babybattle.bms";
+            args[1] = "gckart.baa";
+            args[2] = "1";
+            args[3] = "0001.bms";
 #endif
           
             if (args.Length > 0)

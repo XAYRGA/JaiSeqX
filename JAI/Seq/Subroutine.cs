@@ -16,6 +16,8 @@ namespace JaiSeqX.JAI.Seq
         WAIT_8 = 0x80,
         /* wait with u16 arg */
         WAIT_16 = 0x88,
+       
+        WAIT_24 = 0xEA,
         /* wait with variable-length arg */
         WAIT_VAR = 0xF0,
 
@@ -190,6 +192,7 @@ namespace JaiSeqX.JAI.Seq
                 switch (current_opcode)
                 {
                     /* Delays and waits */
+                    
                     case (byte)JaiSeqEvent.WAIT_16: // Wait (UInt16)
                         State.delay = Sequence.ReadUInt16(); // Add to the state delay
                       
@@ -230,6 +233,7 @@ namespace JaiSeqX.JAI.Seq
                         {
                             var type = Sequence.ReadByte();
                             var val = Sequence.ReadInt16();
+                            Console.WriteLine("VAL {0}", val);
                             if (type == 0x62)
                             {
                                 State.ppqn = val;
