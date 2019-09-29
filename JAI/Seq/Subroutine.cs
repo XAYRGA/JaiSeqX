@@ -506,6 +506,7 @@ namespace JaiSeqX.JAI.Seq
                         //Console.WriteLine(Sequence.ReadByte());
                         return JaiEventType.DEBUG;
                     case 0xBC:
+                    case 0xE1:
                         return JaiEventType.UNKNOWN;
                 }
             }
