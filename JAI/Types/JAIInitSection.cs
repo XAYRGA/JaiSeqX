@@ -14,6 +14,7 @@ namespace JaiSeqX.JAI.Types
         WSYS = 3,
         SEQMAP = 4,
         STREAM_MAP = 5,
+        EMBEDDED_SEQUENCE = 6,
 
 
         UNKNOWN = 255

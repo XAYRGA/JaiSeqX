@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using JaiSeqX.JAI.Types;
-using Be.IO;
 using System.IO;
+using Be.IO;
 
 namespace JaiSeqX.JAI.Loaders
 {

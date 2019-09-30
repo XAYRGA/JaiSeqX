@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="JAI\Helpers.cs" />
     <Compile Include="JAI\JASystem.cs" />
+    <Compile Include="JAI\Loaders\JAIV1_5_BAALoader.cs" />
     <Compile Include="JAI\Loaders\JAV1_AAFLoader.cs" />
     <Compile Include="JAI\Loaders\JASystemLoader.cs" />
     <Compile Include="JAI\Loaders\JASystemVersionDetector.cs" />
