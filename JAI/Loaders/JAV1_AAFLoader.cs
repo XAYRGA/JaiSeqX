@@ -76,7 +76,7 @@ namespace JaiSeqX.JAI.Loaders
                     case 1:
                         {
                             var NewSect = loadRegularSection(aafRead); // Load regular section
-                            NewSect.type = JAIInitSectionType.TUNING_TABLE; // Type 1 is the finetune table.
+                            NewSect.type = JAIInitSectionType.SOUND_TABLE; // Type 1 is the finetune table.
                             NewSect.order = order; // The order it was loaded in  (for later reassembly)
                             order++; // Increment Order 
                             stk.Push(NewSect); // Push to return stack
@@ -117,7 +117,7 @@ namespace JaiSeqX.JAI.Loaders
                     case 4:
                         {
                             var NewSect = loadRegularSection(aafRead); // Load regular section
-                            NewSect.type = JAIInitSectionType.SEQMAP;// Type 4 would be the sequence table.
+                            NewSect.type = JAIInitSectionType.SEQUENCE_COLLECTION;// Type 4 would be the sequence table.
                             NewSect.order = order; // Store order.
                             order++; // Increment global order
                             stk.Push(NewSect); // Push to return stack

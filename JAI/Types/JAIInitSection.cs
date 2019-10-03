@@ -9,16 +9,17 @@ namespace JaiSeqX.JAI.Types
     public enum JAIInitSectionType
     {
         END = 0,
-        TUNING_TABLE = 1,
+        SOUND_TABLE = 1,
         IBNK = 2, 
         WSYS = 3,
-        SEQMAP = 4,
+        SEQUENCE_COLLECTION = 4,
         STREAM_MAP = 5,
-        EMBEDDED_SEQUENCE = 6,
+        MUSIC_SEQUENCE = 6,
+        SOUND_TABLE_STRINGS = 7,
+        STREAM_FILE_TABLE = 8,
 
-
+        CUSTOM_DATA = 254,
         UNKNOWN = 255
-
     }
 
     public class JAIInitSection
@@ -27,6 +28,8 @@ namespace JaiSeqX.JAI.Types
         public int size;
         public int flags;
         public byte order;
+        public int number;
         public JAIInitSectionType type;         
     }
+
 }

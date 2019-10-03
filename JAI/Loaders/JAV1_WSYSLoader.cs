@@ -166,9 +166,9 @@ namespace JaiSeqX.JAI.Loaders
                     var IDMap = loadC_DF(binStream, Base); // load the C_DF, which gives us  an array of C_DF entries, containing awID and WaveID. 
                     for (int b=0; b < IDMap.Length;b++)  // We need to loop over the map of ID's
                     {
-                        currentWG.Waves[i].id = IDMap[i].waveid; // SCNE and WaveGroup are  1 to 1, meanin the first entry in one lines up with the other. 
+                        currentWG.Waves[b].id = IDMap[b].waveid; // SCNE and WaveGroup are  1 to 1, meanin the first entry in one lines up with the other. 
                         // So we'll want to move the waveid into the wave object itself for convience. 
-                        currentWG.WaveByID[IDMap[i].waveid] = currentWG.Waves[i]; // Basically making a copy of the wave object, so  it can be found by its ID instead of entry index.
+                        currentWG.WaveByID[IDMap[b].waveid] = currentWG.Waves[b]; // Basically making a copy of the wave object, so  it can be found by its ID instead of entry index.
                     }
                 }
             }

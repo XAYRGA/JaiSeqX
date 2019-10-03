@@ -35,7 +35,7 @@ namespace JaiSeqX
             args[2] = "0";
             args[3] = "iplrom.bms.bak";
 #endif
-            var w = File.ReadAllBytes("jaiinit.aaf");
+            var w = File.ReadAllBytes("jaiinit_sms.aaf");
             var b = new JAI.Loaders.JAV1_AAFLoader();
             var wx = new MemoryStream(w);
             var bread = new BeBinaryReader(wx);
