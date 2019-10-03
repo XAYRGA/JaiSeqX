@@ -36,7 +36,7 @@ namespace JaiSeqX
             args[3] = "iplrom.bms.bak";
 #endif
             var w = File.ReadAllBytes("jaiinit_sms.aaf");
-            var b = new JAI.Loaders.JAV1_AAFLoader();
+            var b = new JAI.Loaders.JA_AAFLoader();
             var wx = new MemoryStream(w);
             var bread = new BeBinaryReader(wx);
             var wat = b.load(ref w);
@@ -46,13 +46,13 @@ namespace JaiSeqX
                 Console.WriteLine("{0} {1:X} {2:X} {3}", wat[i].type, wat[i].start, wat[i].size,wat[i].order);
                 if (data.type==JAI.Types.JAIInitSectionType.WSYS)
                 {
-                    var vb = new JAI.Loaders.JAV1_WSYSLoader();
+                    var vb = new JAI.Loaders.JA_WSYSLoader_V1();
                     bread.BaseStream.Position = data.start;
                     vb.loadWSYS(bread, data.start);
                 }
                 if (data.type == JAI.Types.JAIInitSectionType.IBNK)
                 {
-                    var vb = new JAI.Loaders.JAV1_IBankLoader();
+                    var vb = new JAI.Loaders.JA_IBankLoader_V1();
                     bread.BaseStream.Position = data.start;
                     var ibnk = vb.loadIBNK(bread, data.start);
                     

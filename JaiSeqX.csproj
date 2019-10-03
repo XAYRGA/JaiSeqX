@@ -59,12 +59,12 @@
   <ItemGroup>
     <Compile Include="JAI\Helpers.cs" />
     <Compile Include="JAI\JASystem.cs" />
-    <Compile Include="JAI\Loaders\JAIV1_5_BAALoader.cs" />
-    <Compile Include="JAI\Loaders\JAV1_AAFLoader.cs" />
+    <Compile Include="JAI\Loaders\JA_BAALoader.cs" />
+    <Compile Include="JAI\Loaders\JA_AAFLoader.cs" />
     <Compile Include="JAI\Loaders\JASystemLoader.cs" />
     <Compile Include="JAI\Loaders\JASystemVersionDetector.cs" />
-    <Compile Include="JAI\Loaders\JAV1_IBNKLoader.cs" />
-    <Compile Include="JAI\Loaders\JAV1_WSYSLoader.cs" />
+    <Compile Include="JAI\Loaders\JA_IBankLoader_V1.cs" />
+    <Compile Include="JAI\Loaders\JA_WSYSLoader_V1.cs" />
     <Compile Include="JAI\Seq\JAISeqEvent.cs" />
     <Compile Include="JAI\Seq\JAISeqExecutionFrame.cs" />
     <Compile Include="JAI\Seq\JAISeqRegisterMap.cs" />
@@ -77,6 +77,8 @@
     <Compile Include="JAI\Types\JInstrument.cs" />
     <Compile Include="JAI\Types\JIBank.cs" />
     <Compile Include="JAI\Types\JOscillator.cs" />
+    <Compile Include="JAI\Types\JSequenceCollection.cs" />
+    <Compile Include="JAI\Types\JSoundTable.cs" />
     <Compile Include="JAI\Types\JWave.cs" />
     <Compile Include="JAI\Types\JWaveSystem.cs" />
     <Compile Include="Program.cs" />

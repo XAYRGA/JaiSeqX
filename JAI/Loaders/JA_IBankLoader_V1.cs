@@ -10,7 +10,7 @@ using Be.IO;
 
 namespace JaiSeqX.JAI.Loaders
 {
-    public class JAV1_IBankLoader
+    public class JA_IBankLoader_V1
     {
         private const int IBNK = 0x49424e4b;
         private const int BANK = 0x42414E4B;

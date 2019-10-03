@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using JaiSeqX.JAI.Types;
 using System.IO;
 using Be.IO;
-
+// JAAAF Loader
+// JAudio Audio Archive File Loader
 namespace JaiSeqX.JAI.Loaders
 {
-    class JAV1_AAFLoader
+    class JA_AAFLoader
     {
 
 

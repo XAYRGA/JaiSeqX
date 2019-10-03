@@ -15,7 +15,7 @@ namespace JaiSeqX.JAI.Loaders
         public short waveid;
     }
 
-    class JAV1_WSYSLoader
+    public class JA_WSYSLoader_V1
     {
 
 
