@@ -14,7 +14,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using SdlDotNet.Core;
 using Be.IO;
-
+using JaiSeqX.JAI.Loaders;
 
 
 namespace JaiSeqX
@@ -26,71 +26,16 @@ namespace JaiSeqX
         static void Main(string[] args)
         {
 
-         
-
 #if DEBUG
             args = new string[4];
             args[0] = "visu";
-            args[1] = "jaiinit.baa";
+            args[1] = "GCKart.baa";
             args[2] = "0";
             args[3] = "iplrom.bms.bak";
 #endif
-            var w = File.ReadAllBytes("jaiinit_sms.aaf");
-            var b = new JAI.Loaders.JA_AAFLoader();
-            var wx = new MemoryStream(w);
-            var bread = new BeBinaryReader(wx);
-            var wat = b.load(ref w);
-            for  (int i=0;  i <  wat.Length; i++)
-            {
-                var data = wat[i];
-                Console.WriteLine("{0} {1:X} {2:X} {3}", wat[i].type, wat[i].start, wat[i].size,wat[i].order);
-                if (data.type==JAI.Types.JAIInitSectionType.WSYS)
-                {
-                    var vb = new JAI.Loaders.JA_WSYSLoader_V1();
-                    bread.BaseStream.Position = data.start;
-                    vb.loadWSYS(bread, data.start);
-                }
-                if (data.type == JAI.Types.JAIInitSectionType.IBNK)
-                {
-                    var vb = new JAI.Loaders.JA_IBankLoader_V1();
-                    bread.BaseStream.Position = data.start;
-                    var ibnk = vb.loadIBNK(bread, data.start);
-                    
-                    for (int x=0; x < ibnk.Instruments.Length; x++)
-                    {
-                        var cinst = ibnk.Instruments[x];
-                       /*
-                        if (cinst!=null  && cinst.oscillatorCount > 0)
-                        {
-                            var cosc = cinst.oscillators[0];
-                            if (cosc.ASVector.Length > 1)
-                            {
-                                cosc.attack();
-                                Console.WriteLine("OSCILLATOR BREAK MODE 2");
-                                while (true)
-                                {
-                              
-                                    cosc.advance();
-                                    var xv = Console.ReadKey();
-                                    if (xv.Key==ConsoleKey.C)
-                                    {
-                                        Console.WriteLine("Oscillator skipped.");
-                                        break;
-                                    }
-                                    if (xv.Key==ConsoleKey.R)
-                                    {
-                                        cosc.release();
-                                        Console.WriteLine("oscillator swap vector: release");
-                                    }
-                                }
-                            }
-                        }
-                        //*/
-                    }
-                    
-                    
-                }
-            }
+            var data = File.ReadAllBytes(args[1]);
+
+            JASystemLoader.loadJASystem(ref data);
 
            
             Console.ReadLine();

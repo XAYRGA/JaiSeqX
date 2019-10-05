@@ -62,8 +62,9 @@
     <Compile Include="JAI\Loaders\JA_BAALoader.cs" />
     <Compile Include="JAI\Loaders\JA_AAFLoader.cs" />
     <Compile Include="JAI\Loaders\JASystemLoader.cs" />
-    <Compile Include="JAI\Loaders\JASystemVersionDetector.cs" />
+    <Compile Include="JAI\Loaders\JAIInitTypeDetector.cs" />
     <Compile Include="JAI\Loaders\JA_IBankLoader_V1.cs" />
+    <Compile Include="JAI\Loaders\JA_IBankLoader_V2.cs" />
     <Compile Include="JAI\Loaders\JA_WSYSLoader_V1.cs" />
     <Compile Include="JAI\Seq\JAISeqEvent.cs" />
     <Compile Include="JAI\Seq\JAISeqExecutionFrame.cs" />
@@ -73,7 +74,7 @@
     <Compile Include="JAI\Seq\JAISeq_Flow.cs" />
     <Compile Include="JAI\Seq\JAISeq_Param.cs" />
     <Compile Include="JAI\Seq\JAISeq_Perf.cs" />
-    <Compile Include="JAI\Types\JAIInitSection.cs" />
+    <Compile Include="JAI\JAIInit.cs" />
     <Compile Include="JAI\Types\JInstrument.cs" />
     <Compile Include="JAI\Types\JIBank.cs" />
     <Compile Include="JAI\Types\JOscillator.cs" />

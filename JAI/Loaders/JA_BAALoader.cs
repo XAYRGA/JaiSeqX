@@ -15,6 +15,7 @@ namespace JaiSeqX.JAI.Loaders
         // BAA - Binary Audio Archive 
         public const int BAA_Header = 0x41415F3C;
         public const int BAAC = 0x62616163; // BINARY AUDIO ARCHIVE CUSTOM
+        public const int BFCA = 0x62666361;
         public const int BMS = 0x626D7320; // BINARY MUSIC SEQUENCE
         public const int BNK = 0x626E6B20; // INSTRUMENT BANK
         public const int BSC = 0x62736320; // BINARY SEQUENCE COLLECTION
@@ -129,6 +130,15 @@ namespace JaiSeqX.JAI.Loaders
                             var newSect = new JAIInitSection();
                             newSect.start = aafRead.ReadInt32(); // Read the start offset.                
                             newSect.type = JAIInitSectionType.STREAM_FILE_TABLE;
+                            stk.Push(newSect);
+                        }
+                        break;
+                    case BFCA:
+                        {
+                            // Unique packing. Only has a start offset.
+                            var newSect = new JAIInitSection();
+                            newSect.start = aafRead.ReadInt32(); // Read the start offset.                
+                            newSect.type = JAIInitSectionType.UNKNOWN;
                             stk.Push(newSect);
                         }
                         break;

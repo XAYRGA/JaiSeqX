@@ -4,8 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JaiSeqX.JAI.Types
+namespace JaiSeqX.JAI
 {
+
+    public enum JAIInitType
+    {
+        AAF = 0,
+        BAA = 1,
+    }
+
     public enum JAIInitSectionType
     {
         END = 0,

@@ -9,28 +9,11 @@ namespace JaiSeqX.JAI
 {
     public class JASystem
     {
-        public JIBank[] Banks;
-        public JWaveSystem[] WaveBanks;
-        public JAIVersion version;
+        public JIBank[] Banks = new JIBank[0xFF];
+        public JWaveSystem[] WaveBanks = new JWaveSystem[0xFF];
+        public JAIInitType version;
         
     }
 
-    public enum JAIVersion
-    {
-        // Games that use JAIV1 
-        // Luigis Mansion
-        // Super Mario Sunshine
-        // Pikmin
-        // Pikmin 2
-        // Legend of Zelda: Windwaker 
-        ZERO = 0,
-        // Games that use JAIV2 
-        // Mario Kart Double Dash
-        ONE = 1,
-        // Games that use JAIV3 
-        // Super Mario Galaxy 1 & 2 
-        // Legend of Zelda: Twilight Princess
-        TWO = 2
-    }
-
+  
 }
