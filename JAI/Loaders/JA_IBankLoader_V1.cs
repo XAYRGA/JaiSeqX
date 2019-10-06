@@ -33,7 +33,6 @@ namespace JaiSeqX.JAI.Loaders
             var RetIBNK = new JIBank();
             binStream.BaseStream.Position = Base;
             long anchor = 0; // Return / Seekback anchor
-            var HeaderData = 0; // Temporary storage for each sanity check.
             //binStream.BaseStream.Seek(-4, SeekOrigin.Current);
             if (binStream.ReadInt32() != IBNK) // Check if first 4 bytes are IBNK
                 throw new InvalidDataException("Data is not an IBANK");
@@ -387,8 +386,6 @@ namespace JaiSeqX.JAI.Loaders
                 }
             }
             Inst.Keys = keys;
-
-
             return Inst;
         }
 

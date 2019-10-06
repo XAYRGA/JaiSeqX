@@ -11,7 +11,8 @@ namespace JaiSeqX.JAI.Loaders
 {
     class JA_IBankLoader_V2
     {
-        private const int PERC = 0x50455243; // Percussion
+        private const int PERC = 0x50455243; // Percussion Table
+        private const int Perc = 0x50657263; // Percussion 
         private const int SENS = 0x53454E53; // Sensor effect
         private const int RAND = 0x52414E44; // Random Effect
         private const int OSCT = 0x4F534354; // OSCillator Table
@@ -20,12 +21,15 @@ namespace JaiSeqX.JAI.Loaders
         private const int Inst = 0x496E7374; // Instrument
         private const int IBNK = 0x49424E4B; // Instrument BaNK
         private const int ENVT = 0x454E5654; // ENVelope Table
+        private const int LIST = 0x4C495354;
 
         private int iBase = 0;
         private int OscTableOffset = 0;
         private int EnvTableOffset = 0;
         private int RanTableOffset = 0;
         private int SenTableOffset = 0;
+        private int ListTableOffset = 0;
+
         private int Boundaries = 0;
 
         private JOscillator[] bankOscillators;
@@ -86,21 +90,54 @@ namespace JaiSeqX.JAI.Loaders
             EnvTableOffset = findChunk(binStream, ENVT);
             RanTableOffset = findChunk(binStream, RAND);
             SenTableOffset = findChunk(binStream, SENS);
+            ListTableOffset = findChunk(binStream, LIST);           
 
             binStream.BaseStream.Position = OscTableOffset + iBase;
             loadBankOscTable(binStream, Base); // Load oscillator table, also handles the ENVT. 
-
+            binStream.BaseStream.Position = ListTableOffset + iBase;
+            var instruments = loadInstrumentList(binStream, Base);
 
             return RetIBNK;
         }
+
+
+
+        public JInstrument[] loadInstrumentList(BeBinaryReader binStream, int Base)
+        {
+            JInstrument[] instruments = new JInstrument[0xF0];
+            if (binStream.ReadInt32() != LIST)
+                throw new InvalidDataException("LIST data section started with unexpected data " + binStream.BaseStream.Position);
+            binStream.ReadInt32(); // Section Length 
+            var count = binStream.ReadInt32();
+            // why are these FUCKS relative whenever literally nothing else in the file is ? //
+            var pointers = Helpers.readInt32Array(binStream, count);
+
+            for (int i = 0; i < count; i++)
+            {
+                binStream.BaseStream.Position = Base + pointers[i]; // FUCK THIS. Err I mean. Seek to the position of the instrument index.
+                var IID = binStream.ReadInt32();  // read the identity at the base of each section
+                binStream.BaseStream.Seek(-4, SeekOrigin.Current); // Seek back identity
+                switch (IID)
+                {
+                    case Inst:
+
+                        break;
+                    case Perc:
+
+                        break;
+                }
+            }
+
+            return instruments;
+        }
+
+
         /* JAIV1 OSCT Structure
             0x00 int32 0x4F534354 'OSCT'
             0x04 int32 SectionLength (+8 for entire section)
             0x08 int32 OscillatorCouint       
-            
-
-         
         */
+
         private void loadBankOscTable(BeBinaryReader binStream, int Base)
         {
             if (binStream.ReadInt32() != OSCT)
@@ -171,7 +208,6 @@ namespace JaiSeqX.JAI.Loaders
                 {
                     var current = OscVecs[i]; // Grab current oscillator vector, notice the for loop starts at 1
                     var cmp = OscVecs[j]; // Grab the previous object
-
                     if (cmp.time > current.time) // if its time is greater than ours
                     {
                         OscVecs[j] = current; // shift us down
