@@ -80,43 +80,53 @@ namespace JaiSeqX.JAI.Loaders
         public JIBank loadIBNK(BeBinaryReader binStream, int Base)
         {
             Console.WriteLine("Start load ibnk");
-            var RetIBNK = new JIBank();
-                                 
+            var RetIBNK = new JIBank();        
             iBase = Base;
             if (binStream.ReadInt32() != IBNK)
                 throw new InvalidDataException("Section doesn't have an IBNK header");
             Boundaries = binStream.ReadInt32() + 8; // total length of our section, the data of the section starts at +8, so we need to account for that, too.
-            OscTableOffset = findChunk(binStream, OSCT); 
-            EnvTableOffset = findChunk(binStream, ENVT);
-            RanTableOffset = findChunk(binStream, RAND);
-            SenTableOffset = findChunk(binStream, SENS);
-            ListTableOffset = findChunk(binStream, LIST);           
+            OscTableOffset = findChunk(binStream, OSCT); // Load oscillator table chunk
+            EnvTableOffset = findChunk(binStream, ENVT); // Load envelope table chunk
+            RanTableOffset = findChunk(binStream, RAND); // Load random effect table chunk
+            SenTableOffset = findChunk(binStream, SENS); // Load sensor table chunk
+            ListTableOffset = findChunk(binStream, LIST); // load the istrument list
 
-            binStream.BaseStream.Position = OscTableOffset + iBase;
-            loadBankOscTable(binStream, Base); // Load oscillator table, also handles the ENVT. 
-            binStream.BaseStream.Position = ListTableOffset + iBase;
-            var instruments = loadInstrumentList(binStream, Base);
+            binStream.BaseStream.Position = OscTableOffset + iBase; // Seek to the position of the oscillator table
+            loadBankOscTable(binStream, Base); // Load oscillator table, also handles the ENVT!!
+            binStream.BaseStream.Position = ListTableOffset + iBase; // Seek to the instrument list base
+            var instruments = loadInstrumentList(binStream, Base); // Load it.
 
             return RetIBNK;
         }
 
 
+        /*
+            JAIV2 LIST STRUCTURE
+            0x00 - int32 0x4C495354 'LIST';
+            0x04 - int32 length 
+            0x08 - int32 count 
+            0x0c - int32[count] instrumentPointers (RELATIVE TO IBANK 0x00)
+        */
 
         public JInstrument[] loadInstrumentList(BeBinaryReader binStream, int Base)
         {
-            JInstrument[] instruments = new JInstrument[0xF0];
-            if (binStream.ReadInt32() != LIST)
-                throw new InvalidDataException("LIST data section started with unexpected data " + binStream.BaseStream.Position);
-            binStream.ReadInt32(); // Section Length 
-            var count = binStream.ReadInt32();
+            JInstrument[] instruments = new JInstrument[0xF0]; // JSystem doesn't have more than 0xF0 instruments in each bank
+            if (binStream.ReadInt32() != LIST) // Verify we're loading the right section
+                throw new InvalidDataException("LIST data section started with unexpected data " + binStream.BaseStream.Position); // Throw if it's not the right data
+            binStream.ReadInt32(); // Section Length // Section lenght doesn't matter, but we have to read it to keep alignment.
+            var count = binStream.ReadInt32(); // Count of entries in the section (Including nulls.)
             // why are these FUCKS relative whenever literally nothing else in the file is ? //
-            var pointers = Helpers.readInt32Array(binStream, count);
+            var pointers = Helpers.readInt32Array(binStream, count); // This will be an in32[] of pointers
 
             for (int i = 0; i < count; i++)
             {
-                binStream.BaseStream.Position = Base + pointers[i]; // FUCK THIS. Err I mean. Seek to the position of the instrument index.
+
+                if (pointers[i] < 1) // Instrument is empty.
+                    continue; // Instrument is empty. Skip this iteration
+                binStream.BaseStream.Position = Base + pointers[i]; // FUCK THIS. Err I mean. Seek to the position of the instrument index + the base of the bank.
                 var IID = binStream.ReadInt32();  // read the identity at the base of each section
-                binStream.BaseStream.Seek(-4, SeekOrigin.Current); // Seek back identity
+                binStream.BaseStream.Seek(-4, SeekOrigin.Current); // Seek back identity (We read 4 bytes for the ID)
+
                 switch (IID)
                 {
                     case Inst:
@@ -124,6 +134,10 @@ namespace JaiSeqX.JAI.Loaders
                         break;
                     case Perc:
 
+                        break;
+                    default:
+
+                        Console.WriteLine("unknown inst index {0:X}" , binStream.BaseStream.Position);
                         break;
                 }
             }
@@ -244,7 +258,7 @@ namespace JaiSeqX.JAI.Loaders
         };
 
         /*
-          JAIV2 Oscillator Format 
+          JAIV2 Oscillator Structure
           0x00 - int32 0x4F736369 'Osci'
           0x04 - byte mode 
           0x05 - byte[3] unknown
