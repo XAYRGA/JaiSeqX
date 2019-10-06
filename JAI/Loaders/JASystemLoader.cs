@@ -20,7 +20,7 @@ namespace JaiSeqX.JAI.Loaders
                     loadJV0(ref newJA, ref data);
                     break;
                 case JAIInitType.BAA:
-                    Console.WriteLine("Detected type BAA");
+                    loadJV2(ref newJA, ref data);
                     break;
             }
             return newJA;
@@ -89,21 +89,14 @@ namespace JaiSeqX.JAI.Loaders
                                  var v1L = new JA_IBankLoader_V1(); // Make a loader
                                  ibnk = v1L.loadIBNK(read, current_section.start); // Load it
                                 JAS.Banks[ibnk.id] = ibnk; //Push into bank array. 
-#if DEBUG
-                                Console.WriteLine("Detected V1 Bank");
-#endif
                                 break;
                             }
 
-                             // Though V2 has 'ENVT' just after it, don't check for it. It's either v1 or v2. 
-                             
-                             var v2L = new JA_IBankLoader_V2(); // Make a loader
-                                                                //ibnk = v2L.loadIBNK(read, current_section.start); // Load it
-                                                                //JAS.Banks[ibnk.id] = ibnk; //Push into bank array. 
-#if DEBUG
-                            Console.WriteLine("Detected V2 Bank");
-#endif
-
+                            stm.Position = current_section.start; // Reset stream position to section base.
+                            // Though V2 has 'ENVT' just after it, don't check for it. It's either v1 or v2.                              
+                            var v2L = new JA_IBankLoader_V2(); // Make a loader
+                             ibnk = v2L.loadIBNK(read, current_section.start); // Load it
+                             JAS.Banks[ibnk.id] = ibnk; //Push into bank array. 
                             break;
                         }
                     case JAIInitSectionType.WSYS: // Wave System -- the same as jaiv1?

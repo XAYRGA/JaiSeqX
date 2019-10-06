@@ -156,6 +156,18 @@ namespace JaiSeqX.JAI.Loaders
             return Inst;
         }
 
+
+        /*
+        JAIV1 Oscillator Vector Structure 
+            These are weird. so i'll just do it like this
+            short mode
+            short time
+            short value
+
+            when you read anything over 8 for the mode, read the last two shorts then stop reading -- so the last value in the array would be
+
+            0x000F, 0x0000, 0x0000
+        */
         public JOscillatorVector[] readOscVector(BeBinaryReader binStream, int Base)
         {
             var len = 0;
@@ -172,8 +184,7 @@ namespace JaiSeqX.JAI.Loaders
                     binStream.ReadInt32(); // Then skip the actual entry data
                 }
                 else // The value was over 10 
-                {
-           
+                {           
                     break;  // So we need to stop the loop
                 }
             }
@@ -181,8 +192,7 @@ namespace JaiSeqX.JAI.Loaders
             JOscillatorVector[] OscVecs = new JOscillatorVector[len]; // And create an array the size of our length.
 
             for (int i=0; i < len - 1;i++) // we read - 1 because we don't want to read the end value yet
-            {
-              
+            {              
                 var vector = new JOscillatorVector
                 {
                     mode = (JOscillatorVectorMode)binStream.ReadInt16(), // Read the values of each into their places
@@ -226,6 +236,17 @@ namespace JaiSeqX.JAI.Loaders
             return OscVecs; // finally, return. 
         }
 
+
+        /*
+         JAIV1 Oscillator Format 
+         0x00 - byte mode 
+         0x01 - byte[3] unknown
+         0x04 - float rate
+         0x08 - int32 attackVectorOffset
+         0x0C - int32 releaseVectorOffset
+         0x10 - float width
+         0x14 - float vertex
+        */    
         public JOscillator loadOscillator(BeBinaryReader binStream, int Base)
         {
             var Osc = new JOscillator(); // Create new oscillator
@@ -241,65 +262,17 @@ namespace JaiSeqX.JAI.Loaders
             {
                 binStream.BaseStream.Position = attackSustainTableOffset + Base; // Seek to the vector table
                 Osc.ASVector = readOscVector(binStream, Base); // Load the table
-#if OSCILLATOR_DEBUG // Code below is NOT commented because its for debugging only
-                var b = File.OpenWrite("oscs/" + currentBankID + "_" + currentInstID + "_atk.csv");
-                var header = "time,value,op\r\n";
-                var headera = Encoding.ASCII.GetBytes(header);
-                b.Write(headera, 0, headera.Length);
-                for (int i = 0; i < Osc.ASVector.Length; i++)
-                {
-                    var vector = Osc.ASVector[i];
-                    var add = "";
-                    if (vector.mode > JOscillatorVectorMode.SampleCell)
-                    {
-                        add = "," + vector.mode.ToString();
-
-                    }
-                    var asd = "" + vector.time + "," + vector.value + add + "\r\n";
-                    var astro = Encoding.ASCII.GetBytes(asd);
-                    b.Write(astro, 0, astro.Length);
-                }
-                b.Close();
-#endif
             }
-
             if (releaseDecayTableOffset > 0) // Next is RD table
             {
                 binStream.BaseStream.Position = releaseDecayTableOffset + Base; // Seek to the vector and load it
                 Osc.DRVector = readOscVector(binStream, Base); // loadddd
-#if OSCILLATOR_DEBUG // Code below is NOT commented because its for debugging only
-                for (int i=0; i < Osc.DRVector.Length; i++)
-                {
-                    var entry = Osc.DRVector[i];
-                    if (entry.mode==JOscillatorVectorMode.Loop)
-                    {
-                        Console.WriteLine("[!] WARNING [!] ModeLoop is enabled in this instrument, but on the release loop. This is a bad idea! The instrument may never release.\n\nGood luck, have fun.");
-                    }
-                }
-                var b = File.OpenWrite("oscs/" + currentBankID + "_" + currentInstID + "_rel.csv");
-                var header = "time,value,op\r\n";
-                var headera = Encoding.ASCII.GetBytes(header);
-                b.Write(headera, 0, headera.Length);
-                for (int i = 0; i < Osc.DRVector.Length; i++)
-                {
-                    var vector = Osc.DRVector[i];
-                    var add = "";
-                    if (vector.mode > JOscillatorVectorMode.SampleCell)
-                    {
-                        add = "," + vector.mode.ToString();
-
-                    }
-                    var asd = "" + vector.time + "," + vector.value +add + "\r\n";
-                    var astro = Encoding.ASCII.GetBytes(asd);
-                    b.Write(astro, 0, astro.Length);
-                }
-
-                b.Close();
-#endif
             }
             Osc.target = (JOscillatorTarget)target;
             return Osc;
         }
+
+
         /* 
             JAIV1 KeyRegion Structure
             0x00 byte baseKey 

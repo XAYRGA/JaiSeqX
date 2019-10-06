@@ -29,7 +29,7 @@ namespace JaiSeqX
 #if DEBUG
             args = new string[4];
             args[0] = "visu";
-            args[1] = "GCKart.baa";
+            args[1] = "Z2Sound.baa";
             args[2] = "0";
             args[3] = "iplrom.bms.bak";
 #endif
