@@ -21,6 +21,8 @@ namespace JaiSeqX.JAI.Loaders
         private const int Inst = 0x496E7374; // Instrument
         private const int IBNK = 0x49424E4B; // Instrument BaNK
         private const int ENVT = 0x454E5654; // ENVelope Table
+        private const int PMAP = 0x504D4150;
+        private const int Pmap = 0x506D6170;
         private const int LIST = 0x4C495354;
 
         private int iBase = 0;
@@ -29,6 +31,8 @@ namespace JaiSeqX.JAI.Loaders
         private int RanTableOffset = 0;
         private int SenTableOffset = 0;
         private int ListTableOffset = 0;
+        private int PmapTableOffset = 0; 
+        
 
         private int Boundaries = 0;
 
@@ -90,6 +94,7 @@ namespace JaiSeqX.JAI.Loaders
             RanTableOffset = findChunk(binStream, RAND); // Load random effect table chunk
             SenTableOffset = findChunk(binStream, SENS); // Load sensor table chunk
             ListTableOffset = findChunk(binStream, LIST); // load the istrument list
+            PmapTableOffset = findChunk(binStream, PMAP);  // Percussion mapping lookup table
 
             binStream.BaseStream.Position = OscTableOffset + iBase; // Seek to the position of the oscillator table
             loadBankOscTable(binStream, Base); // Load oscillator table, also handles the ENVT!!
@@ -127,13 +132,13 @@ namespace JaiSeqX.JAI.Loaders
                 var IID = binStream.ReadInt32();  // read the identity at the base of each section
                 binStream.BaseStream.Seek(-4, SeekOrigin.Current); // Seek back identity (We read 4 bytes for the ID)
 
-                switch (IID)
+                switch (IID) // Switch ID
                 {
-                    case Inst:
-
+                    case Inst: // It's a regular instrument 
+                        instruments[i] = loadInstrument(binStream, Base); // Ask it to load (We're already just behind the Inst)
                         break;
-                    case Perc:
-
+                    case Perc: // Percussion Instrument 
+                        instruments[i] = loadPercussionInstrument(binStream, Base);
                         break;
                     default:
 
@@ -145,6 +150,168 @@ namespace JaiSeqX.JAI.Loaders
             return instruments;
         }
 
+        /* JAIV2 Instrument Structure 
+              0x00 int32 = 0x496E7374 'Inst'
+              0x04 int32 oscillatorCount
+              0x08 int32[oscillatorCount] oscillatorIndicies
+              ???? int32 0 
+              ???? int32 keyRegionCount 
+              ???? keyRegion[keyRegionCount]
+              ???? float freqmultiplier
+              ???? float gain
+        */
+        public JInstrument loadInstrument(BeBinaryReader binStream, int Base)
+        {
+            var newInst = new JInstrument();
+            newInst.IsPercussion = false; // Instrument isn't percussion
+            // This is wrong, they come at the end of the instrument
+            //newInst.Pitch = 1; // So these kinds of instruments don't initialize with a pitch value, which is strange. 
+            //newInst.Volume = 1; // I guess they figured that it was redundant since they're already doing it in 3 other places. 
+            if (binStream.ReadInt32() != Inst)
+                throw new InvalidDataException("Inst section started with unexpected data");
+            var osciCount = binStream.ReadInt32(); // Read the count of the oscillators. 
+            newInst.oscillatorCount = (byte)osciCount; // Hope no instrument never ever ever has > 255 oscillators lol.
+            newInst.oscillators = new JOscillator[osciCount]; // Initialize the instrument with the proper amount of oscillaotrs
+            for (int i =0; i < osciCount; i++) // Loop through and read each oscillator.
+            {
+                var osciIndex = binStream.ReadInt32(); // Each oscillator is stored as a 32 bit index.
+                newInst.oscillators[i] = bankOscillators[osciIndex]; // We loaded the oscillators already, I hope.  So this will grab them by their index.                
+            }
+            binStream.ReadInt32(); // There's always a 0 int32 padding this and the key regions. 
+            var keyRegCount = binStream.ReadInt32();
+            var keyLow = 0; // For region spanning. 
+            JInstrumentKey[] keys = new JInstrumentKey[0x81]; // Always go for one more.
+            for (int i = 0; i < keyRegCount; i++) // Loop through all pointers.
+            {
+                var bkey = readKeyRegion(binStream, Base); // Read the key region
+                //Console.WriteLine("KREG BASE KEY {0}", bkey.baseKey);
+                for (int b = 0; b < bkey.baseKey - keyLow; b++)
+                {
+                    //  They're key regions, so we're going to have a toothy / gappy piano. So we need to span the missing gaps with the previous region config.
+                    // This means that if the last key was 4, and the next key was 8 -- whatever parameters 4 had will span keys 4 5 6 and 7. 
+                    keys[b + keyLow] = bkey; // span the keys
+                    keys[127] = bkey;
+                }
+                keyLow = bkey.baseKey; // Store our last key 
+            }
+            newInst.Keys = keys;
+            newInst.Pitch = binStream.ReadSingle(); // Pitch and volume come last???
+            newInst.Volume = binStream.ReadSingle(); // ^^
+            // WE HAVE READ EVERY BYTE IN THE INST, WOOO
+            return newInst;
+        }
+
+
+        public JInstrument loadPercussionInstrument(BeBinaryReader binStream, int Base)
+        {
+            if (binStream.ReadInt32() != Perc)
+                throw new InvalidDataException("Perc section started with unexpected data");
+            var newPERC = new JInstrument();
+            newPERC.IsPercussion = true;
+            newPERC.Pitch = 1f;
+            newPERC.Volume = 1f;
+            var count = binStream.ReadInt32();
+            var ptrs = Helpers.readInt32Array(binStream, count);
+            var iKeys = new JInstrumentKey[count];
+            for (int i = 0; i < count; i++)
+            {
+                
+                var PmapOffset = ptrs[i];
+                if (PmapOffset > 0)
+                {
+                    var newKey = new JInstrumentKey();
+                    newKey.Velocities = new JInstrumentKeyVelocity[0x81];
+                    var pmapDataOffs = PmapOffset + Base ; // OH LOOK ANOTHER RELATIVE TO BANK BASE.
+                    binStream.BaseStream.Position = pmapDataOffs;
+                    if (binStream.ReadInt32() != Pmap)
+                    {
+                        Console.WriteLine("ERROR: Invalid PMAP data {0:X} -- Potential misalignment!", binStream.BaseStream.Position);
+                        continue;
+                    }
+                    newKey.Pitch = binStream.ReadInt32();
+                    newKey.Volume = binStream.ReadInt32();
+                    //binStream.ReadInt32(); // byte panning 
+                    binStream.BaseStream.Seek(8, SeekOrigin.Current); // runtime. 
+                    var velRegCount = binStream.ReadInt32();
+
+                    var velLow = 0;
+                    for (int b = 0; b < velRegCount; b++)
+                    {
+                        var breg = readKeyVelRegion(binStream, Base);
+                        for (int c = 0; c < breg.baseVel - velLow; c++)
+                        {
+                            //  They're velocity regions, so we're going to have a toothy / gappy piano. So we need to span the missing gaps with the previous region config.
+                            // This means that if the last key was 4, and the next key was 8 -- whatever parameters 4 had will span keys 4 5 6 and 7. 
+                            newKey.Velocities[c] = breg; // store the  region
+                            newKey.Velocities[127] = breg;
+                        }
+                        velLow = breg.baseVel; // store the velocity for spanning
+                    }
+                    iKeys[i] = newKey;
+                }
+            }
+            newPERC.Keys = iKeys;
+            newPERC.oscillatorCount = 0; 
+            return newPERC;
+        }
+
+
+        /* 
+          JAIV2 KeyRegion Structure
+          0x00 byte baseKey 
+          0x01 byte[0x3] unused;
+          0x04 int32 velocityRegionCount
+          VelocityRegion[velocityRegionCount] velocities; // NOTE THESE ARENT POINTERS, THESE ARE ACTUAL OBJECTS.
+        */
+        public JInstrumentKey readKeyRegion(BeBinaryReader binStream, int Base)
+        {
+            JInstrumentKey newKey = new JInstrumentKey();
+            newKey.Velocities = new JInstrumentKeyVelocity[0x81]; // Create region array
+            //-------
+            newKey.baseKey = binStream.ReadByte(); // Store base key
+            binStream.BaseStream.Seek(3, SeekOrigin.Current); ; // Skip 3 bytes
+            var velRegCount = binStream.ReadInt32(); // Grab vel region count
+            var velLow = 0;  // Again, these are regions -- see LoadInstrument for this exact code ( a few lines above ) 
+            for (int i = 0; i < velRegCount; i++)
+            {
+                var breg = readKeyVelRegion(binStream, Base);  // Read the vel region.\
+
+                for (int b = 0; b < breg.baseVel - velLow; b++)
+                {
+                    //  They're velocity regions, so we're going to have a toothy / gappy piano. So we need to span the missing gaps with the previous region config.
+                    // This means that if the last key was 4, and the next key was 8 -- whatever parameters 4 had will span keys 4 5 6 and 7. 
+                    newKey.Velocities[b] = breg;
+                    newKey.Velocities[127] = breg;
+                }
+                velLow = breg.baseVel;
+            }
+            return newKey;
+        }
+
+
+        /* 
+         JAIV2 Velocity Region Structure
+           0x00 byte baseVelocity;
+           0x04 byte[0x03] unused;
+           0x07 short wsysID;
+           0x09 short waveID;
+           0x0D float Volume; 
+           0x11 float Pitch;
+       */
+
+        public JInstrumentKeyVelocity readKeyVelRegion(BeBinaryReader binStream, int Base)
+        {
+            JInstrumentKeyVelocity newReg = new JInstrumentKeyVelocity();
+            newReg.baseVel = binStream.ReadByte();
+            binStream.BaseStream.Seek(3, SeekOrigin.Current); ; // Skip 3 bytes.
+            newReg.velocity = newReg.baseVel;
+            newReg.wsysid = binStream.ReadInt16();
+            newReg.wave = binStream.ReadInt16();
+            newReg.Volume = binStream.ReadSingle();
+            newReg.Pitch = binStream.ReadSingle();
+            return newReg;
+        }
+
 
         /* JAIV1 OSCT Structure
             0x00 int32 0x4F534354 'OSCT'
@@ -154,12 +321,12 @@ namespace JaiSeqX.JAI.Loaders
 
         private void loadBankOscTable(BeBinaryReader binStream, int Base)
         {
-            if (binStream.ReadInt32() != OSCT)
-                throw new InvalidDataException("Oscillator table section started with unexpected data " + binStream.BaseStream.Position );
-            binStream.ReadInt32(); // length 
+            if (binStream.ReadInt32() != OSCT) // Check if it has the oscillator table header
+                throw new InvalidDataException("Oscillator table section started with unexpected data " + binStream.BaseStream.Position ); // Throw if it doesn't
+            binStream.ReadInt32(); // This is the section length, its mainly used for seeking the file so we won't touch it.
             var count = binStream.ReadInt32(); // Read the count
-            bankOscillators = new JOscillator[count];
-            for (int i = 0; i < count; i++)
+            bankOscillators = new JOscillator[count]; // Initialize the bank oscillators with the number of oscillators int he table
+            for (int i = 0; i < count; i++) // Loop through each onne
             {
                 var returnPos = binStream.BaseStream.Position; // Save our position, the oscillator load function destroys our position.
                 bankOscillators[i] = loadOscillator(binStream, EnvTableOffset + iBase); // Ask the oscillator to load
@@ -298,7 +465,5 @@ namespace JaiSeqX.JAI.Loaders
             Osc.target = OscillatorTargetConversionLUT[target];
             return Osc;
         }
-
-
     }
 }

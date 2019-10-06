@@ -205,7 +205,7 @@ namespace JaiSeqX.JAI.Loaders
         {
             binStream.ReadInt32(); // should be C-DF.
             var count = binStream.ReadInt32(); // Read the count
-            Console.WriteLine("{0:X}" , binStream.BaseStream.Position); // DEBUG DEEEEBUG
+            //Console.WriteLine("{0:X}" , binStream.BaseStream.Position); // DEBUG DEEEEBUG
             var Offsets = Helpers.readInt32Array(binStream, count); // Read all offsets, (count int32's)
             var idmap = new C_DFEntry[count]; // New array to store all the waveid's in
             for (int i=0; i <  count; i++)
