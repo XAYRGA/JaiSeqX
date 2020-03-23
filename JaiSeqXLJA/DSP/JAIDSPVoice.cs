@@ -39,14 +39,11 @@ namespace JaiSeqXLJA.DSP
             //internalVoice.
             internalVoice.SubmitSourceBuffer(rootBuffer.buffer, null); // flush buffer into mixer 
             internalVoice.SetOutputVoices(JAIDSP.VoiceDescriptor); // prolly wrong
-            
             effectChain[(int)VoiceEffect.REVERB] = new EffectDescriptor(new Reverb(JAIDSP.Engine),buff.format.Channels);
             effectChain[(int)VoiceEffect.ECHO] = new EffectDescriptor(new Echo(JAIDSP.Engine),buff.format.Channels);
             internalVoice.SetEffectChain(effectChain);
             internalVoice.DisableEffect((int)VoiceEffect.REVERB);
             internalVoice.DisableEffect((int)VoiceEffect.ECHO);       
-            
-            
         }
 
 
