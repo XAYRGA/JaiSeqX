@@ -31,6 +31,8 @@ namespace JaiSeqXLJA.DSP
         private int oscTicks;
         private float oscValue = 1f;
         private EffectDescriptor[] effectChain =  new EffectDescriptor[2]; // max 16 effects per voice
+        private bool doDestroy = false;
+
         public JAIDSPVoice(ref JAIDSPSoundBuffer buff)
         {
             rootBuffer = buff;  // save root buffer.
@@ -67,8 +69,15 @@ namespace JaiSeqXLJA.DSP
 
         public void stop()
         {
+            if (instOsc==null)
+            {
+                doDestroy = true;
+                internalVoice.Stop();
+                return;
+            }
             if (instOsc != null && instOsc.envelopes[1] == null)
             {
+                doDestroy = true;
                 internalVoice.Stop();
             }
             else
@@ -118,6 +127,10 @@ namespace JaiSeqXLJA.DSP
                 vv *= gain0Matrix[i];
             }
             internalVoice.SetVolume(vv);
+            if (doDestroy==true)
+            {
+                return 3;
+            }
             if (envCurrentVec==null)
             {
                 return 2;

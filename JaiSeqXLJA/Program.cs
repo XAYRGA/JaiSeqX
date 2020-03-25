@@ -82,6 +82,7 @@ namespace JaiSeqXLJA
             }
             */
             // 6/28
+            /*
             var inst = JASystem.Banks[6].Instruments[42];
             var waveGroup = JASystem.WaveBanks[inst.Keys[64].Velocities[127].wsysid].Groups[0];
             var wave = waveGroup.WaveByID[inst.Keys[64].Velocities[127].wave];
@@ -96,10 +97,14 @@ namespace JaiSeqXLJA
             //voi.setEffectParams(VoiceEffect.REVERB, 0.5f, 0.5f);
             voi.play();
             voi.stop();
+            */
+            Player.JAISeqPlayer.startPlayback("TelesaBattle.bms", ref JASystem);
 
-
-
-                Console.ReadLine();
+            while (true)
+            {
+                Player.JAISeqPlayer.update();
+                Thread.Sleep(2);
+            }
 
             if (true)
                 return;
