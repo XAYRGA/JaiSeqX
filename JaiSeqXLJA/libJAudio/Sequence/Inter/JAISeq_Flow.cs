@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace libJAudio.Sequence.Inter
 {
-    public partial class JAISeqSubroutine
+    public partial class JAISeqInterpreter
     {
         public JAISeqEvent ProcessFlowOps(byte currnet_opcode)
         {

@@ -81,6 +81,8 @@
     <Compile Include="libJAudio\Loaders\JA_WSYSLoader_V1.cs" />
     <Compile Include="libJAudio\Sequence\JAISeqEvent.cs" />
     <Compile Include="libJAudio\Sequence\Inter\JAISeqExecutionFrame.cs" />
+    <Compile Include="Player\JAISeqPlayer.cs" />
+    <Compile Include="Player\JAISeqTrack.cs" />
     <Compile Include="Player\JAITrackRegisterMap.cs" />
     <Compile Include="libJAudio\Sequence\Inter\JAISeqInterpreter.cs" />
     <Compile Include="libJAudio\Sequence\Inter\JAISeq_Arithmetic.cs" />

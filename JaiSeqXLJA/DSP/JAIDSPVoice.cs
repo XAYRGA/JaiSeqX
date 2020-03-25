@@ -67,9 +67,7 @@ namespace JaiSeqXLJA.DSP
 
         public void stop()
         {
-            if (instOsc != null &&
-
-                instOsc.envelopes[1] == null)
+            if (instOsc != null && instOsc.envelopes[1] == null)
             {
                 internalVoice.Stop();
             }
@@ -157,18 +155,17 @@ namespace JaiSeqXLJA.DSP
             switch (eff)
             {
                 case VoiceEffect.REVERB:
-                    {
-                       
+                {
                         internalVoice.EnableEffect((int)VoiceEffect.REVERB);
                         var w = internalVoice.GetEffectParameters<ReverbParameters>((int)VoiceEffect.REVERB);
                         w.RoomSize = parameters[0];
                         w.Diffusion = parameters[1];
                         internalVoice.SetEffectParameters<ReverbParameters>((int)VoiceEffect.REVERB, w);
                         break;
-                    }
+                }
 
                 case VoiceEffect.ECHO:
-                    {
+                 {
                         internalVoice.EnableEffect((int)VoiceEffect.ECHO);
                         var w = internalVoice.GetEffectParameters<EchoParameters>((int)VoiceEffect.ECHO);
                         w.Delay = parameters[0];
@@ -176,7 +173,7 @@ namespace JaiSeqXLJA.DSP
                         w.WetDryMix = parameters[2];
                         internalVoice.SetEffectParameters<EchoParameters>((int)VoiceEffect.ECHO, w);
                         break;
-                    }
+                 }
             }
         }
         
@@ -184,7 +181,7 @@ namespace JaiSeqXLJA.DSP
         /* There's a leak here. I have no clue what it is */
         public void Dispose()  {
 
-            Console.WriteLine("disps called");
+            //Console.WriteLine("disps called");
             internalVoice.Stop();
             internalVoice.DestroyVoice();
             internalVoice.Dispose();

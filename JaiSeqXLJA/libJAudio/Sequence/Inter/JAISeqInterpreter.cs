@@ -8,7 +8,7 @@ using System.IO;
 
 namespace libJAudio.Sequence.Inter            
 {
-    public partial class JAISeqSubroutine
+    public partial class JAISeqInterpreter
     {
        
         byte[] SeqData; // Full .BMS  file.  
@@ -25,7 +25,7 @@ namespace libJAudio.Sequence.Inter
             set { Sequence.BaseStream.Position = value; }
         }
         public int pcl;
-        public JAISeqSubroutine(ref byte[] BMSData,int BaseAddr)
+        public JAISeqInterpreter(ref byte[] BMSData,int BaseAddr)
         {
             SeqData = BMSData; // 
             AddrStack = new Stack<int>(8); // JaiSeq has a stack depth of 8
