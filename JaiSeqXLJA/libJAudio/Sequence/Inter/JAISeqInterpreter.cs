@@ -48,7 +48,10 @@ namespace libJAudio.Sequence.Inter
             Sequence.BaseStream.Position = baseAddress; // Seek Back to base address
         }
 
-
+        public void jump(int pos)
+        {
+            Sequence.BaseStream.Position = pos;
+        }
        
         public JAISeqEvent loadNextOp()
         {
@@ -112,7 +115,7 @@ namespace libJAudio.Sequence.Inter
                        skip(2);
                         // Console.WriteLine(Sequence.ReadByte());
                         //Console.WriteLine(Sequence.ReadByte());
-                        return JAISeqEvent.UNKNOWN;
+                        return JAISeqEvent.SYNC_CPU;
                     /* 3 byte unknowns */
                     case 0xDD:
                     case (byte)JAISeqEvent.FIRSTSET:
@@ -145,6 +148,7 @@ namespace libJAudio.Sequence.Inter
                     case 0xBE: // Completely unknown
                     case (byte)JAISeqEvent.WRITE_CHILD_PORT:
                     case (byte)JAISeqEvent.WRITE_PARENT_PORT:
+              
                         skip(2);
                         return JAISeqEvent.UNKNOWN;
                     /* One byte unknowns */

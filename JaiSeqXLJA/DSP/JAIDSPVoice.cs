@@ -50,14 +50,27 @@ namespace JaiSeqXLJA.DSP
         }
 
 
-        public void setPitch(float pitch)
+        public void setPitchMatrix(byte index,float pitch)
         {
-            pitchMatrix[0] = pitch;
-            internalVoice.SetFrequencyRatio(pitch);
+            pitchMatrix[index] = pitch;
+            //internalVoice.SetFrequencyRatio(pitch);
+            float pv = 1f;
+            for (int i = 0; i < pitchMatrix.Length; i++)
+            {
+                pv *= pitchMatrix[i];
+            }
+            internalVoice.SetFrequencyRatio(pv);
         }
-        public void setVolume(float volume)
+        public void setVolumeMatrix(byte index,float volume)
         {
-            gain0Matrix[0] = volume;
+            gain0Matrix[index] = volume;
+            float vv = 1f;
+            for (int i = 0; i < gain0Matrix.Length; i++)
+            {
+                vv *= gain0Matrix[i];
+            }
+            //Console.WriteLine("Final Gain {0}", vv);
+            internalVoice.SetVolume(vv);
         }
 
 
@@ -122,10 +135,7 @@ namespace JaiSeqXLJA.DSP
 
         public byte updateVoice()
         {
-            
-            
             oscTicks++; // noooooooooooooooooooooooooooooooooooooooooooo
-                        // please.
 
             if (doDestroy == true)
             {
@@ -143,6 +153,7 @@ namespace JaiSeqXLJA.DSP
             {
                 vv *= gain0Matrix[i];
             }
+            //Console.WriteLine("Final Gain {0}", vv);
             internalVoice.SetVolume(vv);
        
             if (envCurrentVec==null)

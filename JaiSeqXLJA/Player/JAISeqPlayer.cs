@@ -109,21 +109,24 @@ namespace JaiSeqXLJA.Player
         
         public static void recalculateTimebase()
         {
+            Console.WriteLine("BPM {0} PPQN {1}", bpm, ppqn);
             tickLength = (60000f / (float)(bpm)) / ((float)ppqn);
             ticks = (int)(tickTimer.ElapsedMilliseconds / tickLength);
+            
             Console.WriteLine(tickLength);
         }
 
         public static void update()
         {
+          
             var ts = tickTimer.ElapsedMilliseconds;
             var tt_n = ts / tickLength;
             while (ticks < tt_n)
             {
                 try
                 {
-                    tick();
-            
+                    tt_n = ts / tickLength;
+                    tick();            
                 }
                 catch (Exception E)
                 {
@@ -152,11 +155,11 @@ namespace JaiSeqXLJA.Player
 
         public static void addTrack(int id, JAISeqTrack trk)
         {
-            if (tracks[id]!=null)
+            if (tracks[id + 1]!=null)
             {
-                tracks[id].destroy();
+                tracks[id + 1].destroy();
             }
-            tracks[id] = trk;
+            tracks[id + 1] = trk;
         }
 
     }

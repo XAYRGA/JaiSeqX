@@ -97,12 +97,12 @@ namespace JaiSeqXLJA
             voi.play();
             voi.stop();
             */
-            Player.JAISeqPlayer.startPlayback("TelesaBattle.bms", ref JASystem);
+            Player.JAISeqPlayer.startPlayback("OyamaPress_pr.bms", ref JASystem);
 
             while (true)
             {
                 Player.JAISeqPlayer.update();
-                Thread.Sleep(2);
+                Thread.Sleep(1);
             }
 
             if (true)

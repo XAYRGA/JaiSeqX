@@ -101,8 +101,8 @@ namespace libJAudio.Sequence
         VOLUME_MODE = 0xF3, // <byte mode>
         PRINTF = 0xFB, // READ UNTIL 0x00, advance one byte.
         NOP = 0xFC, // NO ARGS
-        TEMPO = 0xFD, // Short tempo
-        TIME_BASE = 0xFE, // <short timebase>
+        TIME_BASE = 0xFD, // Short tempo
+        TEMPO = 0xFE, // <short timebase>
         FIN = 0xFF, // NO ARGS
 
         // Thanks, Jasper!

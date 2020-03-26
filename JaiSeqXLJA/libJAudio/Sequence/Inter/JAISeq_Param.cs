@@ -48,7 +48,7 @@ namespace libJAudio.Sequence.Inter
                 case (byte)JAISeqEvent.TEMPO: // Set BPM
                     {
                         rI[0] = (short)(Sequence.ReadInt16());
-                        return JAISeqEvent.TIME_BASE;
+                        return JAISeqEvent.TEMPO;
                     }
                 /* Parameter control */
                 case (byte)JAISeqEvent.J2_SET_PARAM_8:
