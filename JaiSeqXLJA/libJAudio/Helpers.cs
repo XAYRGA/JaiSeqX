@@ -20,13 +20,14 @@ namespace libJAudio
 
         public static int ReadVLQ(BinaryReader reader)
         {
-            int fade = (int)reader.ReadByte();
-            while ((fade & 0x80) > 0)
+            int vlq = 0;
+            int temp = 0;
+            do
             {
-                fade = ((fade & 0x7F) << 7);
-                fade += reader.ReadByte();
-            }
-            return fade;
+                temp = reader.ReadByte();
+                vlq = (vlq << 7) | (temp & 0x7F);
+            } while ((temp & 0x80) > 0);
+            return vlq;
         }
 
 

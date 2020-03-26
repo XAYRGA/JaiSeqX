@@ -59,6 +59,7 @@ namespace libJAudio.Sequence.Inter
                         byte flags = Sequence.ReadByte(); // Read flags.
                         var condition = flags & 15; // last nybble is condition. 
                         var addr = (int)Helpers.ReadUInt24BE(Sequence); // pointer, push to ir1
+                        rI[0] = flags;
                         rI[1] = addr;
                         return JAISeqEvent.JUMP_CONDITIONAL;
                     }

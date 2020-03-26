@@ -89,6 +89,7 @@ namespace libJAudio.Loaders
             if (binStream.ReadInt32() != IBNK)
                 throw new InvalidDataException("Section doesn't have an IBNK header");
             Boundaries = binStream.ReadInt32() + 8; // total length of our section, the data of the section starts at +8, so we need to account for that, too.
+            RetIBNK.id = binStream.ReadInt32(); // Forgot this. Ibank ID. Important.
             OscTableOffset = findChunk(binStream, OSCT); // Load oscillator table chunk
             EnvTableOffset = findChunk(binStream, ENVT); // Load envelope table chunk
             RanTableOffset = findChunk(binStream, RAND); // Load random effect table chunk
@@ -100,7 +101,7 @@ namespace libJAudio.Loaders
             loadBankOscTable(binStream, Base); // Load oscillator table, also handles the ENVT!!
             binStream.BaseStream.Position = ListTableOffset + iBase; // Seek to the instrument list base
             var instruments = loadInstrumentList(binStream, Base); // Load it.
-
+            RetIBNK.Instruments = instruments;
             return RetIBNK;
         }
 
@@ -210,6 +211,7 @@ namespace libJAudio.Loaders
             newPERC.IsPercussion = true;
             newPERC.Pitch = 1f;
             newPERC.Volume = 1f;
+    
             var count = binStream.ReadInt32();
             var ptrs = Helpers.readInt32Array(binStream, count);
             var iKeys = new JInstrumentKey[count];

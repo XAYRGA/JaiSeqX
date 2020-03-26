@@ -356,6 +356,8 @@ namespace libJAudio.Loaders
                 throw new InvalidDataException("Data is not an PER2");
             Inst.Pitch = 1.0f;
             Inst.Volume = 1.0f;
+            Inst.IsPercussion = true;
+            binStream.BaseStream.Seek(0x84, SeekOrigin.Current);
             JInstrumentKey[] keys = new JInstrumentKey[100];
             int[] keyPointers = new int[100];
             keyPointers = Helpers.readInt32Array(binStream, 100); // read the pointers.
@@ -389,6 +391,7 @@ namespace libJAudio.Loaders
                     }
                     velLow = breg.baseVel; // store the velocity for spanning
                 }
+                keys[i] = newKey;
             }
             Inst.Keys = keys;
             return Inst;

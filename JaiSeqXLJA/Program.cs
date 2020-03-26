@@ -25,9 +25,12 @@ namespace JaiSeqXLJA
 
             JAIDSP.Init();
 
-            var jaiinit = File.ReadAllBytes("JAIInit.aaf"); // read entire JAIInitFile
+            var jaiinit = File.ReadAllBytes("jaiinit_sms.aaf"); // read entire JAIInitFile
             JASystem = libJAudio.Loaders.JASystemLoader.loadJASystem(ref jaiinit); // Load the JASystem (will automatically be detected by JAIInitVersionDetector)
             Console.WriteLine("Loaded JASystem");
+            Player.JAISeqPlayer.startPlayback("test5.bms", ref JASystem);
+
+
             /*
             foreach (JWaveSystem w in System.WaveBanks)
             {
@@ -97,7 +100,7 @@ namespace JaiSeqXLJA
             voi.play();
             voi.stop();
             */
-            Player.JAISeqPlayer.startPlayback("OyamaPress_pr.bms", ref JASystem);
+
 
             while (true)
             {

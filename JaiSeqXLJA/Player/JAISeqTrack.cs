@@ -17,26 +17,28 @@ namespace JaiSeqXLJA.Player
         
         byte[] bmsData;
         int offsetAddr;
-
         public Stack<int> CallStack = new Stack<int>(32);
         public int[] Ports = new int[32];
-
         public int trackNumber;
         public int delay;
-
         JAIDSPVoice[] voices;
         JAIDSPVoice[] voiceOrphans;
-
+        private int trackArticulation = 1;
         public int activeVoices;
-
         public JAISeqTrack parent;
-
         public bool muted;
         public bool halted;
-
         float perfTarget = 0;
         int perfTicks = 0;
+        float volume = 0;
 
+
+        private static byte[] bendCoefLUT;
+        bool bending = false;
+        int bendticks = 0;
+        int bendTargetTicks = 0;
+        int bendTarget = 0;
+        float bendFinalValue = 1f;
 
         public int ticks = 0;
 
@@ -47,6 +49,14 @@ namespace JaiSeqXLJA.Player
             trkInter = new JAISeqInterpreter(ref SeqFile, address);
             voices = new JAIDSPVoice[0xA]; // Even though we only support 7 voices, I can tell that some will linger whenever we stop them.            
             voiceOrphans = new JAIDSPVoice[0xFF];
+
+
+            bendCoefLUT = new byte[100];
+            bendCoefLUT[12] = 2;
+            bendCoefLUT[8] = 2;
+            bendCoefLUT[2] = 12;
+            bendCoefLUT[0] = 2;
+
         }
 
         public void destroy()
@@ -54,14 +64,36 @@ namespace JaiSeqXLJA.Player
 
         }
 
+
+        public float Lerp(float firstFloat, float secondFloat, float by)
+        {
+            return firstFloat * (1 - by) + secondFloat * by;
+        }
+
+
         private void updateVoices()
         {
             for (int i=0; i < voices.Length; i++)
-            {
+            {               
                 if (voices[i]!=null)
                 {
+                    if (bending==true)
+                    {
+                        bendticks++;
+                        var bendCoef = bendCoefLUT[Registers[7]];
+                        var bend = (float)Math.Pow(2, (( (float)bendTarget)) / (4096f * bendCoef));
+                        var cnt = voices[i].getPitchMatrix(1);
+                        voices[i].setPitchMatrix(1, Lerp(cnt,bend,1f));
+                        bendFinalValue = bend;
+                        if (bendticks > bendTargetTicks)
+                        {
+                            bending = false;
+                        }
+                        
+                    }
                     voices[i].updateVoice();
                 }
+                
             }
             for (int i=0; i < voiceOrphans.Length; i++)
             {
@@ -80,12 +112,13 @@ namespace JaiSeqXLJA.Player
         private void addVoice(JAIDSPVoice voice, byte id)
         {
             activeVoices++;
+            stopVoice(id);
             voices[id] = voice;
            // Console.WriteLine("VOICE BUFFER FULL: Trk{0} BA: 0x{1:X} PC: 0x{2:X}\n\nPREPARE FOR THE LEAKENING.", trackNumber, offsetAddr, trkInter.pc);
         }
         private void stopVoice(byte id)
         {
-    
+            
             activeVoices--;
             if (voices[id] == null)
                 return;
@@ -172,14 +205,53 @@ namespace JaiSeqXLJA.Player
           
             if (halted) { return; }
         
-            while (delay < 1) { 
-               var opcode = trkInter.loadNextOp(); // load next operation\
+            while (delay < 1) {
+                var opcode = JAISeqEvent.UNKNOWN;
+                try
+                {
+                    opcode = trkInter.loadNextOp(); // load next operation\
+                } catch (Exception E)
+                {
+                    Console.WriteLine("TRACK {0} CATASTROPHIC CRASH", trackNumber);
+                    crash();
+                    halted = true;
+                    Console.WriteLine(E.ToString());
+                    return;
+                }
                // Console.WriteLine(opcode);
    
                 switch (opcode)
                 {
-                    
 
+                    case JAISeqEvent.PERF_S8_NODUR:
+                    case JAISeqEvent.PERF_S8_DUR_U8:
+                    case JAISeqEvent.PERF_S8_DUR_U16:
+                    case JAISeqEvent.PERF_U8_NODUR:
+                    case JAISeqEvent.PERF_U8_DUR_U8:
+                    case JAISeqEvent.PERF_U8_DUR_U16:
+                    case JAISeqEvent.PERF_S16_NODUR:
+                    case JAISeqEvent.PERF_S16_DUR_U8:
+                    case JAISeqEvent.PERF_S16_DUR_U16:
+                        /*             rI[0] = perf;
+                        rI[1] = (value > 0x7F) ? value - 0xFF : value;
+                        rI[2] = 0;
+                        rF[0] = ((float)(rI[1]) / 0x7F);
+                        */
+                        {
+                            if (trkInter.rI[0]==1)
+                            {
+                                bending = true;
+                                bendTargetTicks = trkInter.rI[2];
+                                bendTarget = trkInter.rI[1];
+                                bendticks = 0;
+                            } else if (trkInter.rI[0]==0)
+                            {
+                                volume = trkInter.rF[0];
+                                //Console.WriteLine("Trk{0} change volume {1}", trackNumber, trkInter.rF[0]);
+                            }
+
+                            break;
+                        }
 
                     case JAISeqEvent.WAIT_8:
                     case JAISeqEvent.WAIT_16:
@@ -193,6 +265,8 @@ namespace JaiSeqXLJA.Player
                             JAISeqPlayer.addTrack(newTrk.trackNumber,newTrk);
                             break;                               
                         }
+                    case JAISeqEvent.J2_SET_PARAM_8:
+                    case JAISeqEvent.J2_SET_PARAM_16:
                     case JAISeqEvent.PARAM_SET_16:
                     case JAISeqEvent.PARAM_SET_8:
                         {
@@ -201,31 +275,74 @@ namespace JaiSeqXLJA.Player
                             break;
                         }
                     case JAISeqEvent.JUMP_CONDITIONAL:
-                        if (checkCondition((byte)trkInter.rI[0]))
+                        if (checkCondition((byte)(trkInter.rI[0] & 15)))
                         {
                             trkInter.jump(trkInter.rI[1]);
                             Console.WriteLine("Trk{0} jumps to {1}", trackNumber, trkInter.rI[1]);
                         }
                         else
-                            Console.WriteLine("Trk {0} cond check jump fail.", trackNumber);
+                            Console.WriteLine("Trk{0} cond check jump fail: {1}", trackNumber,trkInter.rI[0] & 15);
                         break;
-
+                    case JAISeqEvent.CALL:
+                        CallStack.Push(trkInter.pc);
+                        trkInter.jump(trkInter.rI[0]);
+                        break;
+                    case JAISeqEvent.CALL_CONDITIONAL:
+                        if (checkCondition(  (byte)(trkInter.rI[0] & 15)) )
+                        {
+                            CallStack.Push(trkInter.pc);
+                            trkInter.jump(trkInter.rI[1]);
+                        }
+                        break;
+                    case JAISeqEvent.RETURN:
+                        if (CallStack.Count == 0)
+                        {
+                            Console.WriteLine("Call stack is empty.");
+                            crash();
+                        }
+                        trkInter.jump(CallStack.Pop());
+                        break;
+                    case JAISeqEvent.RETURN_CONDITIONAL:
+                        if (checkCondition((byte)(trkInter.rI[0] & 15)))
+                        {
+                            if (CallStack.Count == 0)
+                            {
+                                Console.WriteLine("Call stack is empty.");
+                                crash();
+                            }
+                            trkInter.jump(CallStack.Pop());
+                        }
+                        break;
                     case JAISeqEvent.JUMP:
                         trkInter.jump(trkInter.rI[0]);
                         break;
                     case JAISeqEvent.FIN:
+                        Console.WriteLine("Trk{0} is now halted. ({1} opcode)", trkInter, opcode);
                         halted = true;
+                        return;
+                    case JAISeqEvent.J2_SET_BANK:
+                        Registers[0x20] = (byte)trkInter.rI[0];
                         break;
-                   
+                    case JAISeqEvent.J2_SET_PROG:
+                        Registers[0x21] = (byte)trkInter.rI[0];
+                        break;                   
                     case JAISeqEvent.J2_SET_ARTIC:
+                        Console.WriteLine("ARTICULATION 0x{0:X} {1}", trkInter.rI[0], trkInter.rI[1]);
+                        if (trkInter.rI[0] == 0x62)
+                        {
+                            JAISeqPlayer.ppqn = trkInter.rI[1];
+                            JAISeqPlayer.recalculateTimebase();
+                        } else if (trkInter.rI[0]==0x64)
+                        {
+                            trackArticulation = trkInter.rI[1];
+                        }
+                        break;  
                     case JAISeqEvent.TIME_BASE:
                         JAISeqPlayer.ppqn = trkInter.rI[0];
                         JAISeqPlayer.recalculateTimebase();
-                        Console.WriteLine("RECALC TIMEBASE.");
                         break;
                     case JAISeqEvent.J2_TEMPO:
                     case JAISeqEvent.TEMPO:
-                        Console.WriteLine("RECALC TIMEBASE BPM");
                         JAISeqPlayer.bpm = trkInter.rI[0];
                         JAISeqPlayer.recalculateTimebase();
                       
@@ -240,27 +357,40 @@ namespace JaiSeqXLJA.Player
                             var ibnks = JaiSeqXLJA.JASystem.Banks;
 
                             var currentBank = ibnks[bank];
-                            if (currentBank == null) { Console.WriteLine("NULL IBNK"); break; }
+                            if (currentBank == null) { Console.WriteLine("NULL IBNK v{0}",bank); break; }
                             var currentInst = currentBank.Instruments[program];
                             if (currentInst==null) { Console.WriteLine("Empty inst"); break; }
                             var keyNote = currentInst.Keys[note];
+                            if (keyNote==null) { Console.WriteLine("EMPTY KEY b{0} p{1} -- n{2} v{3}",bank,program,note,velocity); break; }
                             var keyNoteVel = keyNote.Velocities[velocity];
                             JWave ouData;
                             var snd = JAISeqPlayer.loadSound(keyNoteVel.wsysid, keyNoteVel.wave, out ouData);
                             if (snd == null) { Console.WriteLine("*screams in null wave buffer*"); break; }
 
                             var newVoice = new JAIDSPVoice(ref snd);
-                            newVoice.setPitchMatrix(0,(float)Math.Pow(2, (note - ouData.key) / 12f) * currentInst.Pitch * keyNoteVel.Pitch);
-                            newVoice.setVolumeMatrix(0, (float)((velocity / 127f * currentInst.Volume * keyNoteVel.Volume) * 0.5f * 0.6f) );
-                            if ((float)((velocity / 127f * currentInst.Volume * keyNoteVel.Volume) * 0.5f * 0.6f) > 1)
+                            if (currentInst.IsPercussion == false)
                             {
-                                Console.WriteLine("[!]");
+                                newVoice.setPitchMatrix(0, (float)Math.Pow(2, (note - ouData.key) / 12f) * currentInst.Pitch * keyNoteVel.Pitch * keyNote.Pitch);
                             }
-
+                            newVoice.setVolumeMatrix(0, (float)( (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume ) * 0.5f )  );
+                            if (Registers[7]==2)
+                            {
+                                //newVoice.setPitchMatrix(1, bendFinalValue);
+                            }
+                            newVoice.tickAdvanceValue = 1;
+                    
                             if (currentInst.oscillatorCount > 0)
                             {
                                 newVoice.setOcillator(currentInst.oscillators[0]);
+                                newVoice.tickAdvanceValue = 1;
                             }
+                            if (currentInst.oscillatorCount==2)
+                            {
+                                    newVoice.setOcillator(currentInst.oscillators[1]);
+                                    newVoice.tickAdvanceValue = 1;
+                            }
+
+                            
                             newVoice.play();
                             addVoice(newVoice, (byte)voice);
                             break;
@@ -268,9 +398,17 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.NOTE_OFF:
                         stopVoice((byte)trkInter.rI[0]);
                         break;
-                    case JAISeqEvent.UNKNOWN:
-       
+                    case JAISeqEvent.UNKNOWN:       
                         break;
+
+                    case JAISeqEvent.MISS:
+                    case JAISeqEvent.LOADTBL:
+                        crash();
+                        break;
+                    default:
+                        Console.WriteLine("Trk{0} unimplemented opcode 0x{1:X}({2})",trackNumber,(int)opcode, opcode);
+                        break;
+
 
                 }
      

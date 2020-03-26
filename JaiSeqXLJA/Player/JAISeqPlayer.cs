@@ -24,11 +24,14 @@ namespace JaiSeqXLJA.Player
         private static float tickLength;
         private static int ticks = 0;
 
+        public static float timebaseValue
+        {
+            get { return tickLength; }
+        }
+
         private static Dictionary<int, JAIDSPSoundBuffer> waveCache;
         private static Dictionary<string, Stream> awHandles;
-
         public static JASystem JASPtr;
-
 
         public static void startPlayback(string file, ref JASystem sys)
         {
@@ -103,22 +106,16 @@ namespace JaiSeqXLJA.Player
             return sbuf;
         }
 
-       
 
-        
-        
         public static void recalculateTimebase()
         {
-            Console.WriteLine("BPM {0} PPQN {1}", bpm, ppqn);
             tickLength = (60000f / (float)(bpm)) / ((float)ppqn);
             ticks = (int)(tickTimer.ElapsedMilliseconds / tickLength);
-            
-            Console.WriteLine(tickLength);
+            Console.WriteLine("Timebase updated {0}bpm {1}ppqn cycle-length {2} @ {3}", bpm, ppqn, tickLength, ticks);
         }
 
         public static void update()
         {
-          
             var ts = tickTimer.ElapsedMilliseconds;
             var tt_n = ts / tickLength;
             while (ticks < tt_n)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,8 +26,9 @@ namespace JaiSeqXLJA.DSP
         private float[] pitchMatrix = { 1f, 1f, 1f };
         private float[] gain0Matrix = { 1f, 1f, 1f };
         private SourceVoice internalVoice;
-        private int ticks;
-        private int oscTicks;
+        private float ticks;
+        public float tickAdvanceValue = 1;
+        private int oscTicks;       
         private float oscValue = 1f;
         private EffectDescriptor[] effectChain =  new EffectDescriptor[2]; // max 16 effects per voice
         private bool doDestroy = false;
@@ -60,6 +61,11 @@ namespace JaiSeqXLJA.DSP
                 pv *= pitchMatrix[i];
             }
             internalVoice.SetFrequencyRatio(pv);
+        }
+
+        public float getPitchMatrix(byte index)
+        {
+            return pitchMatrix[index];
         }
         public void setVolumeMatrix(byte index,float volume)
         {
@@ -112,7 +118,7 @@ namespace JaiSeqXLJA.DSP
         }
         private void swapEnvelope(JEnvelope env)
         {
-           
+            ticks = 0;
             var rqVec = env.vectorList[0];
             if (rqVec.time == 0)
             {
@@ -126,7 +132,7 @@ namespace JaiSeqXLJA.DSP
                     mode = rqVec.mode,
                     next = rqVec,
                     time = 0,
-                    value = 0
+                    value = 32700
                 };
             }
             //*/
@@ -158,7 +164,7 @@ namespace JaiSeqXLJA.DSP
        
             if (envCurrentVec==null)
             {
-                return 2;
+                return 3;
             }
             if (envCurrentVec.mode == JEnvelopeVectorMode.Stop)
             {
@@ -185,7 +191,8 @@ namespace JaiSeqXLJA.DSP
             envValue = (float)envValueLast + (float)(envCurrentVec.value - envValueLast) * mult;
             //Console.WriteLine(envValue);
             gain0Matrix[1] = envValue / 32758f;
-            ticks++;
+            //Console.WriteLine(instOsc.rate);
+            ticks += tickAdvanceValue;
             return 1;
            // */
         }
