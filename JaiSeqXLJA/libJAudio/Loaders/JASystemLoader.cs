@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using libJAudio.Types;
 
 // If i was wrong about BX and its isntrument assignments (it assigns them sequentially, but loads into 0 when needed) 
 // then define this.

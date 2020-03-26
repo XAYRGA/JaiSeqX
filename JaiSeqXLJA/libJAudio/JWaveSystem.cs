@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace libJAudio.Types
+namespace libJAudio
 {
 
 
@@ -18,6 +18,7 @@ namespace libJAudio.Types
     {
         public int id;
         public JWaveGroup[] Groups;
-        public JWave[] LoadedWaves; 
+        public JWave[] LoadedWaves;
+        public Dictionary<int, JWave> WaveTable;
     }
 }

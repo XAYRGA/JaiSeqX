@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Be.IO;
-namespace libJAudio.Types
+namespace libJAudio
 {
     public class JInstrumentKey
     {

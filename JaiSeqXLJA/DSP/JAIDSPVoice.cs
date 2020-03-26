@@ -8,7 +8,6 @@ using SharpDX.XAudio2;
 using SharpDX.Multimedia;
 using SharpDX.XAPO.Fx;
 using SharpDX.XAPO;
-using libJAudio.Types;
 
 namespace JaiSeqXLJA.DSP
 {
@@ -41,17 +40,20 @@ namespace JaiSeqXLJA.DSP
             //internalVoice.
             internalVoice.SubmitSourceBuffer(rootBuffer.buffer, null); // flush buffer into mixer 
             internalVoice.SetOutputVoices(JAIDSP.VoiceDescriptor); // prolly wrong
+            /*
             effectChain[(int)VoiceEffect.REVERB] = new EffectDescriptor(new Reverb(JAIDSP.Engine),buff.format.Channels);
             effectChain[(int)VoiceEffect.ECHO] = new EffectDescriptor(new Echo(JAIDSP.Engine),buff.format.Channels);
             internalVoice.SetEffectChain(effectChain);
             internalVoice.DisableEffect((int)VoiceEffect.REVERB);
             internalVoice.DisableEffect((int)VoiceEffect.ECHO);       
+            */
         }
 
 
         public void setPitch(float pitch)
         {
             pitchMatrix[0] = pitch;
+            internalVoice.SetFrequencyRatio(pitch);
         }
         public void setVolume(float volume)
         {
@@ -69,6 +71,9 @@ namespace JaiSeqXLJA.DSP
 
         public void stop()
         {
+            //Console.WriteLine("STOP");
+           // internalVoice.Stop();
+            
             if (instOsc==null)
             {
                 doDestroy = true;
@@ -82,8 +87,10 @@ namespace JaiSeqXLJA.DSP
             }
             else
             {
+                //Console.WriteLine("Set voice stop env!");
                 swapEnvelope(instOsc.envelopes[1]);
             }
+           // */
         }
 
         public void setOcillator(JOscillator osc)
@@ -92,6 +99,7 @@ namespace JaiSeqXLJA.DSP
         }
         private void swapEnvelope(JEnvelope env)
         {
+           
             var rqVec = env.vectorList[0];
             if (rqVec.time == 0)
             {
@@ -108,13 +116,22 @@ namespace JaiSeqXLJA.DSP
                     value = 0
                 };
             }
+            //*/
         }
 
 
         public byte updateVoice()
         {
+            
+            
             oscTicks++; // noooooooooooooooooooooooooooooooooooooooooooo
                         // please.
+
+            if (doDestroy == true)
+            {
+                return 3;
+            }
+
             float pv = 1f;
             for (int i = 0; i < pitchMatrix.Length;i++)
             {
@@ -127,10 +144,7 @@ namespace JaiSeqXLJA.DSP
                 vv *= gain0Matrix[i];
             }
             internalVoice.SetVolume(vv);
-            if (doDestroy==true)
-            {
-                return 3;
-            }
+       
             if (envCurrentVec==null)
             {
                 return 2;
@@ -138,6 +152,7 @@ namespace JaiSeqXLJA.DSP
             if (envCurrentVec.mode == JEnvelopeVectorMode.Stop)
             {
                 internalVoice.Stop();
+                doDestroy = true;
                 return 3; // reeEEE EEE
             } else if (envCurrentVec.mode== JEnvelopeVectorMode.Hold) { // hold keeps the current value
                 return 1;
@@ -153,7 +168,7 @@ namespace JaiSeqXLJA.DSP
             var tickDist = envCurrentVec.next.time - envCurrentVec.time;
 
             var currentBaseTicks = envCurrentVec.time;
-            /*  Currently linear only implemented */
+            //   Currently linear only implemented
             var mult = ((float)(ticks - currentBaseTicks) / (float)tickDist);
           
             envValue = (float)envValueLast + (float)(envCurrentVec.value - envValueLast) * mult;
@@ -161,10 +176,12 @@ namespace JaiSeqXLJA.DSP
             gain0Matrix[1] = envValue / 32758f;
             ticks++;
             return 1;
+           // */
         }
 
         public void setEffectParams(VoiceEffect eff,params float[] parameters)
         {
+            /*
             switch (eff)
             {
                 case VoiceEffect.REVERB:
@@ -188,16 +205,16 @@ namespace JaiSeqXLJA.DSP
                         break;
                  }
             }
+            */
         }
-        
+
 
         /* There's a leak here. I have no clue what it is */
-        public void Dispose()  {
+        public void Dispose() {
 
-            //Console.WriteLine("disps called");
-            internalVoice.Stop();
-            internalVoice.DestroyVoice();
-            internalVoice.Dispose();
+                internalVoice.Stop();
+                internalVoice.DestroyVoice();
+                internalVoice.Dispose();
         }
     }
 }

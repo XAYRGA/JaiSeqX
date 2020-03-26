@@ -10,6 +10,7 @@ using libJAudio;
 using System.IO;
 using System.Diagnostics;
 
+
 namespace JaiSeqXLJA.Player
 {
     public static class JAISeqPlayer
@@ -23,7 +24,10 @@ namespace JaiSeqXLJA.Player
         private static float tickLength;
         private static int ticks = 0;
 
-        private static JAIDSPSoundBuffer[] waveCache;
+        private static Dictionary<int, JAIDSPSoundBuffer> waveCache;
+        private static Dictionary<string, Stream> awHandles;
+
+        public static JASystem JASPtr;
 
 
         public static void startPlayback(string file, ref JASystem sys)
@@ -32,8 +36,76 @@ namespace JaiSeqXLJA.Player
             tracks[0] = new JAISeqTrack(ref contents,0x0000000); // entry point.
             tickTimer = new Stopwatch();
             tickTimer.Start();
+            JASPtr = sys;
+            waveCache = new Dictionary<int, JAIDSPSoundBuffer>();
+            awHandles = new Dictionary<string, Stream>();
+            var wsc = sys.WaveBanks.Count();
+            // Create AW Handles 
+            foreach ( JWaveSystem jws in sys.WaveBanks)
+            {
+                if (jws!=null)
+                {
+                    foreach (JWaveGroup jwg in jws.Groups)
+                    {
+                        if (jwg != null)
+                        {
+                            Console.WriteLine("Creating handle for {0}", jwg.awFile);
+                            awHandles[jwg.awFile] = File.OpenRead("Banks/" + jwg.awFile);
+                        }
+                    }
+                }
+            }
             recalculateTimebase();
         }
+
+        /* Ugh god, this turned out more awful than i wanted it to. Redo this in the future. This currently has massive perf implications */
+        public static JAIDSPSoundBuffer loadSound(int wsys_id, int waveID, out JWave data)
+        {
+            var cacheIndex = (wsys_id << 16) | waveID;
+            data = null;
+            JAIDSPSoundBuffer ret;
+            // Not in cache.
+            var CWsys = JASPtr.WaveBanks[wsys_id];
+            if (CWsys==null)
+            {
+                Console.WriteLine("Null WSYS request id:{0} wavid:{1}");
+                return null;
+            }
+            JWave waveData;
+            var ok = CWsys.WaveTable.TryGetValue(waveID, out waveData);
+            if (!ok)
+            {
+                Console.WriteLine("WSYS doesn't contain wave id:{0} wavid:{1}");
+                return null;
+            }
+            ok = waveCache.TryGetValue(cacheIndex, out ret);
+            if (ok)
+            {
+                data = waveData;
+                return ret;
+            }
+            var fhnd = awHandles[waveData.wsysFile];
+            fhnd.Position = waveData.wsys_start;
+            byte[] ou = new byte[waveData.wsys_size];
+            fhnd.Read(ou, 0, waveData.wsys_size);
+            var pcm = ADPCM.ADPCMToPCM16(ou, (ADPCM.ADPCMFormat)waveData.format);
+            JAIDSPSoundBuffer sbuf; 
+            if (waveData.loop)
+            {
+                sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16, waveData.loop_start, waveData.loop_end);
+            } else
+            {
+                sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16);
+            }
+
+            waveCache[cacheIndex] = sbuf;
+            data = waveData;
+            return sbuf;
+        }
+
+       
+
+        
         
         public static void recalculateTimebase()
         {
@@ -51,11 +123,15 @@ namespace JaiSeqXLJA.Player
                 try
                 {
                     tick();
+            
                 }
                 catch (Exception E)
                 {
+                    var w = Console.ForegroundColor;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine("SEQUENCER MISSED TICK");
                     Console.WriteLine(E.ToString());
+                    Console.ForegroundColor = w;
                 }
             }
         }
@@ -66,9 +142,12 @@ namespace JaiSeqXLJA.Player
             {
                 if (tracks[i]!=null)
                 {
+
                     tracks[i].update();
+                    //Console.Write("T{0}: {1}|", i, tracks[i].ticks);
                 }
             }
+            //Console.WriteLine();
         }
 
         public static void addTrack(int id, JAISeqTrack trk)

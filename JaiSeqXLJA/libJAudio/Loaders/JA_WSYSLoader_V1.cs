@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using libJAudio.Types;
 using System.IO;
 using Be.IO;
 
@@ -149,6 +148,7 @@ namespace libJAudio.Loaders
             binStream.BaseStream.Position = waveBCT + Base; // Seek to the WBCT
             var wbctPointers = readWBCT(binStream, Base); // load the pointers for the wbct (Wave ID's)
             JWaveGroup[] WSYSGroups = new JWaveGroup[winfoPointers.Length]; // The count of waveInfo's determines the amount of groups -- there is one WINF entry per group. 
+            newWSYS.WaveTable = new Dictionary<int, JWave>();
 
             for (int i=0; i <  WSYSGroups.Length; i++)
             {
@@ -168,6 +168,7 @@ namespace libJAudio.Loaders
                         currentWG.Waves[b].id = IDMap[b].waveid; // SCNE and WaveGroup are  1 to 1, meanin the first entry in one lines up with the other. 
                         // So we'll want to move the waveid into the wave object itself for convience. 
                         currentWG.WaveByID[IDMap[b].waveid] = currentWG.Waves[b]; // Basically making a copy of the wave object, so  it can be found by its ID instead of entry index.
+                        newWSYS.WaveTable[IDMap[b].waveid] = currentWG.Waves[b]; // TODO: Add Wavegroup.load for wsys, not all waves are loaded all the time.
                     }
                 }
             }
@@ -188,6 +189,7 @@ namespace libJAudio.Loaders
             {
                 binStream.BaseStream.Position = Base + WaveOffsets[i]; // Seek to the offset of each eave
                 newWG.Waves[i] = loadWave(binStream, Base); // Then tell it to load. 
+                newWG.Waves[i].wsysFile = newWG.awFile;
             }
             return newWG;
         }

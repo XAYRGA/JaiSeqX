@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using libJAudio;
 using libJAudio.Sequence;
 using libJAudio.Sequence.Inter;
 using JaiSeqXLJA.DSP;
@@ -33,6 +34,8 @@ namespace JaiSeqXLJA.Player
         public static bool muted;
         public static bool halted;
 
+        public int ticks = 0;
+
         public JAISeqTrack(ref byte[] SeqFile, int address)
         {
             bmsData = SeqFile;
@@ -49,26 +52,21 @@ namespace JaiSeqXLJA.Player
 
         private void updateVoices()
         {
-            for (int i = 0; i < voices.Length; i++)
+            for (int i=0; i < voices.Length; i++)
             {
                 if (voices[i]!=null)
                 {
-                    var voiceRes = voices[i].updateVoice();
-                    if (voiceRes==3)
-                    {
-                        voices[i].Dispose();
-                        voices[i] = null;
-                    }
+                    voices[i].updateVoice();
                 }
             }
             for (int i=0; i < voiceOrphans.Length; i++)
             {
                 if (voiceOrphans[i] != null)
                 {
+                    //Console.WriteLine("UPDATE ORPHAN VOICE");
                     var voiceRes = voiceOrphans[i].updateVoice();
                     if (voiceRes == 3)
                     {
-                        voiceOrphans[i].Dispose();
                         voiceOrphans[i] = null;
                     }
                 }
@@ -83,25 +81,35 @@ namespace JaiSeqXLJA.Player
         }
         private void stopVoice(byte id)
         {
+    
+            activeVoices--;
             if (voices[id] == null)
                 return;
             voices[id].stop();
+      
+            
             for (int i = 0; i <voiceOrphans.Length; i++)
             {
                 if (voiceOrphans[i] == null)
                 {
+                    //Console.WriteLine("found voice orphan buffer.");
                     voiceOrphans[i] = voices[id];
                     return;
                 }
             }
+            voices[id] = null; // FuuF
+            //*/
         }
 
         public void update()
         {
             updateVoices();
-            if (delay > 0) { delay--; return; }
+          
+            if (delay > 0) { delay--; }
+          
             if (halted) { return; }
-            while (delay <= 0) { 
+        
+            while (delay < 1) { 
                var opcode = trkInter.loadNextOp(); // load next operation
                 //Console.WriteLine(opcode);
                 switch (opcode)
@@ -138,9 +146,45 @@ namespace JaiSeqXLJA.Player
                         JAISeqPlayer.bpm = trkInter.rI[0];
                         JAISeqPlayer.recalculateTimebase();
                         break;
+                    case JAISeqEvent.NOTE_ON:
+                        {
+                            var note = trkInter.rI[0];
+                            var voice = trkInter.rI[1];
+                            var velocity = trkInter.rI[2];
+                            var program = Registers[0x21];
+                            var bank = Registers[0x20];
+                            var ibnks = JaiSeqXLJA.JASystem.Banks;
+
+                            var currentBank = ibnks[bank];
+                            if (currentBank == null) { Console.WriteLine("NULL IBNK"); break; }
+                            var currentInst = currentBank.Instruments[program];
+                            if (currentInst==null) { Console.WriteLine("Empty inst"); break; }
+                            var keyNote = currentInst.Keys[note];
+                            var keyNoteVel = keyNote.Velocities[velocity];
+                            JWave ouData;
+                            var snd = JAISeqPlayer.loadSound(keyNoteVel.wsysid, keyNoteVel.wave, out ouData);
+                            if (snd == null) { Console.WriteLine("No sound data..."); break; }
+
+                            var newVoice = new JAIDSPVoice(ref snd);
+                            newVoice.setPitch((float)Math.Pow(2, (note - ouData.key) / 12f) * currentInst.Pitch * keyNoteVel.Pitch);
+                            if (currentInst.oscillatorCount > 0)
+                            {
+                                newVoice.setOcillator(currentInst.oscillators[0]);
+                            }
+                            newVoice.play();
+                            addVoice(newVoice, (byte)voice);
+
+
+
+                            break;
+                        }
+                    case JAISeqEvent.NOTE_OFF:
+                        stopVoice((byte)trkInter.rI[0]);
+                        break;
                 }
      
             }
+          
         }
     }
 }

@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using libJAudio;
-using libJAudio.Types;
 using JaiSeqXLJA.DSP;
 using System.Threading.Tasks;
 using System.Threading;
