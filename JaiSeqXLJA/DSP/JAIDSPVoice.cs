@@ -169,6 +169,7 @@ namespace JaiSeqXLJA.DSP
             if (envCurrentVec.mode == JEnvelopeVectorMode.Stop)
             {
                 internalVoice.Stop();
+
                 doDestroy = true;
                 return 3; // reeEEE EEE
             } else if (envCurrentVec.mode== JEnvelopeVectorMode.Hold) { // hold keeps the current value

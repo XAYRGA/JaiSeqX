@@ -84,7 +84,8 @@ namespace libJAudio.Loaders
         public JIBank loadIBNK(BeBinaryReader binStream, int Base)
         {
             Console.WriteLine("Start load ibnk");
-            var RetIBNK = new JIBank();        
+            var RetIBNK = new JIBank();
+            Console.WriteLine(Base);
             iBase = Base;
             if (binStream.ReadInt32() != IBNK)
                 throw new InvalidDataException("Section doesn't have an IBNK header");
@@ -178,7 +179,8 @@ namespace libJAudio.Loaders
                 var osciIndex = binStream.ReadInt32(); // Each oscillator is stored as a 32 bit index.
                 newInst.oscillators[i] = bankOscillators[osciIndex]; // We loaded the oscillators already, I hope.  So this will grab them by their index.                
             }
-            binStream.ReadInt32(); // There's always a 0 int32 padding this and the key regions. 
+            var notpadding = binStream.ReadInt32(); // NOT PADDING. FUCK. Probably effects.
+            Helpers.readInt32Array(binStream, notpadding);
             var keyRegCount = binStream.ReadInt32();
             var keyLow = 0; // For region spanning. 
             JInstrumentKey[] keys = new JInstrumentKey[0x81]; // Always go for one more.
@@ -196,8 +198,9 @@ namespace libJAudio.Loaders
                 keyLow = bkey.baseKey; // Store our last key 
             }
             newInst.Keys = keys;
-            newInst.Pitch = binStream.ReadSingle(); // Pitch and volume come last???
+         
             newInst.Volume = binStream.ReadSingle(); // ^^
+            newInst.Pitch = binStream.ReadSingle(); // Pitch and volume come last???
             // WE HAVE READ EVERY BYTE IN THE INST, WOOO
             return newInst;
         }
@@ -229,8 +232,9 @@ namespace libJAudio.Loaders
                         Console.WriteLine("ERROR: Invalid PMAP data {0:X} -- Potential misalignment!", binStream.BaseStream.Position);
                         continue;
                     }
-                    newKey.Pitch = binStream.ReadInt32();
+      
                     newKey.Volume = binStream.ReadInt32();
+                    newKey.Pitch = binStream.ReadInt32();
                     //binStream.ReadInt32(); // byte panning 
                     binStream.BaseStream.Seek(8, SeekOrigin.Current); // runtime. 
                     var velRegCount = binStream.ReadInt32();
@@ -269,6 +273,7 @@ namespace libJAudio.Loaders
             JInstrumentKey newKey = new JInstrumentKey();
             newKey.Velocities = new JInstrumentKeyVelocity[0x81]; // Create region array
             //-------
+            //Console.WriteLine(binStream.BaseStream.Position);
             newKey.baseKey = binStream.ReadByte(); // Store base key
             binStream.BaseStream.Seek(3, SeekOrigin.Current); ; // Skip 3 bytes
             var velRegCount = binStream.ReadInt32(); // Grab vel region count
@@ -310,6 +315,7 @@ namespace libJAudio.Loaders
             newReg.wave = binStream.ReadInt16();
             newReg.Volume = binStream.ReadSingle();
             newReg.Pitch = binStream.ReadSingle();
+
             return newReg;
         }
 

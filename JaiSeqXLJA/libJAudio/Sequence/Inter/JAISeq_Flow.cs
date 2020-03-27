@@ -79,7 +79,7 @@ namespace libJAudio.Sequence.Inter
                     }
                 case (byte)JAISeqEvent.CALL:
                     {
-                        var addr = Sequence.ReadInt32();
+                        var addr = (int)Helpers.ReadUInt24BE(Sequence);
                         rI[0] = addr; // Set address
                         return JAISeqEvent.CALL;
                     }

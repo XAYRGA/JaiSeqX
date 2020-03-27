@@ -25,81 +25,11 @@ namespace JaiSeqXLJA
 
             JAIDSP.Init();
 
-            var jaiinit = File.ReadAllBytes("jaiinit_sms.aaf"); // read entire JAIInitFile
+            var jaiinit = File.ReadAllBytes("twipri/z2sound.baa"); // read entire JAIInitFile
             JASystem = libJAudio.Loaders.JASystemLoader.loadJASystem(ref jaiinit); // Load the JASystem (will automatically be detected by JAIInitVersionDetector)
             Console.WriteLine("Loaded JASystem");
-            Player.JAISeqPlayer.startPlayback("test5.bms", ref JASystem);
+            Player.JAISeqPlayer.startPlayback("twipri/seqs/tempo.bms", ref JASystem);
 
-
-            /*
-            foreach (JWaveSystem w in System.WaveBanks)
-            {
-                if (w != null)
-                {
-                    foreach (JWaveGroup wg in w.Groups)
-                    {
-                        var waveinst = 0;
-                        Console.Write("{0} Transforming wavegroup ....", wg.awFile);
-                        if (wg!=null)
-                        {
-
-                            waveinst++;
-                            Console.Write("{0}, ", waveinst);
-                            if (!Directory.Exists("WSYS_CACHE/" + wg.awFile))
-                                Directory.CreateDirectory("WSYS_CACHE/" + wg.awFile);
-                            var awhnd = File.OpenRead("Banks/" + wg.awFile);
-                            foreach (JWave wv in wg.Waves)
-                            {
-                                if (wv!=null)
-                                {
-                                    awhnd.Position = wv.wsys_start;
-                                    byte[] dat = new byte[wv.wsys_size];
-                                    awhnd.Read(dat, 0, wv.wsys_size);
-                                    byte[] pcm = ADPCM.ADPCMToPCM16(dat, ADPCM.ADPCMFormat.FOUR_BIT);
-                                    /*
-                                    Console.WriteLine("{0} {1} ", wv.sampleRate, (int)wv.sampleRate);
-                                    int cn = 0;
-                                    int sr = 0;
-                                    int br = 0;
-                                    byte[] pcm2 = WAV.LoadWAVFromFile(@"C:\Users\Dane\source\repos\JaiSeqX\bin\Debug\WSYS_CACHE\AW_LuiSec0_0.aw\0x0.wav", out cn, out br, out sr);
-                                    Console.WriteLine("{0} {1} {2}",cn, sr, br);
-                                    Console.WriteLine("{0}", wv.sampleRate);
-                          
-
-                                    var sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)wv.sampleRate, 16);
-                                    using (JAIDSPVoice voi = new JAIDSPVoice(ref sbuf))
-                                    {
-                                        voi.play();
-                                        voi.setEffectParams(VoiceEffect.REVERB, 0.5F, 0.5F);
-                                        Console.ReadLine();
-                                    }
-                               
-                                }                            
-                            }
-                        }
-                    }
-                    Console.WriteLine("OK.");
-
-                }            
-            }
-            */
-            // 6/28
-            /*
-            var inst = JASystem.Banks[6].Instruments[42];
-            var waveGroup = JASystem.WaveBanks[inst.Keys[64].Velocities[127].wsysid].Groups[0];
-            var wave = waveGroup.WaveByID[inst.Keys[64].Velocities[127].wave];
-            var awhnd = File.OpenRead("Banks/" + waveGroup.awFile);
-            awhnd.Position = wave.wsys_start;
-            byte[] dat = new byte[wave.wsys_size];
-            awhnd.Read(dat, 0, wave.wsys_size);
-            byte[] pcm = ADPCM.ADPCMToPCM16(dat, ADPCM.ADPCMFormat.FOUR_BIT);
-            var sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)wave.sampleRate, 16, (int)Math.Floor((float)(wave.loop_start)), (int)Math.Floor((float)(wave.loop_end )));
-            JAIDSPVoice voi = new JAIDSPVoice(ref sbuf);
-            voi.setOcillator(inst.oscillators[0]);
-            //voi.setEffectParams(VoiceEffect.REVERB, 0.5f, 0.5f);
-            voi.play();
-            voi.stop();
-            */
 
 
             while (true)

@@ -30,7 +30,7 @@ namespace JaiSeqXLJA.Player
         public bool halted;
         float perfTarget = 0;
         int perfTicks = 0;
-        float volume = 0;
+        float volume = 1;
 
 
         private static byte[] bendCoefLUT;
@@ -192,20 +192,16 @@ namespace JaiSeqXLJA.Player
                 }
 
             }
-            catch { }
-            
+            catch { }         
         }
 
 
         public void update()
         {
             updateVoices();
-          
             if (delay > 0) { delay--; }
-          
             if (halted) { return; }
-        
-            while (delay < 1) {
+            while (delay < 1 && !halted) {
                 var opcode = JAISeqEvent.UNKNOWN;
                 try
                 {
@@ -222,7 +218,6 @@ namespace JaiSeqXLJA.Player
    
                 switch (opcode)
                 {
-
                     case JAISeqEvent.PERF_S8_NODUR:
                     case JAISeqEvent.PERF_S8_DUR_U8:
                     case JAISeqEvent.PERF_S8_DUR_U16:
@@ -247,7 +242,7 @@ namespace JaiSeqXLJA.Player
                             } else if (trkInter.rI[0]==0)
                             {
                                 volume = trkInter.rF[0];
-                                //Console.WriteLine("Trk{0} change volume {1}", trackNumber, trkInter.rF[0]);
+                                Console.WriteLine("Trk{0} change volume {1}", trackNumber, trkInter.rF[0]);
                             }
 
                             break;
@@ -285,11 +280,14 @@ namespace JaiSeqXLJA.Player
                         break;
                     case JAISeqEvent.CALL:
                         CallStack.Push(trkInter.pc);
+                        Console.WriteLine("Trk{0} calls 0x{1:X} from {2:X} depth {3:X}", trackNumber, trkInter.rI[0], trkInter.pc, CallStack.Count);
                         trkInter.jump(trkInter.rI[0]);
+                
                         break;
                     case JAISeqEvent.CALL_CONDITIONAL:
                         if (checkCondition(  (byte)(trkInter.rI[0] & 15)) )
                         {
+                            Console.WriteLine("Trk{0} calls 0x{1:X} from {2:X} depth {3:X}", trackNumber, trkInter.rI[0], trkInter.pc, CallStack.Count);
                             CallStack.Push(trkInter.pc);
                             trkInter.jump(trkInter.rI[1]);
                         }
@@ -300,7 +298,9 @@ namespace JaiSeqXLJA.Player
                             Console.WriteLine("Call stack is empty.");
                             crash();
                         }
-                        trkInter.jump(CallStack.Pop());
+                        var retaddr = CallStack.Pop();
+                        Console.WriteLine("Trk{0} returns 0x{1:X} from {2:X} depth {3:X}", trackNumber, retaddr, trkInter.pc, CallStack.Count);
+                        trkInter.jump(retaddr);
                         break;
                     case JAISeqEvent.RETURN_CONDITIONAL:
                         if (checkCondition((byte)(trkInter.rI[0] & 15)))
@@ -363,6 +363,7 @@ namespace JaiSeqXLJA.Player
                             var keyNote = currentInst.Keys[note];
                             if (keyNote==null) { Console.WriteLine("EMPTY KEY b{0} p{1} -- n{2} v{3}",bank,program,note,velocity); break; }
                             var keyNoteVel = keyNote.Velocities[velocity];
+                            if (keyNoteVel == null) { Console.WriteLine("EMPTY VEL b{0} p{1} -- n{2} v{3}", bank, program, note, velocity); break; }
                             JWave ouData;
                             var snd = JAISeqPlayer.loadSound(keyNoteVel.wsysid, keyNoteVel.wave, out ouData);
                             if (snd == null) { Console.WriteLine("*screams in null wave buffer*"); break; }
@@ -372,25 +373,19 @@ namespace JaiSeqXLJA.Player
                             {
                                 newVoice.setPitchMatrix(0, (float)Math.Pow(2, (note - ouData.key) / 12f) * currentInst.Pitch * keyNoteVel.Pitch * keyNote.Pitch);
                             }
-                            newVoice.setVolumeMatrix(0, (float)( (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume ) * 0.5f )  );
+                            newVoice.setVolumeMatrix(0, (float)( (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume ) * volume )  );
                             if (Registers[7]==2)
                             {
-                                //newVoice.setPitchMatrix(1, bendFinalValue);
+                                newVoice.setPitchMatrix(1, bendFinalValue);
                             }
                             newVoice.tickAdvanceValue = 1;
                     
                             if (currentInst.oscillatorCount > 0)
                             {
                                 newVoice.setOcillator(currentInst.oscillators[0]);
-                                newVoice.tickAdvanceValue = 1;
+                                newVoice.tickAdvanceValue = currentInst.oscillators[0].rate;
                             }
-                            if (currentInst.oscillatorCount==2)
-                            {
-                                    newVoice.setOcillator(currentInst.oscillators[1]);
-                                    newVoice.tickAdvanceValue = 1;
-                            }
-
-                            
+                 
                             newVoice.play();
                             addVoice(newVoice, (byte)voice);
                             break;
@@ -400,7 +395,6 @@ namespace JaiSeqXLJA.Player
                         break;
                     case JAISeqEvent.UNKNOWN:       
                         break;
-
                     case JAISeqEvent.MISS:
                     case JAISeqEvent.LOADTBL:
                         crash();
