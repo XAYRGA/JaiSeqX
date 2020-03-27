@@ -156,11 +156,12 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.WRITE_PARENT_PORT:
                     case (byte)JAISeqEvent.CONNECT_NAME:
                     case (byte)JAISeqEvent.TRANSPOSE:
+                    case (byte)JAISeqEvent.TIMERELATE:
                         skip(2);
                         return JAISeqEvent.UNKNOWN;
                     /* One byte unknowns */
             
-                    case (byte)JAISeqEvent.TIMERELATE:
+                    
             
                     case 0xDE: // don't know either.
                     case (byte)JAISeqEvent.IRCCUTOFF:

@@ -8,6 +8,8 @@ using libJAudio.Sequence;
 using libJAudio.Sequence.Inter;
 using JaiSeqXLJA.DSP;
 
+using System.Windows.Input;
+
 namespace JaiSeqXLJA.Player
 {
     public class JAISeqTrack
@@ -61,7 +63,21 @@ namespace JaiSeqXLJA.Player
 
         public void destroy()
         {
-
+            for (int i = 0; i < voices.Length; i++)
+            {
+                if (voices[i] != null)
+                {
+                    voices[i].forceStop();
+                }
+            }
+            for (int i = 0; i < voiceOrphans.Length; i++)
+            {
+                if (voiceOrphans[i] != null)
+                {
+                    //Console.WriteLine("UPDATE ORPHAN VOICE");
+                    voiceOrphans[i].forceStop();                    
+                }
+            }
         }
 
 
@@ -146,7 +162,6 @@ namespace JaiSeqXLJA.Player
             // When a compare function is executed. the registers are subtracted. 
             // The subtracted result is stored in R3. 
             // This means:
-
             switch (cond)
             {
                 case 0: // We were probably given the wrong commmand
@@ -162,8 +177,9 @@ namespace JaiSeqXLJA.Player
                     return false;
                 case 4: // Less Than if r1 - r2 is more than zero, this means r1 was less than r2
                     if (conditionValue > 0) { return true; }
-                    return false;
+                    return true;
                 case 5: // Greater than , if r1 - r2 is less than 0, that means r1 was bigger than r2
+                    //Console.WriteLine("CHECK COND VALUE 5 BUT {0}",conditionValue);
                     if (conditionValue < 0) { return true; }
                     return false;
             }
@@ -202,7 +218,24 @@ namespace JaiSeqXLJA.Player
             if (delay > 0) { delay--; }
             if (halted) { return; }
             while (delay < 1 && !halted) {
-                Registers[3] = 2;
+                if (Console.KeyAvailable)
+                {
+                    ConsoleKeyInfo wtf = Console.ReadKey(true);
+                    if (wtf.Key == ConsoleKey.X)
+                    {
+                        Registers[3] = 1;
+                       
+                    }
+                    else if (wtf.Key == ConsoleKey.C)
+                    {
+                        Registers[3] = -1;
+                    }
+                    else
+                    {
+                        Registers[3] = 0;
+                    }
+                    Console.WriteLine("Set R3 {0}", Registers[3]);
+                }
                 var opcode = JAISeqEvent.UNKNOWN;
                 try
                 {
@@ -215,7 +248,10 @@ namespace JaiSeqXLJA.Player
                     Console.WriteLine(E.ToString());
                     return;
                 }
-       
+            
+                   // Console.WriteLine("({0:X}){1}",trkInter.pcl,opcode);
+                  //  Console.ReadLine();
+           
    
                 switch (opcode)
                 {
@@ -273,6 +309,14 @@ namespace JaiSeqXLJA.Player
                                 bendTarget = trkInter.rI[1];
                                 bendticks = 0;
                             }
+
+                            if ((byte)trkInter.rI[0] == 0)
+                            {
+                              
+                                volume = (float)trkInter.rI[1]/0xFFF;
+                             
+                            }
+
                             break;
                         }
                     case JAISeqEvent.PARAM_SET_16:
@@ -292,7 +336,7 @@ namespace JaiSeqXLJA.Player
                             Console.WriteLine("Trk{0} cond check jump fail: {1}", trackNumber,trkInter.rI[0] & 15);
                         break;
                     case JAISeqEvent.CALL:
-                        Console.WriteLine("TRY CALL");
+                       // Console.WriteLine("TRY CALL");
                         CallStack.Push(trkInter.pc);
                         Console.WriteLine("Trk{0} calls 0x{1:X} from {2:X} depth {3:X}", trackNumber, trkInter.rI[0], trkInter.pc, CallStack.Count);
                         trkInter.jump(trkInter.rI[0]);
@@ -300,13 +344,14 @@ namespace JaiSeqXLJA.Player
                         break;
                     case JAISeqEvent.CALL_CONDITIONAL:
 
-                        Console.WriteLine("TRY CALLC");
+                        //Console.WriteLine("TRY CALLC");
                         if (checkCondition(  (byte)(trkInter.rI[0] & 15)) )
                         {
-                            Console.WriteLine("Trk{0} calls 0x{1:X} from {2:X} depth {3:X}", trackNumber, trkInter.rI[1], trkInter.pc, CallStack.Count);
+                            Console.WriteLine("Trk{0} calls 0x{1:X} from {2:X} depth {3:X} cond {4}", trackNumber, trkInter.rI[1], trkInter.pc, CallStack.Count,trkInter.rI[0]);
                             CallStack.Push(trkInter.pc);
                             trkInter.jump(trkInter.rI[1]);
-                        }
+                        } else
+                            Console.WriteLine("Trk{0} cond check call fail: {1}", trackNumber, trkInter.rI[0] & 15);
                         break;
                     case JAISeqEvent.RETURN:
                         if (CallStack.Count == 0)
@@ -343,7 +388,7 @@ namespace JaiSeqXLJA.Player
                         Registers[0x21] = (byte)trkInter.rI[0];
                         break;                   
                     case JAISeqEvent.J2_SET_ARTIC:
-                        Console.WriteLine("ARTICULATION 0x{0:X} {1}", trkInter.rI[0], trkInter.rI[1]);
+                       // Console.WriteLine("ARTICULATION 0x{0:X} {1}", trkInter.rI[0], trkInter.rI[1]);
                         if (trkInter.rI[0] == 0x62)
                         {
                             JAISeqPlayer.ppqn = trkInter.rI[1];
@@ -389,7 +434,8 @@ namespace JaiSeqXLJA.Player
                             {
                                 newVoice.setPitchMatrix(0, (float)Math.Pow(2, (note - ouData.key) / 12f) * currentInst.Pitch * keyNoteVel.Pitch * keyNote.Pitch);
                             }
-                            newVoice.setVolumeMatrix(0, (float)( (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume ) * volume )  );
+                            newVoice.setVolumeMatrix(0, (float)(Math.Pow(2, (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume) * volume)) );
+                            Console.WriteLine((float)(Math.Pow(2, (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume) * volume)) );
                             if (Registers[7]==2)
                             {
                                 newVoice.setPitchMatrix(1, bendFinalValue);

@@ -88,6 +88,10 @@ namespace JaiSeqXLJA.DSP
             internalVoice.Start();         
         }
 
+        public void forceStop()
+        {
+            internalVoice.Stop();
+        }
         public void stop()
         {
             //Console.WriteLine("STOP");
@@ -132,7 +136,7 @@ namespace JaiSeqXLJA.DSP
                     mode = rqVec.mode,
                     next = rqVec,
                     time = 0,
-                    value = 32700
+                    value = 16384
                 };
             }
             //*/
