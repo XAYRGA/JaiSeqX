@@ -169,6 +169,7 @@ namespace libJAudio.Loaders
                         // So we'll want to move the waveid into the wave object itself for convience. 
                         currentWG.WaveByID[IDMap[b].waveid] = currentWG.Waves[b]; // Basically making a copy of the wave object, so  it can be found by its ID instead of entry index.
                         newWSYS.WaveTable[IDMap[b].waveid] = currentWG.Waves[b]; // TODO: Add Wavegroup.load for wsys, not all waves are loaded all the time.
+
                     }
                 }
             }

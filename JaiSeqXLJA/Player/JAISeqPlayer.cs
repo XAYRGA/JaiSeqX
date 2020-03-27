@@ -78,7 +78,7 @@ namespace JaiSeqXLJA.Player
             var ok = CWsys.WaveTable.TryGetValue(waveID, out waveData);
             if (!ok)
             {
-                Console.WriteLine("WSYS doesn't contain wave id:{0} wavid:{1}");
+                Console.WriteLine("WSYS doesn't contain wave id:{0} wavid:{1}", wsys_id,waveID);
                 return null;
             }
             ok = waveCache.TryGetValue(cacheIndex, out ret);
@@ -87,7 +87,28 @@ namespace JaiSeqXLJA.Player
                 data = waveData;
                 return ret;
             }
-            var fhnd = awHandles[waveData.wsysFile];
+            Stream fhnd;
+            var ok2 = awHandles.TryGetValue(waveData.wsysFile, out fhnd);
+            if (!ok2)
+            {
+                try
+                {
+                    var w = File.OpenRead("Banks/" + waveData.wsysFile);
+                    awHandles[waveData.wsysFile] = w;
+                    var fg = Console.ForegroundColor;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("EMERGENCY: ");
+                    Console.ForegroundColor = fg;
+                    Console.WriteLine("Handle for {0} missing. Attempting JIT load...", waveData.wsysFile);
+
+                    fhnd = w;
+                } catch
+                {
+                    Console.WriteLine("FAILURE.");
+                    return null;
+                }
+            }
+
             fhnd.Position = waveData.wsys_start;
             byte[] ou = new byte[waveData.wsys_size];
             fhnd.Read(ou, 0, waveData.wsys_size);
@@ -142,12 +163,9 @@ namespace JaiSeqXLJA.Player
             {
                 if (tracks[i]!=null)
                 {
-
                     tracks[i].update();
-                    //Console.Write("T{0}: {1}|", i, tracks[i].ticks);
                 }
             }
-            //Console.WriteLine();
         }
 
         public static void addTrack(int id, JAISeqTrack trk)

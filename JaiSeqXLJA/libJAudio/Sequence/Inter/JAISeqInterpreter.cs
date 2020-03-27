@@ -101,6 +101,7 @@ namespace libJAudio.Sequence.Inter
                         }
                      case (byte)JAISeqEvent.PRINTF:
                         {
+                           
                             var lastread = -1;
                             string v = "";
                             while (lastread != 0)
@@ -108,7 +109,10 @@ namespace libJAudio.Sequence.Inter
                                 lastread = Sequence.ReadByte();
                                 v += (char)lastread;
                             }
-                            // Sequence.ReadByte();
+                            Console.WriteLine(v);
+                            var l = Sequence.ReadByte();
+                            if (l != 0)
+                                Sequence.BaseStream.Position = Sequence.BaseStream.Position - 1;
                             return JAISeqEvent.UNKNOWN;
                         }
                     case (byte)JAISeqEvent.SYNC_CPU:
@@ -120,6 +124,7 @@ namespace libJAudio.Sequence.Inter
                     case 0xDD:
                     case (byte)JAISeqEvent.FIRSTSET:
                     case (byte)JAISeqEvent.LASTSET:
+           
                         skip(3);
                         return JAISeqEvent.UNKNOWN;
                     /* 4 byte unknowns */
@@ -127,6 +132,7 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.INTERRUPT:
                     case (byte)JAISeqEvent.BITWISE:
                     case (int)JAISeqEvent.LOADTBL:
+                    case (byte)JAISeqEvent.CLOSE_TRACK:
                         skip(4);
                         return JAISeqEvent.UNKNOWN;
                     /* special case unknowns? */
@@ -148,13 +154,14 @@ namespace libJAudio.Sequence.Inter
                     case 0xBE: // Completely unknown
                     case (byte)JAISeqEvent.WRITE_CHILD_PORT:
                     case (byte)JAISeqEvent.WRITE_PARENT_PORT:
-              
+                    case (byte)JAISeqEvent.CONNECT_NAME:
+                    case (byte)JAISeqEvent.TRANSPOSE:
                         skip(2);
                         return JAISeqEvent.UNKNOWN;
                     /* One byte unknowns */
-                    case (byte)JAISeqEvent.CONNECT_NAME:
+            
                     case (byte)JAISeqEvent.TIMERELATE:
-                    case (byte)JAISeqEvent.TRANSPOSE:
+            
                     case 0xDE: // don't know either.
                     case (byte)JAISeqEvent.IRCCUTOFF:
                     case 0xF4:

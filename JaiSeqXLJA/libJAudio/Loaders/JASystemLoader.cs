@@ -159,7 +159,17 @@ namespace libJAudio.Loaders
                             stm.Position = current_section.start; // Seek to start
                             var vx = new JA_WSYSLoader_V1(); // Create loader
                             var ws = vx.loadWSYS(read, current_section.start); // load
-                            JAS.WaveBanks[ws.id] = ws; // Push to wavebanks
+                            if (JAS.WaveBanks[ws.id] != null)
+                            {
+                                var ows = JAS.WaveBanks[ws.id]; // Merge duplicate wavetable ID's.
+                                foreach (int k in ws.WaveTable.Keys)
+                                {
+                                    ows.WaveTable[k] = ws.WaveTable[k];
+                                }
+                            } else
+                            {                            
+                                JAS.WaveBanks[ws.id] = ws; // Push to wavebanks
+                            }
                             break;
                         }
                     case JAIInitSectionType.SEQUENCE_COLLECTION:

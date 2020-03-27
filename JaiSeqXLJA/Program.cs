@@ -28,7 +28,7 @@ namespace JaiSeqXLJA
             var jaiinit = File.ReadAllBytes("twipri/z2sound.baa"); // read entire JAIInitFile
             JASystem = libJAudio.Loaders.JASystemLoader.loadJASystem(ref jaiinit); // Load the JASystem (will automatically be detected by JAIInitVersionDetector)
             Console.WriteLine("Loaded JASystem");
-            Player.JAISeqPlayer.startPlayback("twipri/seqs/tempo.bms", ref JASystem);
+            Player.JAISeqPlayer.startPlayback("twipri/seqs/e_zant.bms", ref JASystem);
 
 
 

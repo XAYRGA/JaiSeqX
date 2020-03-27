@@ -21,6 +21,9 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = (int)Helpers.ReadUInt24BE(Sequence);  // Pointer to track inside of BMS file (Absolute) 
                         return JAISeqEvent.OPEN_TRACK;
                     }
+                case (byte)JAISeqEvent.OPEN_TRACK_BROS:
+                    var w = Sequence.ReadByte();
+                    return JAISeqEvent.OPEN_TRACK_BROS;
                 case (byte)JAISeqEvent.FIN:
                     {
                         return JAISeqEvent.FIN;

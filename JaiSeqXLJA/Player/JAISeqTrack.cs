@@ -202,6 +202,7 @@ namespace JaiSeqXLJA.Player
             if (delay > 0) { delay--; }
             if (halted) { return; }
             while (delay < 1 && !halted) {
+                Registers[3] = 2;
                 var opcode = JAISeqEvent.UNKNOWN;
                 try
                 {
@@ -214,7 +215,7 @@ namespace JaiSeqXLJA.Player
                     Console.WriteLine(E.ToString());
                     return;
                 }
-               // Console.WriteLine(opcode);
+       
    
                 switch (opcode)
                 {
@@ -262,11 +263,23 @@ namespace JaiSeqXLJA.Player
                         }
                     case JAISeqEvent.J2_SET_PARAM_8:
                     case JAISeqEvent.J2_SET_PARAM_16:
+                        {
+                            //Console.WriteLine("{0} {1}", trkInter.rI[0], trkInter.rI[1]);
+                            Registers[(byte)trkInter.rI[0]] = (short)trkInter.rI[1];
+                            if ((byte)trkInter.rI[0]==1)
+                            {
+                                bending = true;
+                                bendTargetTicks = 1;
+                                bendTarget = trkInter.rI[1];
+                                bendticks = 0;
+                            }
+                            break;
+                        }
                     case JAISeqEvent.PARAM_SET_16:
                     case JAISeqEvent.PARAM_SET_8:
                         {
-                            Registers[(byte)trkInter.rI[0]] = (short)trkInter.rI[1];
-                      
+                           
+                           
                             break;
                         }
                     case JAISeqEvent.JUMP_CONDITIONAL:
@@ -279,15 +292,18 @@ namespace JaiSeqXLJA.Player
                             Console.WriteLine("Trk{0} cond check jump fail: {1}", trackNumber,trkInter.rI[0] & 15);
                         break;
                     case JAISeqEvent.CALL:
+                        Console.WriteLine("TRY CALL");
                         CallStack.Push(trkInter.pc);
                         Console.WriteLine("Trk{0} calls 0x{1:X} from {2:X} depth {3:X}", trackNumber, trkInter.rI[0], trkInter.pc, CallStack.Count);
                         trkInter.jump(trkInter.rI[0]);
                 
                         break;
                     case JAISeqEvent.CALL_CONDITIONAL:
+
+                        Console.WriteLine("TRY CALLC");
                         if (checkCondition(  (byte)(trkInter.rI[0] & 15)) )
                         {
-                            Console.WriteLine("Trk{0} calls 0x{1:X} from {2:X} depth {3:X}", trackNumber, trkInter.rI[0], trkInter.pc, CallStack.Count);
+                            Console.WriteLine("Trk{0} calls 0x{1:X} from {2:X} depth {3:X}", trackNumber, trkInter.rI[1], trkInter.pc, CallStack.Count);
                             CallStack.Push(trkInter.pc);
                             trkInter.jump(trkInter.rI[1]);
                         }
@@ -366,7 +382,7 @@ namespace JaiSeqXLJA.Player
                             if (keyNoteVel == null) { Console.WriteLine("EMPTY VEL b{0} p{1} -- n{2} v{3}", bank, program, note, velocity); break; }
                             JWave ouData;
                             var snd = JAISeqPlayer.loadSound(keyNoteVel.wsysid, keyNoteVel.wave, out ouData);
-                            if (snd == null) { Console.WriteLine("*screams in null wave buffer*"); break; }
+                            if (snd == null) { Console.WriteLine("*screams in null wave buffer*",keyNoteVel.wsysid,keyNoteVel.wave); Console.WriteLine(" b{0} p{1} -- n{2} v{3}", bank, program, note, velocity);  break; }
 
                             var newVoice = new JAIDSPVoice(ref snd);
                             if (currentInst.IsPercussion == false)
