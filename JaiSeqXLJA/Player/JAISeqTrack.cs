@@ -17,21 +17,23 @@ namespace JaiSeqXLJA.Player
         
         byte[] bmsData;
         int offsetAddr;
+        JAISeqInterpreterVersion interVer;
+
         public Stack<int> CallStack = new Stack<int>(32);
         public int[] Ports = new int[32];
         public int trackNumber;
         public int delay;
+        float volume = 1;
+
         JAIDSPVoice[] voices;
         JAIDSPVoice[] voiceOrphans;
         private int trackArticulation = 1;
         public int activeVoices;
+
         public JAISeqTrack parent;
+
         public bool muted;
         public bool halted;
-        float perfTarget = 0;
-        int perfTicks = 0;
-        float volume = 1;
-
 
         private static byte[] bendCoefLUT;
         bool bending = false;
@@ -42,13 +44,15 @@ namespace JaiSeqXLJA.Player
 
         public int ticks = 0;
 
-        public JAISeqTrack(ref byte[] SeqFile, int address)
+        public JAISeqTrack(ref byte[] SeqFile, int address, JAISeqInterpreterVersion seqVersion)
         {
             bmsData = SeqFile;
             offsetAddr = address;
-            trkInter = new JAISeqInterpreter(ref SeqFile, address);
+            trkInter = new JAISeqInterpreter(ref SeqFile, address, seqVersion);
             voices = new JAIDSPVoice[0xA]; // Even though we only support 7 voices, I can tell that some will linger whenever we stop them.            
             voiceOrphans = new JAIDSPVoice[0xFF];
+            interVer = seqVersion;
+
 
 
             bendCoefLUT = new byte[100];
@@ -61,7 +65,22 @@ namespace JaiSeqXLJA.Player
 
         public void destroy()
         {
+            for (int i = 0; i < voices.Length; i++)
+            {
+                if (voices[i] != null)
+                {
+                    voices[i].forceStop() ;
+                }
 
+            }
+            for (int i = 0; i < voiceOrphans.Length; i++)
+            {
+                if (voiceOrphans[i] != null)
+                {
+                    //Console.WriteLine("UPDATE ORPHAN VOICE");
+                   voiceOrphans[i].forceStop();             
+                }
+            }
         }
 
 
@@ -256,7 +275,7 @@ namespace JaiSeqXLJA.Player
                         break;
                     case JAISeqEvent.OPEN_TRACK:
                         {
-                            var newTrk = new JAISeqTrack(ref bmsData, trkInter.rI[1]);
+                            var newTrk = new JAISeqTrack(ref bmsData, trkInter.rI[1],interVer);
                             newTrk.trackNumber = trkInter.rI[0];
                             JAISeqPlayer.addTrack(newTrk.trackNumber,newTrk);
                             break;                               

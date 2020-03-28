@@ -11,42 +11,42 @@
 	// Last updated 10/6/2019
 
 	// Register Based Arithmetic
-	JAISeqEvent.ADDR:
+	(v1) 0xA1 = ADD REGISTER (ADDR)
 		r0 = (byte)destination_register
 		r1 = (byte)source_register
 		r2 = (short)sum (Stores result in RG(destination_register))
 		~op: 
 			Registers[destination_register] += Registers[source_register]
 
-	JAISeqEvent.MULR:
+	(v1) 0xA2 = Multiply Regtister (MULR)
 		r0 = (byte)destination_register
 		r1 = (byte)source_register
 		r2 = (short)product (Stores result in RG(destination_register))
 		~op:
 			Registers[destination_register] *= Registers[source_register]
 
-	JAISeqEvent.CMPR:
+	(v1) 0xA3 = Compare Register (CMPR)
 		r0 = (byte)destination_register
 		r1 = (byte)source_register
 		r2 = (short) difference (Sets RG3)
 		~op:
 			Registers[3] = Registers[destination_register] -  Registers[source_register]; // Note that 3 is the comparerator operator!
 
-	JAISeqEvent.ADD8:
+	(v1) 0xA5 = Add int8 (ADD8)
 		r0 = (byte)destination_register
 		r1 = (byte)value
 		r2 = (short)sum (Stores result in RG(destination_register))
 		~op:
 			Registers[destination_register] += value;
 
-	JAISeqEvent.MUL8:
+	(v1) 0xA6 = Multiply 8 (MUL8)
 		r0 = (byte)destination_register
 		r1 = (byte)value
 		r2 = (short)product (Stores result in RG(destination_register))
 		~op: 
 			Registers[destination_register] *= value;
 
-	JAISeqEvent.CMP8:
+    (v1) 0xA7 = Compare 8 (CMP8)
 		r0 = (byte)destination_register 
 		r1 = (byte)value
 		r2 = (short) difference (Sets RG3)

@@ -23,12 +23,13 @@ namespace JaiSeqXLJA
         static void Main(string[] args)
         {
 
+            Console.WriteLine("Initializing DSP.");
             JAIDSP.Init();
-
+            Console.WriteLine("Initializing JASystem.");
             var jaiinit = File.ReadAllBytes("twipri/z2sound.baa"); // read entire JAIInitFile
             JASystem = libJAudio.Loaders.JASystemLoader.loadJASystem(ref jaiinit); // Load the JASystem (will automatically be detected by JAIInitVersionDetector)
             Console.WriteLine("Loaded JASystem");
-            Player.JAISeqPlayer.startPlayback("twipri/seqs/e_zant.bms", ref JASystem);
+            Player.JAISeqPlayer.startPlayback("twipri/seqs/e_octaeel02.bms", ref JASystem,libJAudio.Sequence.Inter.JAISeqInterpreterVersion.JA2);
 
 
 

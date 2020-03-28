@@ -19,9 +19,8 @@ namespace libJAudio.Sequence.Inter
                  * <?> val
                  * (<?> dur)
                 */
-                case 0x94: //PERF_U8_NODUR:
+                case (byte)JAISeqEvent.PERF_U8_NODUR:
                     {
-                        
                         var perf = Sequence.ReadByte();
                         var value = Sequence.ReadByte();
                         // Registers[perf] = value; // MMAYBE NOT?
@@ -31,7 +30,7 @@ namespace libJAudio.Sequence.Inter
                         rF[0] = (float)value / 0xFF;
                         return JAISeqEvent.PERF_U8_NODUR;
                     }
-                case 0x96: // PERF_U8_DUR_U8:
+                case (byte)JAISeqEvent.PERF_U8_DUR_U8:
                     {
                         var perf = Sequence.ReadByte();
                         var value = Sequence.ReadByte();
@@ -42,7 +41,7 @@ namespace libJAudio.Sequence.Inter
                         rF[0] = ((float)value / 0xFF);
                         return JAISeqEvent.PERF_U8_DUR_U8;
                     }
-                case 0x97: // PERF_U8_DUR_U16
+                case (byte)JAISeqEvent.PERF_U8_DUR_U16:
                     {
                         var perf = Sequence.ReadByte();
                         var value = Sequence.ReadByte();
@@ -53,7 +52,7 @@ namespace libJAudio.Sequence.Inter
                         rF[0] = ((float)value / 0xFF);
                         return JAISeqEvent.PERF_U8_DUR_U16;
                     }
-                case 0x98: // PERF_S8_NODUR:
+                case (byte)JAISeqEvent.PERF_S8_NODUR:
                     {
                         var perf = Sequence.ReadByte();
                         var value = Sequence.ReadByte();
@@ -64,7 +63,7 @@ namespace libJAudio.Sequence.Inter
                         rF[0] = ((float)(rI[1]) / 0x7F);
                         return JAISeqEvent.PERF_S8_NODUR;
                     }
-                case 0x9A: // PERF_S8_DUR_U8:
+                case (byte)JAISeqEvent.PERF_S8_DUR_U8:
                     {
                         var perf = Sequence.ReadByte();
                         var value = Sequence.ReadByte();
@@ -76,7 +75,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.PERF_S8_DUR_U8;
                     }
 
-                case 0x9B: // PERF_S8_DUR_U16:
+                case (byte)JAISeqEvent.PERF_S8_DUR_U16:
                     {
                         var perf = Sequence.ReadByte();
                         var value = Sequence.ReadByte();
@@ -88,7 +87,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.PERF_S8_DUR_U16;
                     }
 
-                case 0x9C: // PERF_S16_NODUR:
+                case (byte)JAISeqEvent.PERF_S16_NODUR:
                     {
                         var perf = Sequence.ReadByte();
                         var value = Sequence.ReadInt16();
@@ -98,7 +97,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.PERF_S16_NODUR;
                     }
 
-                case 0x9E: // PERF_S16_DUR_U8:
+                case (byte)JAISeqEvent.PERF_S16_DUR_U8:
                     {
                         var perf = Sequence.ReadByte();
                         var value = Sequence.ReadInt16();
@@ -109,7 +108,7 @@ namespace libJAudio.Sequence.Inter
                         rF[0] = ((float)(value) / 0x7FFF);
                         return JAISeqEvent.PERF_S16_DUR_U8;
                     }
-                case 0x9F: // PERF_S16_DUR_U16:
+                case (byte)JAISeqEvent.PERF_S16_DUR_U16:
                     {
                         var perf = Sequence.ReadByte();
                         var value = Sequence.ReadInt16();

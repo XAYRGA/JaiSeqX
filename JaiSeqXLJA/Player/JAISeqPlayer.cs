@@ -33,10 +33,10 @@ namespace JaiSeqXLJA.Player
         private static Dictionary<string, Stream> awHandles;
         public static JASystem JASPtr;
 
-        public static void startPlayback(string file, ref JASystem sys)
+        public static void startPlayback(string file, ref JASystem sys, JAISeqInterpreterVersion seqVer)
         {
             var contents = File.ReadAllBytes(file);
-            tracks[0] = new JAISeqTrack(ref contents,0x0000000); // entry point.
+            tracks[0] = new JAISeqTrack(ref contents,0x0000000,seqVer); // entry point.
             tickTimer = new Stopwatch();
             tickTimer.Start();
             JASPtr = sys;

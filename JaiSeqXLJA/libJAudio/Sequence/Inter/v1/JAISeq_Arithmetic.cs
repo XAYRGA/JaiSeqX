@@ -13,7 +13,7 @@ namespace libJAudio.Sequence.Inter
             switch (currnet_opcode)
             {
                 /* ARITHMATIC OPERATORS */
-                case 0xA1: // ADDR
+                case (byte)JAISeqEvent.ADDR:
                     {
                         var destination_reg = Sequence.ReadByte();
                         var source_reg = Sequence.ReadByte();
@@ -21,7 +21,7 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = source_reg;
                         return JAISeqEvent.ADDR;
                     }
-                case 0xA2: // MULR
+                case (byte)JAISeqEvent.MULR:
                     {
                         var destination_reg = Sequence.ReadByte();
                         var source_reg = Sequence.ReadByte();
@@ -29,7 +29,7 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = source_reg;
                         return JAISeqEvent.MULR;
                     }
-                case 0xA3: // CMPR
+                case (byte)JAISeqEvent.CMPR:
                     {
                         var destination_reg = Sequence.ReadByte();
                         var source_reg = Sequence.ReadByte();
@@ -37,7 +37,7 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = source_reg;
                         return JAISeqEvent.CMPR;
                     }
-                case 0xA5: // ADD8
+                case (byte)JAISeqEvent.ADD8:
                     {
                         var destination_reg = Sequence.ReadByte();
                         var value = Sequence.ReadByte();
@@ -46,7 +46,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.ADD8;
                     }
 
-                case 0xA6: // MUL8
+                case (byte)JAISeqEvent.MUL8:
                     {
                         var destination_reg = Sequence.ReadByte();
                         var value = Sequence.ReadByte();
@@ -55,7 +55,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.MUL8;
                     }
 
-                case 0xA7: // CMP8
+                case (byte)JAISeqEvent.CMP8:
                     {
                         var destination_reg = Sequence.ReadByte();
                         var value = Sequence.ReadByte();
@@ -64,7 +64,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.CMP8;
                     }
 
-                case 0xAD: // ADD16
+                case (byte)JAISeqEvent.ADD16:
                     {
                         var destination_reg = Sequence.ReadByte();
                         var value = Sequence.ReadInt16();
@@ -73,7 +73,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.ADD16;
                     }
 
-                case 0xAE: // MUL16
+                case (byte)JAISeqEvent.MUL16:
                     {
                         var destination_reg = Sequence.ReadByte();
                         var value = Sequence.ReadByte();
@@ -82,7 +82,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.MUL16;
                     }
 
-                case 0xAF: // CMP16                   
+                case (byte)JAISeqEvent.CMP16:
                     {
                         var destination_reg = Sequence.ReadByte();
                         var value = Sequence.ReadByte();

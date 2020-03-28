@@ -88,6 +88,10 @@ namespace JaiSeqXLJA.DSP
             internalVoice.Start();         
         }
 
+        public void forceStop()
+        {
+            internalVoice.Stop();
+        }
         public void stop()
         {
             //Console.WriteLine("STOP");

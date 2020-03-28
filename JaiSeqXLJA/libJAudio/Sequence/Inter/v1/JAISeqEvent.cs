@@ -7,26 +7,6 @@ using System.Threading.Tasks;
 namespace libJAudio.Sequence
 {
 
-    /*    
-     _______     ________       _       ______     ____    ____  ________  
-    |_   __ \   |_   __  |     / \     |_   _ `.  |_   \  /   _||_   __  | 
-      | |__) |    | |_ \_|    / _ \      | | `. \   |   \/   |    | |_ \_| 
-      |  __ /     |  _| _    / ___ \     | |  | |   | |\  /| |    |  _| _  
-     _| |  \ \_  _| |__/ | _/ /   \ \_  _| |_.' /  _| |_\/_| |_  _| |__/ | 
-    |____| |___||________||____| |____||______.'  |_____||_____||________|                                                                   
-        THESE OPCODES ARE ABSOLUTELY NOT ACCURATE TO THE ACTUAL JAISEQ SYSTEM.
-        They are an attempt to match only, nothing more. 
-        They don't match because JAISeq1 and JAISeq2 have colliding opcodes.
-
-        For example, 0xFD in JAISeq1 is TIME_BASE, 
-        but 0xFD in JAISeq2 is PRINTF,
-        Obviously, a single case statement, and an enumerator can't 
-
-        For actual opcode ID's, see seqdoc.txt
-        Or just look at the goddamn source files. they're commented.
-    */
-      
-
     public enum JAISeqEvent
     {
         UNKNOWN = 0x00,
@@ -119,9 +99,9 @@ namespace libJAudio.Sequence
         PANSWEEPSET = 0xEF, // <byte speed>?
         OSCILLATORFULL = 0xF2, 
         VOLUME_MODE = 0xF3, // <byte mode>
-        PRINTF = 0xFB, // READ UNTIL 0x00, advance one byte.
+        PRINTF = 0xFD, // READ UNTIL 0x00, advance one byte.
         NOP = 0xFC, // NO ARGS
-        TIME_BASE = 0xFD, // Short tempo
+        TIME_BASE = 0xFB, // Short tempo
         TEMPO = 0xFE, // <short timebase>
         FIN = 0xFF, // NO ARGS
 
@@ -134,7 +114,6 @@ namespace libJAudio.Sequence
         J2_TEMPO = 0xE0, // <short tempo>
         J2_SET_BANK = 0xE2, // <byte bank>
         J2_SET_PROG = 0xE3, // <byte program>
-        J2_PRINTF = 0xF9, // mActual opcode is 0xFD
 
     }
 

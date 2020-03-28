@@ -13,7 +13,7 @@ namespace libJAudio.Sequence.Inter
             switch (currnet_opcode)
             {
                 /* PORT COMANDS */
-                case 0xCB: // READPORT
+                case (byte)JAISeqEvent.READPORT:
                     {
                         var port_id = Sequence.ReadByte(); // Read Port ID
                         var dest_reg = Sequence.ReadByte(); //  Read Destination Register
@@ -22,7 +22,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.READPORT;
                     }
 
-                case 0xCC:
+                case (byte)JAISeqEvent.WRITEPORT:
                     {
                         var port_id = Sequence.ReadByte();
                         var source_reg = Sequence.ReadByte();
@@ -31,7 +31,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.WRITEPORT;
                     }
                 /* Tempo Control */
-                case 0xD8: // The very same.
+                case (byte)JAISeqEvent.J2_SET_ARTIC: // The very same.
                     {
                         var type = Sequence.ReadByte();
                         var val = Sequence.ReadInt16();
@@ -39,31 +39,31 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = val;
                         return JAISeqEvent.J2_SET_ARTIC;
                     }
-                case 0xFD: // (v1)TIME_BASE (v2)J2_PRINTF TODOTODO
+                case (byte)JAISeqEvent.TIME_BASE: // Set ticks per quarter note.
                     {
                         rI[0] = (short)(Sequence.ReadInt16());
                         return JAISeqEvent.TIME_BASE;
                     }
-                case 0xE0: // J2_TEMPO (v2)
-                case 0xFE: // TEMPO (v1)
+                case (byte)JAISeqEvent.J2_TEMPO: // Set BPM, Same format
+                case (byte)JAISeqEvent.TEMPO: // Set BPM
                     {
                         rI[0] = (short)(Sequence.ReadInt16());
                         return JAISeqEvent.TEMPO;
                     }
                 /* Parameter control */
-                case 0xB8: // J2_SET_PARAM_8
+                case (byte)JAISeqEvent.J2_SET_PARAM_8:
                     {
                         rI[0] = Sequence.ReadByte();
                         rI[1] = Sequence.ReadByte();
                         return JAISeqEvent.J2_SET_PARAM_8;
                     }
-                case 0xB9: // J2_SET_PARAM_16
+                case (byte)JAISeqEvent.J2_SET_PARAM_16:
                     {
                         rI[0] = Sequence.ReadByte();
                         rI[1] = Sequence.ReadInt16();
                         return JAISeqEvent.J2_SET_PARAM_16;
                     }
-                case 0xA0: // PARAM_SET_R
+                case (byte)JAISeqEvent.PARAM_SET_R:
                     {
                         var register1 = Sequence.ReadByte();
                         var register2 = Sequence.ReadByte();
@@ -71,7 +71,7 @@ namespace libJAudio.Sequence.Inter
                         rI[2] = register2;
                         return JAISeqEvent.PARAM_SET_R;
                     }
-                case 0xA4: //  PARAM_SET_8
+                case (byte)JAISeqEvent.PARAM_SET_8: // Set track parameters (Usually used for instruments)
                     {
                         var reg = Sequence.ReadByte();
                         var val = Sequence.ReadByte();
@@ -79,7 +79,7 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = val;
                         return JAISeqEvent.PARAM_SET_8;
                     }
-                case 0xAC: // PARAM_SET_16
+                case (byte)JAISeqEvent.PARAM_SET_16: // Set track parameters (Usually used for instruments)
                     {
                         var reg = Sequence.ReadByte();
                         var val = Sequence.ReadInt16();
@@ -87,12 +87,12 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = val;
                         return JAISeqEvent.PARAM_SET_16;
                     }
-                case 0xE2: //J2_SET_BANK:
+                case (byte)JAISeqEvent.J2_SET_BANK:
                     {
                         rI[0] = Sequence.ReadByte();
                         return JAISeqEvent.J2_SET_BANK;
                     }
-                case 0xE3: //J2_SET_PROG
+                case (byte)JAISeqEvent.J2_SET_PROG:
                     {
                         rI[0] = Sequence.ReadByte();
                         return JAISeqEvent.J2_SET_PROG;
