@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using libJAudio;
-using SharpDX.XAudio2;
-using SharpDX.Multimedia;
-using SharpDX.XAPO.Fx;
-using SharpDX.XAPO;
+using Un4seen.Bass;
+using Un4seen.Bass.Misc;
+using Un4seen.Bass.AddOn.Fx;
+using System.IO;
+using System.Runtime.InteropServices;
 
 namespace JaiSeqXLJA.DSP
 {
@@ -22,34 +23,35 @@ namespace JaiSeqXLJA.DSP
         private JOscillator instOsc;
         private JEnvelopeVector envCurrentVec;
         private float envValue = 1;
-        private float envValueLast = 32261; // In case we only have a release for this voice. 
+        private float envValueLast = 1; // In case we only have a release for this voice. 
+
         private float[] pitchMatrix = { 1f, 1f, 1f };
         private float[] gain0Matrix = { 1f, 1f, 1f };
-        private SourceVoice internalVoice;
+
+        private int voiceHandle;
+        private int syncHandle;
+
+
         private float ticks;
         public float tickAdvanceValue = 1;
         private int oscTicks;       
         private float oscValue = 1f;
-        private EffectDescriptor[] effectChain =  new EffectDescriptor[2]; // max 16 effects per voice
+
         private bool doDestroy = false;
 
         public JAIDSPVoice(ref JAIDSPSoundBuffer buff)
         {
             rootBuffer = buff;  // save root buffer.
-            //Console.WriteLine(rootBuffer.format.Channels);
-            internalVoice = new SourceVoice(JAIDSP.Engine, rootBuffer.format, VoiceFlags.None, 1024f); // create voice for mixer
-            //internalVoice.
-            internalVoice.SubmitSourceBuffer(rootBuffer.buffer, null); // flush buffer into mixer 
-            internalVoice.SetOutputVoices(JAIDSP.VoiceDescriptor); // prolly wrong
-            /*
-            effectChain[(int)VoiceEffect.REVERB] = new EffectDescriptor(new Reverb(JAIDSP.Engine),buff.format.Channels);
-            effectChain[(int)VoiceEffect.ECHO] = new EffectDescriptor(new Echo(JAIDSP.Engine),buff.format.Channels);
-            internalVoice.SetEffectChain(effectChain);
-            internalVoice.DisableEffect((int)VoiceEffect.REVERB);
-            internalVoice.DisableEffect((int)VoiceEffect.ECHO);       
-            */
-        }
 
+
+            voiceHandle = Bass.BASS_StreamCreateFile(buff.globalFileBuffer, 0, buff.fileBuffer.Length, BASSFlag.BASS_DEFAULT);
+
+            if (buff.looped)
+            {
+                //Console.WriteLine("Force loop!");
+                syncHandle = Bass.BASS_ChannelSetSync(voiceHandle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME , buff.loopEnd, JAIDSP.globalLoopProc, new IntPtr(buff.loopStart));
+            }
+        }
 
         public void setPitchMatrix(byte index,float pitch)
         {
@@ -60,7 +62,7 @@ namespace JaiSeqXLJA.DSP
             {
                 pv *= pitchMatrix[i];
             }
-            internalVoice.SetFrequencyRatio(pv);
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_FREQ,rootBuffer.format.sampleRate * pv);
         }
 
         public float getPitchMatrix(byte index)
@@ -76,7 +78,7 @@ namespace JaiSeqXLJA.DSP
                 vv *= gain0Matrix[i];
             }
             //Console.WriteLine("Final Gain {0}", vv);
-            internalVoice.SetVolume(vv);
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv);
         }
 
 
@@ -85,12 +87,24 @@ namespace JaiSeqXLJA.DSP
             {
                 swapEnvelope(instOsc.envelopes[0]);
             }
-            internalVoice.Start();         
+            Bass.BASS_ChannelPlay(voiceHandle,false);
         }
 
         public void forceStop()
         {
-            internalVoice.Stop();
+            destroy();
+        }
+
+        public void destroy()
+        {
+            Bass.BASS_ChannelStop(voiceHandle);
+            Bass.BASS_StreamFree(voiceHandle);
+            
+            if (rootBuffer.looped)
+            {
+                Bass.BASS_ChannelRemoveSync(voiceHandle, syncHandle);
+            }
+    
         }
         public void stop()
         {
@@ -100,13 +114,13 @@ namespace JaiSeqXLJA.DSP
             if (instOsc==null)
             {
                 doDestroy = true;
-                internalVoice.Stop();
+                destroy();
                 return;
             }
             if (instOsc != null && instOsc.envelopes[1] == null)
             {
                 doDestroy = true;
-                internalVoice.Stop();
+                destroy();
             }
             else
             {
@@ -157,22 +171,22 @@ namespace JaiSeqXLJA.DSP
             {
                 pv *= pitchMatrix[i];
             }
-            internalVoice.SetFrequencyRatio(pv);
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_FREQ, rootBuffer.format.sampleRate * pv);
             float vv = 1f;
             for (int i = 0; i < gain0Matrix.Length; i++)
             {
                 vv *= gain0Matrix[i];
             }
             //Console.WriteLine("Final Gain {0}", vv);
-            internalVoice.SetVolume(vv);
-       
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv);
+
             if (envCurrentVec==null)
             {
                 return 3;
             }
             if (envCurrentVec.mode == JEnvelopeVectorMode.Stop)
             {
-                internalVoice.Stop();
+                destroy();
 
                 doDestroy = true;
                 return 3; // reeEEE EEE
@@ -204,40 +218,14 @@ namespace JaiSeqXLJA.DSP
 
         public void setEffectParams(VoiceEffect eff,params float[] parameters)
         {
-            /*
-            switch (eff)
-            {
-                case VoiceEffect.REVERB:
-                {
-                        internalVoice.EnableEffect((int)VoiceEffect.REVERB);
-                        var w = internalVoice.GetEffectParameters<ReverbParameters>((int)VoiceEffect.REVERB);
-                        w.RoomSize = parameters[0];
-                        w.Diffusion = parameters[1];
-                        internalVoice.SetEffectParameters<ReverbParameters>((int)VoiceEffect.REVERB, w);
-                        break;
-                }
 
-                case VoiceEffect.ECHO:
-                 {
-                        internalVoice.EnableEffect((int)VoiceEffect.ECHO);
-                        var w = internalVoice.GetEffectParameters<EchoParameters>((int)VoiceEffect.ECHO);
-                        w.Delay = parameters[0];
-                        w.Feedback = parameters[1];
-                        w.WetDryMix = parameters[2];
-                        internalVoice.SetEffectParameters<EchoParameters>((int)VoiceEffect.ECHO, w);
-                        break;
-                 }
-            }
-            */
         }
 
 
         /* There's a leak here. I have no clue what it is */
         public void Dispose() {
 
-                internalVoice.Stop();
-                internalVoice.DestroyVoice();
-                internalVoice.Dispose();
+           
         }
     }
 }

@@ -26,10 +26,10 @@ namespace JaiSeqXLJA
             Console.WriteLine("Initializing DSP.");
             JAIDSP.Init();
             Console.WriteLine("Initializing JASystem.");
-            var jaiinit = File.ReadAllBytes("twipri/z2sound.baa"); // read entire JAIInitFile
+            var jaiinit = File.ReadAllBytes("jaiinit.aaf"); // read entire JAIInitFile
             JASystem = libJAudio.Loaders.JASystemLoader.loadJASystem(ref jaiinit); // Load the JASystem (will automatically be detected by JAIInitVersionDetector)
             Console.WriteLine("Loaded JASystem");
-            Player.JAISeqPlayer.startPlayback("twipri/seqs/e_octaeel02.bms", ref JASystem,libJAudio.Sequence.Inter.JAISeqInterpreterVersion.JA2);
+            Player.JAISeqPlayer.startPlayback("Event_Speak.bms", ref JASystem, libJAudio.Sequence.Inter.JAISeqInterpreterVersion.JA1);
 
 
 

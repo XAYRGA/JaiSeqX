@@ -297,8 +297,8 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.PARAM_SET_16:
                     case JAISeqEvent.PARAM_SET_8:
                         {
-                           
-                           
+                            Registers[(byte)trkInter.rI[0]] = (short)trkInter.rI[1];
+
                             break;
                         }
                     case JAISeqEvent.JUMP_CONDITIONAL:
@@ -408,7 +408,7 @@ namespace JaiSeqXLJA.Player
                             {
                                 newVoice.setPitchMatrix(0, (float)Math.Pow(2, (note - ouData.key) / 12f) * currentInst.Pitch * keyNoteVel.Pitch * keyNote.Pitch);
                             }
-                            newVoice.setVolumeMatrix(0, (float)( (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume ) * volume )  );
+                            newVoice.setVolumeMatrix(0, (float)( (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume ) * volume * 0.2f )  );
                             if (Registers[7]==2)
                             {
                                 newVoice.setPitchMatrix(1, bendFinalValue);

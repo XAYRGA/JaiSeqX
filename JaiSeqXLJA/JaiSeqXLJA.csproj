@@ -35,17 +35,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Bass.Net, Version=2.4.13.3, Culture=neutral, PublicKeyToken=b7566c273e6ef480, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>nonfree\Bass.Net.dll</HintPath>
+    </Reference>
     <Reference Include="Be.IO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Be.IO.1.0.0\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+Xamarin.iOS10+MonoTouch10\Be.IO.dll</HintPath>
     </Reference>
     <Reference Include="SdlDotNet, Version=6.1.0.0, Culture=neutral, processorArchitecture=x86">
       <HintPath>..\packages\SdlDotNet.1.1.0\lib\net40\SdlDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.XAudio2, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.XAudio2.4.2.0\lib\net45\SharpDX.XAudio2.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -58,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DSP\ADPCM.cs" />
+    <Compile Include="DSP\JAIDSPFormat.cs" />
     <Compile Include="DSP\JAIDSPVoice.cs" />
     <Compile Include="DSP\WAV.cs" />
     <Compile Include="libJAudio\Helpers.cs" />

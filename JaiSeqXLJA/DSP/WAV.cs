@@ -4,10 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using SharpDX.XAudio2;
-using SharpDX.Multimedia;
-using SharpDX.XAPO.Fx;
-using SharpDX.XAPO;
+
 
 namespace JaiSeqXLJA.DSP
 {
