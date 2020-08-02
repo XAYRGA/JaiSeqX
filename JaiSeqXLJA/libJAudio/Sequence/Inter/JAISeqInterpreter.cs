@@ -43,7 +43,7 @@ namespace libJAudio.Sequence.Inter
             baseAddress = BaseAddr; // store the base address
             rI = new int[8]; 
             rF = new float[8];
-            Console.WriteLine($"Initialized with intver {ver}");
+           // Console.WriteLine($"Initialized with intver {ver}");
             InterpreterVersion = ver;
         }
 

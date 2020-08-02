@@ -256,7 +256,7 @@ namespace JaiSeqXLJA.Player
                // Console.ReadLine();
                 if (trackNumber==13)
                 {
-                    return;////////////////////////////////////////////////////////////////////////////////////////////////
+                    //return;////////////////////////////////////////////////////////////////////////////////////////////////
                 }
    
                 switch (opcode)
@@ -335,15 +335,15 @@ namespace JaiSeqXLJA.Player
                         if (checkCondition((byte)(trkInter.rI[0] & 15)))
                         {
                             trkInter.jump(trkInter.rI[1]);
-                            Console.WriteLine("Trk{0} jumps to {1}", trackNumber, trkInter.rI[1]);
+                            Console.WriteLine("T({0}) == -> {1}", trackNumber, trkInter.rI[1]);
                         }
                         else
-                            Console.WriteLine("Trk{0} cond check jump fail: {1}", trackNumber,trkInter.rI[0] & 15);
+                            Console.WriteLine("T({0}) ==XX -!> : {1}", trackNumber,trkInter.rI[0] & 15);
                         break;
                     case JAISeqEvent.CALL:
-                        Console.WriteLine("TRY CALL");
+         
                         CallStack.Push(trkInter.pc);
-                        Console.WriteLine("Trk{0} calls 0x{1:X} from {2:X} depth {3:X}", trackNumber, trkInter.rI[0], trkInter.pc, CallStack.Count);
+                        Console.WriteLine("T({0}) -> 0x{1:X} | 0x{2:X}  D({3:X})", trackNumber, trkInter.rI[0], trkInter.pc, CallStack.Count);
                         trkInter.jump(trkInter.rI[0]);
                 
                         break;
@@ -352,7 +352,7 @@ namespace JaiSeqXLJA.Player
                         Console.WriteLine("TRY CALLC");
                         if (checkCondition(  (byte)(trkInter.rI[0] & 15)) )
                         {
-                            Console.WriteLine("Trk{0} calls 0x{1:X} from {2:X} depth {3:X}", trackNumber, trkInter.rI[1], trkInter.pc, CallStack.Count);
+                            Console.WriteLine("T({0}) -> 0x{1:X} | 0x{2:X}  D({3:X})", trackNumber, trkInter.rI[1], trkInter.pc, CallStack.Count);
                             CallStack.Push(trkInter.pc);
                             trkInter.jump(trkInter.rI[1]);
                         }
@@ -364,7 +364,7 @@ namespace JaiSeqXLJA.Player
                             crash();
                         }
                         var retaddr = CallStack.Pop();
-                        Console.WriteLine("Trk{0} returns 0x{1:X} from {2:X} depth {3:X}", trackNumber, retaddr, trkInter.pc, CallStack.Count);
+                        Console.WriteLine("T(0) <-- 0x{1:X} | {2:X}  D({3:X})", trackNumber, retaddr, trkInter.pc, CallStack.Count);
                         trkInter.jump(retaddr);
                         break;
                     case JAISeqEvent.RETURN_CONDITIONAL:
@@ -382,7 +382,7 @@ namespace JaiSeqXLJA.Player
                         trkInter.jump(trkInter.rI[0]);
                         break;
                     case JAISeqEvent.FIN:
-                        Console.WriteLine("Trk{0} is now halted. ({1} opcode)", trkInter, opcode);
+                        Console.WriteLine("T(0) [HALT]. ({1} opcode)", trkInter, opcode);
                         halted = true;
                         return;
                     case JAISeqEvent.J2_SET_BANK:
@@ -392,7 +392,7 @@ namespace JaiSeqXLJA.Player
                         Registers[0x21] = (byte)trkInter.rI[0];
                         break;                   
                     case JAISeqEvent.J2_SET_ARTIC:
-                        Console.WriteLine("ARTICULATION 0x{0:X} {1}", trkInter.rI[0], trkInter.rI[1]);
+                        Console.WriteLine("A 0x{0:X} {1}", trkInter.rI[0], trkInter.rI[1]);
                         if (trkInter.rI[0] == 0x62)
                         {
                             JAISeqPlayer.ppqn = trkInter.rI[1];
@@ -443,7 +443,8 @@ namespace JaiSeqXLJA.Player
                             {
                                 desiredPitch = 1;
                             }
-                            newVoice.setVolumeMatrix(0, (float)( (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume ) * 0.34f )  );
+                            var true_volume = (float)(Math.Pow(((float)velocity) / 127f, 2) * currentInst.Volume * keyNoteVel.Volume);
+                            newVoice.setVolumeMatrix(0, true_volume* 0.40f )  ;
                             newVoice.setVolumeMatrix(2, volume);
                             if (Registers[7]==2)
                             {

@@ -41,7 +41,7 @@ namespace libJAudio.Sequence.Inter
                 /* Tempo Control */
                 case 0xD8: // The very same.
                     {
-                        Console.WriteLine(InterpreterVersion);
+                        //Console.WriteLine(InterpreterVersion);
                         if (InterpreterVersion == JAISeqInterpreterVersion.JA1) {
 
                             Sequence.ReadInt32(); // skip 4 bytes
