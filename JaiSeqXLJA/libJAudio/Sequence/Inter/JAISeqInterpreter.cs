@@ -11,7 +11,7 @@ namespace libJAudio.Sequence.Inter
     public enum JAISeqInterpreterVersion // Futile attempt to save my codebase.
     {
         JA1 = 0,
-        JA2 = 0
+        JA2 = 1
     }
 
     public partial class JAISeqInterpreter
@@ -43,6 +43,7 @@ namespace libJAudio.Sequence.Inter
             baseAddress = BaseAddr; // store the base address
             rI = new int[8]; 
             rF = new float[8];
+            Console.WriteLine($"Initialized with intver {ver}");
             InterpreterVersion = ver;
         }
 
@@ -159,7 +160,6 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.CONNECT_CLOSE:
                     case 0xBE: // Completely unknown
                     case (byte)JAISeqEvent.WRITE_CHILD_PORT:
-                    case (byte)JAISeqEvent.WRITE_PARENT_PORT:
                     case (byte)JAISeqEvent.CONNECT_NAME:
                     case (byte)JAISeqEvent.TRANSPOSE:
                         skip(2);

@@ -24,6 +24,10 @@ namespace libJAudio.Sequence.Inter
                 case 0xC2: // OPEN_TRACK_BROS
                     var w = Sequence.ReadByte();
                     return JAISeqEvent.OPEN_TRACK_BROS;
+                case 0xC9:
+                    return JAISeqEvent.LOOPS;
+                case 0xCA:
+                    return JAISeqEvent.LOOPE;
                 case 0xFF: // FIN
                     {
                         return JAISeqEvent.FIN;

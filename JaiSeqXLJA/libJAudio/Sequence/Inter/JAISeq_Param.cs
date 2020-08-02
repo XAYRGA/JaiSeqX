@@ -30,19 +30,54 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = source_reg;
                         return JAISeqEvent.WRITEPORT;
                     }
+                case 0xD1: // Write Parent Port 
+                    {
+                        var port_id = Sequence.ReadByte();
+                        var source_reg = Sequence.ReadByte();
+                        rI[0] = port_id;
+                        rI[1] = source_reg;
+                        return JAISeqEvent.WRITE_PARENT_PORT;
+                    }
                 /* Tempo Control */
                 case 0xD8: // The very same.
                     {
-                        var type = Sequence.ReadByte();
-                        var val = Sequence.ReadInt16();
-                        rI[0] = type; // 0x62 is  tempo, tho. 
-                        rI[1] = val;
-                        return JAISeqEvent.J2_SET_ARTIC;
+                        Console.WriteLine(InterpreterVersion);
+                        if (InterpreterVersion == JAISeqInterpreterVersion.JA1) {
+
+                            Sequence.ReadInt32(); // skip 4 bytes
+                            return JAISeqEvent.SIMPLE_ADSR;
+                        } else
+                        {
+                            var type = Sequence.ReadByte();
+                            var val = Sequence.ReadInt16();
+                            rI[0] = type; // 0x62 is  tempo, tho. 
+                            rI[1] = val;
+                            return JAISeqEvent.J2_SET_ARTIC;
+                        }
+                       
                     }
                 case 0xFD: // (v1)TIME_BASE (v2)J2_PRINTF TODOTODO
                     {
-                        rI[0] = (short)(Sequence.ReadInt16());
-                        return JAISeqEvent.TIME_BASE;
+                        if (InterpreterVersion == JAISeqInterpreterVersion.JA1) { 
+                            rI[0] = (short)(Sequence.ReadInt16());
+                            return JAISeqEvent.TIME_BASE;
+                        }
+                        if (InterpreterVersion == JAISeqInterpreterVersion.JA2)
+                        {
+                            var lastread = -1;
+                            string v = "";
+                            while (lastread != 0)
+                            {
+                                lastread = Sequence.ReadByte();
+                                v += (char)lastread;
+                            }
+                            Console.WriteLine(v);
+                            var l = Sequence.ReadByte();
+                            if (l != 0)
+                                Sequence.BaseStream.Position = Sequence.BaseStream.Position - 1;
+                            return JAISeqEvent.J2_PRINTF;
+                        }
+                        return JAISeqEvent.UNKNOWN;
                     }
                 case 0xE0: // J2_TEMPO (v2)
                 case 0xFE: // TEMPO (v1)

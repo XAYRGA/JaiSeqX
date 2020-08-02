@@ -42,7 +42,7 @@ namespace JaiSeqXLJA.DSP
             BASS_DEVICEINFO info = new BASS_DEVICEINFO(); // Print device info. 
             for (int n = 0; Bass.BASS_GetDeviceInfo(n, info); n++)
             {
-                Console.WriteLine(info.ToString());
+                //Console.WriteLine(info.ToString());
             }
             globalLoopProc = new SYNCPROC(DoLoop);
             return true;
@@ -75,7 +75,7 @@ namespace JaiSeqXLJA.DSP
                 looped = true,
             };
             rt.generateFileBuffer();
-            File.WriteAllBytes("test/" + v1.ToString() + ".wav", rt.fileBuffer) ;
+            //File.WriteAllBytes("test/" + v1.ToString() + ".wav", rt.fileBuffer) ;
             return rt;
         }
 
@@ -94,7 +94,7 @@ namespace JaiSeqXLJA.DSP
                 looped = false,
             };
             rt.generateFileBuffer();
-            File.WriteAllBytes("test/" + v1.ToString() + ".wav", rt.fileBuffer);
+            //File.WriteAllBytes("test/" + v1.ToString() + ".wav", rt.fileBuffer);
             return rt;
         }
     }

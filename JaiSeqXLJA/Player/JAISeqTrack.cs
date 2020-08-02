@@ -7,6 +7,7 @@ using libJAudio;
 using libJAudio.Sequence;
 using libJAudio.Sequence.Inter;
 using JaiSeqXLJA.DSP;
+using System.Security.Cryptography;
 
 namespace JaiSeqXLJA.Player
 {
@@ -24,6 +25,9 @@ namespace JaiSeqXLJA.Player
         public int trackNumber;
         public int delay;
         float volume = 1;
+
+        public int looppos = 0;
+        
 
         JAIDSPVoice[] voices;
         JAIDSPVoice[] voiceOrphans;
@@ -89,7 +93,18 @@ namespace JaiSeqXLJA.Player
             return firstFloat * (1 - by) + secondFloat * by;
         }
 
+        public void updateTrackVolume(float volume)
+        {
 
+            for (int i = 0; i < voices.Length; i++)
+            {
+                if (voices[i] != null)
+                {  
+                    voices[i].setVolumeMatrix(2,volume);
+                }
+
+            }
+        }
         private void updateVoices()
         {
             for (int i=0; i < voices.Length; i++)
@@ -166,8 +181,10 @@ namespace JaiSeqXLJA.Player
             // The subtracted result is stored in R3. 
             // This means:
 
+       
             switch (cond)
             {
+
                 case 0: // We were probably given the wrong commmand
                     return true;  // oops, all boolean
                 case 1: // Equal, if r1 - r2 == 0, then they obviously both had the same value
@@ -234,7 +251,13 @@ namespace JaiSeqXLJA.Player
                     Console.WriteLine(E.ToString());
                     return;
                 }
-       
+
+               // Console.WriteLine($"TRK: {trackNumber} - {opcode} at 0x{trkInter.pcl:X}");
+               // Console.ReadLine();
+                if (trackNumber==13)
+                {
+                    return;////////////////////////////////////////////////////////////////////////////////////////////////
+                }
    
                 switch (opcode)
                 {
@@ -263,11 +286,18 @@ namespace JaiSeqXLJA.Player
                             {
                                 volume = trkInter.rF[0];
                                 Console.WriteLine("Trk{0} change volume {1}", trackNumber, trkInter.rF[0]);
+                                updateTrackVolume(volume); 
                             }
 
                             break;
                         }
 
+                    case JAISeqEvent.LOOPS:
+                        looppos = trkInter.pc;
+                        break;
+                    case JAISeqEvent.LOOPE:
+                        trkInter.jump(looppos);
+                        break;
                     case JAISeqEvent.WAIT_8:
                     case JAISeqEvent.WAIT_16:
                     case JAISeqEvent.WAIT_VAR:
@@ -404,27 +434,39 @@ namespace JaiSeqXLJA.Player
                             if (snd == null) { Console.WriteLine("*screams in null wave buffer*",keyNoteVel.wsysid,keyNoteVel.wave); Console.WriteLine(" b{0} p{1} -- n{2} v{3}", bank, program, note, velocity);  break; }
 
                             var newVoice = new JAIDSPVoice(ref snd);
+                            var desiredPitch = (float)Math.Pow(2, (note - ouData.key) / 12f) * currentInst.Pitch * keyNoteVel.Pitch * keyNote.Pitch;
                             if (currentInst.IsPercussion == false)
                             {
-                                newVoice.setPitchMatrix(0, (float)Math.Pow(2, (note - ouData.key) / 12f) * currentInst.Pitch * keyNoteVel.Pitch * keyNote.Pitch);
+
+                                newVoice.setPitchMatrix(0, desiredPitch);
+                            } else
+                            {
+                                desiredPitch = 1;
                             }
-                            newVoice.setVolumeMatrix(0, (float)( (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume ) * volume * 0.2f )  );
+                            newVoice.setVolumeMatrix(0, (float)( (velocity / 127f) * (currentInst.Volume * keyNoteVel.Volume ) * 0.34f )  );
+                            newVoice.setVolumeMatrix(2, volume);
                             if (Registers[7]==2)
                             {
                                 newVoice.setPitchMatrix(1, bendFinalValue);
                             }
-                            newVoice.tickAdvanceValue = 1;
-                    
+                            newVoice.tickAdvanceValue = (JAISeqPlayer.timebaseValue) ;
+
+
                             if (currentInst.oscillatorCount > 0)
                             {
                                 newVoice.setOcillator(currentInst.oscillators[0]);
-                                newVoice.tickAdvanceValue = currentInst.oscillators[0].rate;
+                                newVoice.tickAdvanceValue = (JAISeqPlayer.timebaseValue); // * currentInst.oscillators[0].rate;
+
+
                             }
                  
                             newVoice.play();
                             addVoice(newVoice, (byte)voice);
                             break;
                         }
+                    case JAISeqEvent.WRITE_PARENT_PORT:
+                        Ports[trkInter.rI[0]] = Registers[(byte)trkInter.rI[1]];
+                        break;
                     case JAISeqEvent.NOTE_OFF:
                         stopVoice((byte)trkInter.rI[0]);
                         break;

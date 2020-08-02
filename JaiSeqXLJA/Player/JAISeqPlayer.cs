@@ -35,6 +35,7 @@ namespace JaiSeqXLJA.Player
 
         public static void startPlayback(string file, ref JASystem sys, JAISeqInterpreterVersion seqVer)
         {
+            Console.WriteLine($"Engine statrting with intver {seqVer}");
             var contents = File.ReadAllBytes(file);
             tracks[0] = new JAISeqTrack(ref contents,0x0000000,seqVer); // entry point.
             tickTimer = new Stopwatch();
@@ -68,32 +69,32 @@ namespace JaiSeqXLJA.Player
             data = null;
             JAIDSPSoundBuffer ret;
             // Not in cache.
-            var CWsys = JASPtr.WaveBanks[wsys_id];
+            var CWsys = JASPtr.WaveBanks[wsys_id]; // Check for WSYS existence
             if (CWsys==null)
             {
                 Console.WriteLine("Null WSYS request id:{0} wavid:{1}");
                 return null;
             }
             JWave waveData;
-            var ok = CWsys.WaveTable.TryGetValue(waveID, out waveData);
+            var ok = CWsys.WaveTable.TryGetValue(waveID, out waveData); // Check for the WAVEID inside of the WSYS
             if (!ok)
             {
                 Console.WriteLine("WSYS doesn't contain wave id:{0} wavid:{1}", wsys_id,waveID);
                 return null;
             }
-            ok = waveCache.TryGetValue(cacheIndex, out ret);
+            ok = waveCache.TryGetValue(cacheIndex, out ret); // check if it is in cache
             if (ok)
             {
                 data = waveData;
-                return ret;
+                return ret; // return the preloaded data if in cache
             }
             Stream fhnd;
-            var ok2 = awHandles.TryGetValue(waveData.wsysFile, out fhnd);
+            var ok2 = awHandles.TryGetValue(waveData.wsysFile, out fhnd); // Check to see if the AWHandle exists 
             if (!ok2)
             {
                 try
                 {
-                    var w = File.OpenRead("Banks/" + waveData.wsysFile);
+                    var w = File.OpenRead("Banks/" + waveData.wsysFile); // 
                     awHandles[waveData.wsysFile] = w;
                     var fg = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Red;

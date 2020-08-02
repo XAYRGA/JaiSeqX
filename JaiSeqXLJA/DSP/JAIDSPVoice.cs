@@ -35,9 +35,10 @@ namespace JaiSeqXLJA.DSP
         private float ticks;
         public float tickAdvanceValue = 1;
         private int oscTicks;       
-        private float oscValue = 1f;
+        private float oscValue = 32755f;
 
         private bool doDestroy = false;
+        private bool crashed = false;
 
         public JAIDSPVoice(ref JAIDSPSoundBuffer buff)
         {
@@ -199,6 +200,20 @@ namespace JaiSeqXLJA.DSP
                // Console.WriteLine("SWAP ENV Last Value {3}\nNext Mode {0}\nCurrent Ticks {1}\nNext time {2}\nNext Value {4}", envCurrentVec.next.mode, ticks, envCurrentVec.next.time, envValueLast, envCurrentVec.next.value);
                 envCurrentVec = envCurrentVec.next; // swap 
                 return updateVoice();
+            }
+            if (envCurrentVec.next == null)
+            {
+                if (crashed == false)
+                {
+                    Console.WriteLine("JAIDSP Error!: Next envelope vector data was NULL!");
+                    var fg = Console.ForegroundColor;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("JAIDSP EMERGENCY: ");
+                    Console.ForegroundColor = fg;
+                    Console.WriteLine($"Force DSP handle destroy -- null data @ {voiceHandle}");
+                    crashed = true;
+                }
+                return 3;
             }
             //Console.WriteLine(envCurrentVec.value);
             var tickDist = envCurrentVec.next.time - envCurrentVec.time;

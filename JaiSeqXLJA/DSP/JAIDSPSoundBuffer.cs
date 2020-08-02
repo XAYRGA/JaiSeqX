@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 
 namespace JaiSeqXLJA.DSP
 {
-    public class JAIDSPSoundBuffer
+    public class JAIDSPSoundBuffer : IDisposable
     {
         public JAIDSPFormat format;
         public bool looped;
@@ -52,6 +52,15 @@ namespace JaiSeqXLJA.DSP
             Marshal.Copy(fileBuffer, 0, globalFileBuffer, fileBuffer.Length);
             //beW.BaseStream.Position = 0;
         }
+
+        public void Dispose()
+        {
+            if (globalFileBuffer!=null)
+            {
+                Marshal.FreeHGlobal(globalFileBuffer);
+            }
+        }
+
         
     }
 

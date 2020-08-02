@@ -127,14 +127,15 @@ namespace libJAudio.Sequence
 
         // Thanks, Jasper!
         /* "Improved" JaiSeq from TP / SMG / SMG2 seems to use this instead */
-        J2_SET_PARAM_8 = 0xB8, // <byte register> <byte value>
-        J2_SET_PARAM_16 = 0xB9, // <byte register> <short value>
+        J2_SET_PARAM_8 = 0x02B8, // <byte register> <byte value>
+        J2_SET_PARAM_16 = 0x02B9, // <byte register> <short value>
         /* Set "articulation"? Used for setting timebase. */
-        J2_SET_ARTIC = 0xD8, // <short timebase>
-        J2_TEMPO = 0xE0, // <short tempo>
-        J2_SET_BANK = 0xE2, // <byte bank>
-        J2_SET_PROG = 0xE3, // <byte program>
-        J2_PRINTF = 0xF9, // mActual opcode is 0xFD
+        J2_SET_ARTIC = 0x02D8, // <short timebase>
+        J2_TEMPO = 0x02E0, // <short tempo>
+        J2_SET_BANK = 0x02E2, // <byte bank>
+        J2_SET_PROG = 0x02E3, // <byte program>
+        J2_PRINTF = 0x02F9, // mActual opcode is 0xFD
+        J2_UNK0 = 0x02D1
 
     }
 

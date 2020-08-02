@@ -11,7 +11,7 @@ using libJAudio;
 using JaiSeqXLJA.DSP;
 using System.Threading.Tasks;
 using System.Threading;
-
+using libJAudio.Sequence.Inter;
 
 namespace JaiSeqXLJA
 {
@@ -22,25 +22,57 @@ namespace JaiSeqXLJA
 
         static void Main(string[] args)
         {
-
+            /*
             Console.WriteLine("Initializing DSP.");
             JAIDSP.Init();
+            Console.ReadLine();
             Console.WriteLine("Initializing JASystem.");
             var jaiinit = File.ReadAllBytes("jaiinit.aaf"); // read entire JAIInitFile
             JASystem = libJAudio.Loaders.JASystemLoader.loadJASystem(ref jaiinit); // Load the JASystem (will automatically be detected by JAIInitVersionDetector)
             Console.WriteLine("Loaded JASystem");
-            Player.JAISeqPlayer.startPlayback("Event_Speak.bms", ref JASystem, libJAudio.Sequence.Inter.JAISeqInterpreterVersion.JA1);
-
-
-
-            while (true)
+   
+            /*
+            foreach (JIBank bnk in JASystem.Banks)
             {
-                Player.JAISeqPlayer.update();
-                Thread.Sleep(1);
+                if (bnk == null)
+                    continue;
+                var ii = 0;
+                foreach(JInstrument inst in bnk.Instruments)
+                {
+                    ii++;
+                    if (inst == null)
+                        continue;
+                    if (inst.oscillators == null)
+                        continue;
+                    var osc1 = inst.oscillators[0];
+
+                    var env = osc1.envelopes[0];
+                    //var FO = File.OpenWrite($"envOut/{bnk.id}_{inst.id}_0.csv");
+                    var SB = new StringBuilder();
+                    SB.Append("MODE,TIME,VALUE\r\n");
+
+                    JEnvelopeVector vec = env.vectorList[0];
+                    while (vec.next!=null)
+                    {
+                        SB.Append($"{vec.mode},{vec.time},{vec.value}\r\n");
+                        vec = vec.next;
+                    }
+                    File.WriteAllText($"envOut/{bnk.id}_{ii}_0.csv", SB.ToString());
+
+
+
+                }
             }
 
             if (true)
                 return;
+      */
+           // Player.JAISeqPlayer.startPlayback("moonsetter.bms", ref JASystem, libJAudio.Sequence.Inter.JAISeqInterpreterVersion.JA1);
+
+
+
+   
+
             cmdargs = args; // push args into global table.
             var jaiiInitFile = assertArg(0, "JAIInitFile");
             var taskFunction = assertArg(1, "Task");
@@ -50,7 +82,7 @@ namespace JaiSeqXLJA
             if (!File.Exists(jaiiInitFile))
                 assert("Cannot find JAIInitFile {0}", jaiiInitFile);
             var jaiinitf = File.ReadAllBytes(jaiiInitFile); // read entire JAIInitFile
-            JASystem = libJAudio.Loaders.JASystemLoader.loadJASystem(ref jaiinit); // Load the JASystem (will automatically be detected by JAIInitVersionDetector)
+            JASystem = libJAudio.Loaders.JASystemLoader.loadJASystem(ref jaiinitf); // Load the JASystem (will automatically be detected by JAIInitVersionDetector)
 
             switch (taskFunction)
             {
@@ -63,8 +95,15 @@ namespace JaiSeqXLJA
                 case "visu":
                 case "play":
                     {
+                        var sequenceFile = assertArg(2, "SequenceFile");
+                        var sequenceVersion = assertArgNum(3, "SequenceVersion");
                         JAIDSP.Init(); // bpth play and visu require the sound engine.       
-                        
+                        Player.JAISeqPlayer.startPlayback(sequenceFile, ref JASystem, (JAISeqInterpreterVersion)sequenceVersion);
+                        while (true)
+                        {
+                            Player.JAISeqPlayer.update();
+                            Thread.Sleep(1);
+                        }
                         break;
                     }
             }

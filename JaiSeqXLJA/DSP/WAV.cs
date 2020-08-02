@@ -10,8 +10,6 @@ namespace JaiSeqXLJA.DSP
 {
     public static class WAV
     {
-  
-
         public static byte[] LoadWAV(Stream stream, out int channels, out int bits, out int rate)
         {
             if (stream == null)
