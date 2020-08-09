@@ -15,7 +15,7 @@ namespace JaiSeqXLJA.Player
 {
     public static class JAISeqPlayer
     {
-        public static int ppqn = 3000;
+        public static int ppqn = 100;
         public static int bpm = 120;
 
         public static JAISeqTrack[] tracks = new JAISeqTrack[64];
@@ -23,6 +23,7 @@ namespace JaiSeqXLJA.Player
         private static Stopwatch tickTimer;
         private static float tickLength;
         private static int ticks = 0;
+        public static float gainMultiplier = 0.3f;
 
         public static float timebaseValue
         {
@@ -38,6 +39,7 @@ namespace JaiSeqXLJA.Player
             Console.WriteLine($"Engine statrting with intver {seqVer}");
             var contents = File.ReadAllBytes(file);
             tracks[0] = new JAISeqTrack(ref contents,0x0000000,seqVer); // entry point.
+            tracks[0].trackNumber = -1;
             tickTimer = new Stopwatch();
             tickTimer.Start();
             JASPtr = sys;
@@ -54,12 +56,44 @@ namespace JaiSeqXLJA.Player
                         if (jwg != null)
                         {
                             Console.WriteLine("Creating handle for {0}", jwg.awFile);
+                            
                             awHandles[jwg.awFile] = File.OpenRead("Banks/" + jwg.awFile);
                         }
                     }
                 }
             }
             recalculateTimebase();
+        }
+
+        public static void setTrackMuted(int trkid, bool muted)
+        {
+            for (int trk = 0; trk < tracks.Length; trk++)
+            {
+                if (tracks[trk] != null && tracks[trk].trackNumber == trkid)
+                {
+                    tracks[trk].muted = muted;
+                    Console.WriteLine($"Track {trk} mute: {tracks[trk].muted} ({trkid})");
+                    if (tracks[trk].muted)
+                        tracks[trk].purgeVoices();
+                    break;
+                }
+            }
+        }
+
+        public static void cycleTrackMuted(int trkid)
+        {
+
+            for (int trk = 0; trk < tracks.Length; trk++)
+            { 
+                if (tracks[trk] != null && tracks[trk].trackNumber==trkid)
+                {
+                    tracks[trk].muted = !tracks[trk].muted;
+                    Console.WriteLine($"Track {trk} mute: {tracks[trk].muted} ({trkid})");
+                    if (tracks[trk].muted)
+                        tracks[trk].purgeVoices();
+                    break;
+                }
+            }
         }
 
         /* Ugh god, this turned out more awful than i wanted it to. Redo this in the future. This currently has massive perf implications */

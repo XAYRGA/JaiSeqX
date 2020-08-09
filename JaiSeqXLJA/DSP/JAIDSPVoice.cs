@@ -46,7 +46,7 @@ namespace JaiSeqXLJA.DSP
 
 
             voiceHandle = Bass.BASS_StreamCreateFile(buff.globalFileBuffer, 0, buff.fileBuffer.Length, BASSFlag.BASS_DEFAULT);
-
+   
             if (buff.looped)
             {
                 //Console.WriteLine("Force loop!");
@@ -205,15 +205,9 @@ namespace JaiSeqXLJA.DSP
             {
                 if (crashed == false)
                 {
-                    Console.WriteLine("JAIDSP Error!: Next envelope vector data was NULL!");
-                    var fg = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write("JAIDSP EMERGENCY: ");
-                    Console.ForegroundColor = fg;
-                    Console.WriteLine($"Force DSP handle destroy -- null data @ {voiceHandle}");
-                    crashed = true;
+                    crashed = true; // envelope progression crashed
                 }
-                return 3;
+                return 3; // tell interpreter to deallocate envelope.
             }
             //Console.WriteLine(envCurrentVec.value);
             var tickDist = envCurrentVec.next.time - envCurrentVec.time;

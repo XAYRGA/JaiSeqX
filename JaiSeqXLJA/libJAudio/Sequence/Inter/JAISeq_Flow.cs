@@ -55,9 +55,9 @@ namespace libJAudio.Sequence.Inter
                 case 0xC7: // JUMP
                     {
                         rI[0] = 0; // No condition, r0
-                        var addr = Sequence.ReadInt32(); // Absolute address r1
+                        var addr = Helpers.ReadUInt24BE(Sequence); // Absolute address r1
                         //jump(addr);
-                        rI[1] = addr;
+                        rI[1] = (int)addr;
                         return JAISeqEvent.JUMP;
                     }
                 case 0xC8: // JUMP_CONDITIONAL

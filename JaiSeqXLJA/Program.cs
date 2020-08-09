@@ -12,6 +12,8 @@ using JaiSeqXLJA.DSP;
 using System.Threading.Tasks;
 using System.Threading;
 using libJAudio.Sequence.Inter;
+using JaiSeqXLJA.Player;
+using JaiSeqXLJA.Visualizer;
 
 namespace JaiSeqXLJA
 {
@@ -22,6 +24,14 @@ namespace JaiSeqXLJA
 
         static void Main(string[] args)
         {
+
+            args = new string[]
+            {
+                "donkey.baa",
+                "play",
+                "dk/bind00.bms",
+                "1",
+            };
             /*
             Console.WriteLine("Initializing DSP.");
             JAIDSP.Init();
@@ -99,10 +109,18 @@ namespace JaiSeqXLJA
                         var sequenceVersion = assertArgNum(3, "SequenceVersion");
                         JAIDSP.Init(); // bpth play and visu require the sound engine.       
                         Player.JAISeqPlayer.startPlayback(sequenceFile, ref JASystem, (JAISeqInterpreterVersion)sequenceVersion);
+                        Menu.init();
                         while (true)
                         {
                             Player.JAISeqPlayer.update();
                             Thread.Sleep(1);
+                            if (Console.KeyAvailable)
+                            {
+                                var w = Console.ReadKey(true);
+                               JAISeqPlayer.cycleTrackMuted((int)w.Key - 64);
+
+                            }
+                            Menu.update();
                         }
                         break;
                     }
@@ -119,6 +137,40 @@ namespace JaiSeqXLJA
             }
             return cmdargs[argn];
         }
+
+        public static string findDynamicStringArgument(string name, string def)
+        {
+            for (int i = 0; i < cmdargs.Length; i++)
+            {
+                if (cmdargs[i]==name) // THANK YOU FOR STOPPING BY
+                {
+                    if (cmdargs.Length < i + 1) // I REALLY REALLY REALLY LIKE THIS IMAGE
+                    {
+                        return cmdargs[i + 1]; // (I like it too)
+                    }
+                    break; // haha great pic
+                }
+            }
+            return def; // thanks lori.
+        }
+
+
+        public static int findDynamicNumberArgument(string name, int def)
+        {
+            for (int i = 0; i < cmdargs.Length; i++)
+            {
+                if (cmdargs[i] == name)
+                {
+                    if (cmdargs.Length < i + 1)
+                    {
+                        return Convert.ToInt32(cmdargs[i + 1]);
+                    }
+                    break;
+                }
+            }
+            return def;
+        }
+
         public static int assertArgNum(int argn, string assert)
         {
             if (cmdargs.Length <= argn)
