@@ -27,10 +27,10 @@ namespace JaiSeqXLJA
 
             args = new string[]
             {
-                "donkey.baa",
+                "jaiinit.aaf",
                 "play",
-                "dk/bind00.bms",
-                "1",
+                "BlueBattle.bms",
+                "0",
             };
             /*
             Console.WriteLine("Initializing DSP.");
@@ -114,12 +114,7 @@ namespace JaiSeqXLJA
                         {
                             Player.JAISeqPlayer.update();
                             Thread.Sleep(1);
-                            if (Console.KeyAvailable)
-                            {
-                                var w = Console.ReadKey(true);
-                               JAISeqPlayer.cycleTrackMuted((int)w.Key - 64);
-
-                            }
+                          
                             Menu.update();
                         }
                         break;

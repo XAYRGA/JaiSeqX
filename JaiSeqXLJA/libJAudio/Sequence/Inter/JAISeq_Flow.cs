@@ -78,7 +78,16 @@ namespace libJAudio.Sequence.Inter
                 case 0xC4: // CALL_CONDITIONAL
                     {
                         var cond = Sequence.ReadByte();
-                        var addr = (int)Helpers.ReadUInt24BE(Sequence);
+
+                        // Might be int32, it will depend on sequence flavor.  JAI2 might have 32 bit calls. 
+                        int addr = 0;
+                        if (InterpreterVersion == JAISeqInterpreterVersion.JA1)
+                        {
+                             addr = (int)Helpers.ReadUInt24BE(Sequence);
+                        } else
+                        {
+                            addr = Sequence.ReadInt32();
+                        }
                         rI[0] = cond; // Set to condition
                         rI[1] = addr; // set ir1 to address jumped
                         return JAISeqEvent.CALL_CONDITIONAL;

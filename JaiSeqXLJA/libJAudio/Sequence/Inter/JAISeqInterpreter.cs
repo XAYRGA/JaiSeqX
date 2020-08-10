@@ -132,6 +132,8 @@ namespace libJAudio.Sequence.Inter
                     case 0xDD:
                     case (byte)JAISeqEvent.FIRSTSET:
                     case (byte)JAISeqEvent.LASTSET:
+                    case (byte)JAISeqEvent.TRANSPOSE:
+                    case (byte)JAISeqEvent.CLOSE_TRACK:
                         skip(3);
                         return JAISeqEvent.UNKNOWN;
                     /* 4 byte unknowns */
@@ -139,7 +141,7 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.INTERRUPT:
                     case (byte)JAISeqEvent.BITWISE:
                     case (int)JAISeqEvent.LOADTBL:
-                    case (byte)JAISeqEvent.CLOSE_TRACK:
+                    //case (byte)JAISeqEvent.CLOSE_TRACK:
                         skip(4);
                         return JAISeqEvent.UNKNOWN;
                     /* special case unknowns? */
@@ -161,7 +163,7 @@ namespace libJAudio.Sequence.Inter
                     case 0xBE: // Completely unknown
                     case (byte)JAISeqEvent.WRITE_CHILD_PORT:
                     case (byte)JAISeqEvent.CONNECT_NAME:
-                    case (byte)JAISeqEvent.TRANSPOSE:
+                   
                         skip(2);
                         return JAISeqEvent.UNKNOWN;
                     /* One byte unknowns */

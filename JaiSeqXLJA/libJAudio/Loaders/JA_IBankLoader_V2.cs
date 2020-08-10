@@ -159,8 +159,9 @@ namespace libJAudio.Loaders
               ???? int32 0 
               ???? int32 keyRegionCount 
               ???? keyRegion[keyRegionCount]
-              ???? float freqmultiplier
               ???? float gain
+              ???? float freqmultiplier
+             
         */
         public JInstrument loadInstrument(BeBinaryReader binStream, int Base)
         {

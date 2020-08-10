@@ -9,9 +9,11 @@ namespace JaiSeqXLJA.Player
    public  class JAITrackRegisterMap
     {
         Dictionary<byte,short> InternalDict;
+        public bool[] changed; 
         public JAITrackRegisterMap()
         {
             InternalDict = new Dictionary<byte, short>(255);
+            changed = new bool[255];
         }
         public short this[byte index]
         {
@@ -24,6 +26,15 @@ namespace JaiSeqXLJA.Player
             set
             {
                 InternalDict[index] = value;
+                changed[index] = true;
+            }
+        }
+
+        public void clearChanged()
+        {
+            for (int i=0; i < changed.Length;i++)
+            {
+                changed[i] = false;
             }
         }
         ~JAITrackRegisterMap()

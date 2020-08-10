@@ -39,7 +39,7 @@ namespace JaiSeqXLJA.Visualizer
 
         public static void update()
         {
-            if (!_window.Exists) { return; }
+            if (!_window.Exists) { Environment.Exit(0); return; }
             InputSnapshot snapshot = _window.PumpEvents();
             if (!_window.Exists) { return; }
             _controller.Update(1f / 60f, snapshot); // Feed the input events to our ImGui controller, which passes them through to ImGui.
@@ -55,6 +55,8 @@ namespace JaiSeqXLJA.Visualizer
             _gd.SwapBuffers(_gd.MainSwapchain);
         }
 
+        private static int changeFrames = 0;
+     
         public static void SubmitUI()
         {
 
@@ -126,10 +128,39 @@ namespace JaiSeqXLJA.Visualizer
                         continue;
                     var w = Player.JAISeqPlayer.tracks[i];
                     ImGui.Dummy(new Vector2(0, 2f));
-                    ImGui.Text($"LST:{w.lastOpcode} VOI: {w.activeVoices} DEL: {w.delay}");
+                    ImGui.Text($"LST:{w.lastOpcode,-15} VOI: {w.activeVoices,-5} DEL: {w.delay,-5} PC: 0x{w.pc:X} ");
                 
                 }
             }
+
+            ImGui.SetNextWindowPos(new Vector2(648, 168));
+            ImGui.SetNextWindowSize(new Vector2(375, 600));
+
+            ImGui.Begin("CReg / TPrt", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
+            {
+                var ib = 0;
+                for (int i = 0; i < Player.JAISeqPlayer.tracks.Length; i++)
+                {
+                    if (Player.JAISeqPlayer.tracks[i] == null)
+                        continue;
+                    var w = Player.JAISeqPlayer.tracks[i];
+                    ImGui.Dummy(new Vector2(0, 2f));
+                    if (w.Registers.changed[0])
+                        changeFrames = 30;
+                        
+                    if (changeFrames > 0 )
+                        igPushStyleColor(ImGuiCol.Text, new Vector4(255, 0, 0, 255));
+                    ImGui.Text($"rS: {w.Registers[0]} rC:{w.Registers[3]} rA:{w.Registers[1],-6} p0:{w.Ports[0]} p1:{w.Ports[1]}");
+                    if (changeFrames > 0)
+                    {
+                        igPopStyleColor(1);
+                        changeFrames--;
+                    }
+
+                    w.Registers.clearChanged();
+                }
+            }
+
             ImGui.End();
         }
 
