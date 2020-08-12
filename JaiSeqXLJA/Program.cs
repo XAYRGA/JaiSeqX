@@ -99,15 +99,23 @@ namespace JaiSeqXLJA
                     {
                         var sequenceFile = assertArg(2, "SequenceFile");
                         var sequenceVersion = assertArgNum(3, "SequenceVersion");
+
+                        if (!File.Exists(sequenceFile))
+                            assert("Cannot find SequenceFile {0}", sequenceFile);
                         JAIDSP.Init(); // bpth play and visu require the sound engine.       
                         Player.JAISeqPlayer.startPlayback(sequenceFile, ref JASystem, (JAISeqInterpreterVersion)sequenceVersion);
-                        Menu.init();
+                        var useVisu = taskFunction == "visu";
+                        if (useVisu)
+                            Menu.init();
+
+                       
+
                         while (true)
                         {
                             Player.JAISeqPlayer.update();
                             Thread.Sleep(1);
-                          
-                            Menu.update();
+                            if (useVisu)
+                                Menu.update();
                         }
                         break;
                     }
