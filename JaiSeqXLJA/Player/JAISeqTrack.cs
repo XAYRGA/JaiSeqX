@@ -169,6 +169,10 @@ namespace JaiSeqXLJA.Player
             activeVoices++;
             stopVoice(id);
             voices[id] = voice;
+            if (Registers[7]==2)
+            {
+                voices[id].setPitchMatrix(1, (float)bendTarget / (4096f * 12) );
+            }
            // Console.WriteLine("VOICE BUFFER FULL: Trk{0} BA: 0x{1:X} PC: 0x{2:X}\n\nPREPARE FOR THE LEAKENING.", trackNumber, offsetAddr, trkInter.pc);
         }
         private void stopVoice(byte id)

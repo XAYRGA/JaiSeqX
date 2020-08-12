@@ -24,14 +24,6 @@ namespace JaiSeqXLJA
 
         static void Main(string[] args)
         {
-
-            args = new string[]
-            {
-                "jaiinit.aaf",
-                "play",
-                "BlueBattle.bms",
-                "0",
-            };
             /*
             Console.WriteLine("Initializing DSP.");
             JAIDSP.Init();
