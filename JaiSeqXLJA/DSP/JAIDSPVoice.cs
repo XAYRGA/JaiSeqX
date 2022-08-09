@@ -46,7 +46,7 @@ namespace JaiSeqXLJA.DSP
 
 
             voiceHandle = Bass.BASS_StreamCreateFile(buff.globalFileBuffer, 0, buff.fileBuffer.Length, BASSFlag.BASS_DEFAULT);
-   
+            Bass.BASS_ChannelSetFX(voiceHandle, BASSFXType.BASS_FX_DX8_I3DL2REVERB, 1);
             if (buff.looped)
             {
                 //Console.WriteLine("Force loop!");

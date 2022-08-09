@@ -17,7 +17,7 @@ using JaiSeqXLJA.Visualizer;
 
 namespace JaiSeqXLJA
 {
-    class JaiSeqXLJA
+    public class JaiSeqXLJA
     {
         public static string[] cmdargs;
         public static JASystem JASystem;
@@ -69,11 +69,17 @@ namespace JaiSeqXLJA
             if (true)
                 return;
       */
-           // Player.JAISeqPlayer.startPlayback("moonsetter.bms", ref JASystem, libJAudio.Sequence.Inter.JAISeqInterpreterVersion.JA1);
-
-
-
-   
+            // Player.JAISeqPlayer.startPlayback("moonsetter.bms", ref JASystem, libJAudio.Sequence.Inter.JAISeqInterpreterVersion.JA1);
+          /*
+            args = new string[]
+            {
+                "jaiinit.aaf",
+                "visu",
+                "telesabattle.bms",
+                "0"
+            };
+            */
+            Console.WriteLine("Initializing DSP.");
 
             cmdargs = args; // push args into global table.
             var jaiiInitFile = assertArg(0, "JAIInitFile");
@@ -120,14 +126,14 @@ namespace JaiSeqXLJA
                         break;
                     }
             }
+            Console.ReadLine();
         }
 
-        public static string assertArg(int argn,string assert)
+        public static string assertArg(int argn, string assert)
         {
-            if (cmdargs.Length <= argn )
+            if (cmdargs.Length <= argn)
             {
-                
-                Console.WriteLine("Missing required argument #{0} for '{1}'", argn, assert); 
+                Console.WriteLine("Missing required argument #{0} for '{1}'", argn, assert);
                 Environment.Exit(0);
             }
             return cmdargs[argn];
@@ -137,16 +143,15 @@ namespace JaiSeqXLJA
         {
             for (int i = 0; i < cmdargs.Length; i++)
             {
-                if (cmdargs[i]==name) // THANK YOU FOR STOPPING BY
+       
+                if (cmdargs[i] == name)
                 {
-                    if (cmdargs.Length < i + 1) // I REALLY REALLY REALLY LIKE THIS IMAGE
-                    {
-                        return cmdargs[i + 1]; // (I like it too)
-                    }
-                    break; // haha great pic
+
+                        return cmdargs[i + 1];
+         
                 }
             }
-            return def; // thanks lori.
+            return def;
         }
 
 
@@ -154,16 +159,33 @@ namespace JaiSeqXLJA
         {
             for (int i = 0; i < cmdargs.Length; i++)
             {
+  
                 if (cmdargs[i] == name)
                 {
-                    if (cmdargs.Length < i + 1)
-                    {
-                        return Convert.ToInt32(cmdargs[i + 1]);
-                    }
-                    break;
+         
+                        int v = 0;
+                        var ok = Int32.TryParse(cmdargs[i + 1], out v);
+                        if (!ok)
+                        {
+                            Console.WriteLine($"Invalid parameter for '{cmdargs[i]}' (Number expected, couldn't parse '{cmdargs[i + 1]}' as a number.)");
+                            Environment.Exit(0);
+                        }
+                    return v;
                 }
             }
             return def;
+        }
+
+        public static bool findDynamicFlagArgument(string name)
+        {
+            for (int i = 0; i < cmdargs.Length; i++)
+            {
+                if (cmdargs[i] == name)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public static int assertArgNum(int argn, string assert)
@@ -175,9 +197,9 @@ namespace JaiSeqXLJA
             }
             int b = 1;
             var w = Int32.TryParse(cmdargs[argn], out b);
-            if (w==false)
+            if (w == false)
             {
-                Console.WriteLine("Cannot parse argument #{0} for '{1}' (expected number, got {2}) ", argn, assert ,cmdargs[argn]);
+                Console.WriteLine("Cannot parse argument #{0} for '{1}' (expected number, got {2}) ", argn, assert, cmdargs[argn]);
                 Environment.Exit(0);
             }
             return b;
@@ -195,7 +217,7 @@ namespace JaiSeqXLJA
             }
             return cmdargs[argn];
         }
-        public static void assert(string text,params object[] wtf)
+        public static void assert(string text, params object[] wtf)
         {
             Console.WriteLine(text, wtf);
             Environment.Exit(0);

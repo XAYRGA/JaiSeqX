@@ -24,6 +24,7 @@ namespace JaiSeqXLJA.Player
         private static float tickLength;
         private static int ticks = 0;
         public static float gainMultiplier = 0.3f;
+        public static bool paused = false;
 
         public static float timebaseValue
         {
@@ -38,7 +39,7 @@ namespace JaiSeqXLJA.Player
         {
             Console.WriteLine($"Engine statrting with intver {seqVer}");
             var contents = File.ReadAllBytes(file);
-            tracks[0] = new JAISeqTrack(ref contents,0x0000000,seqVer); // entry point.
+            tracks[0] = new JAISeqTrack(ref contents,0,seqVer); // entry point.
             tracks[0].trackNumber = -1;
             tickTimer = new Stopwatch();
             tickTimer.Start();
@@ -56,8 +57,13 @@ namespace JaiSeqXLJA.Player
                         if (jwg != null)
                         {
                             Console.WriteLine("Creating handle for {0}", jwg.awFile);
-                            
-                            awHandles[jwg.awFile] = File.OpenRead("Banks/" + jwg.awFile);
+                            if (jwg.awFile.Length > 2)
+                            {
+                                awHandles[jwg.awFile] = File.OpenRead("Banks/" + jwg.awFile);
+                            } else
+                            {
+                                Console.WriteLine("Ignoring WSYS (name too short)");
+                            }
                         }
                     }
                 }
@@ -134,7 +140,7 @@ namespace JaiSeqXLJA.Player
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("EMERGENCY: ");
                     Console.ForegroundColor = fg;
-                    Console.WriteLine("Handle for {0} missing. Attempting JIT load...", waveData.wsysFile);
+                    Console.WriteLine("Handle for {0} missing. Attempting hot load...", waveData.wsysFile);
 
                     fhnd = w;
                 } catch
@@ -150,12 +156,11 @@ namespace JaiSeqXLJA.Player
             var pcm = ADPCM.ADPCMToPCM16(ou, (ADPCM.ADPCMFormat)waveData.format);
             JAIDSPSoundBuffer sbuf; 
             if (waveData.loop)
-            {
                 sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16, waveData.loop_start, waveData.loop_end);
-            } else
-            {
-                sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16);
-            }
+            else
+                 sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16);
+
+
 
             waveCache[cacheIndex] = sbuf;
             data = waveData;
@@ -175,7 +180,6 @@ namespace JaiSeqXLJA.Player
             var ts = tickTimer.ElapsedMilliseconds;
             var tt_n = ts / tickLength;
             while (ticks < tt_n)
-            {
                 try
                 {
                     tt_n = ts / tickLength;
@@ -189,26 +193,21 @@ namespace JaiSeqXLJA.Player
                     Console.WriteLine(E.ToString());
                     Console.ForegroundColor = w;
                 }
-            }
+            
         }
         public static void tick()
          {
             ticks++;
             for (int i=0; i < tracks.Length; i++)
-            {
                 if (tracks[i]!=null)
-                {
-                    tracks[i].update();
-                }
-            }
+                    if (!paused)
+                        tracks[i].update();
         }
 
         public static void addTrack(int id, JAISeqTrack trk)
         {
             if (tracks[id + 1]!=null)
-            {
                 tracks[id + 1].destroy();
-            }
             tracks[id + 1] = trk;
         }
 

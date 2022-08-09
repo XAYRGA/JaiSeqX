@@ -28,6 +28,7 @@ namespace libJAudio.Loaders
                     loadJV2(ref newJA, ref data);
                     break;
                 case JAIInitType.BX:
+                    Console.WriteLine("TYPE JBX!");
                     loadJBX(ref newJA, ref data);
                     break;
             }
@@ -44,6 +45,7 @@ namespace libJAudio.Loaders
             var wscount = 0;
             var inscount = 0;
 
+            Console.WriteLine("!!! LOAD JBX");
             for (int i = 0; i < sections.Length; i++) // Loop through the AAF
             {
                 var current_section = sections[i]; // Select current section
@@ -56,9 +58,13 @@ namespace libJAudio.Loaders
                             var ibnk = vx.loadIBNK(read, current_section.start); // Load it
 #if BX_XAYR_WRONG_INST
                             JAS.Banks[ibnk.id] = ibnk; //Push into bank array.
-                            inscount++
+                          
 #else
+                       
                             JAS.Banks[inscount] = ibnk; //Push into bank array.
+
+                            inscount++;
+                            Console.WriteLine("Load bank " + inscount);
 #endif
                             break;
                         }
@@ -71,14 +77,27 @@ namespace libJAudio.Loaders
                             JAS.WaveBanks[wscount] = ws; // Push to wavebanks
                             wscount++;
 #else 
-                            JAS.WaveBanks[ws.id] = ws;
+                            Console.WriteLine(ws.id);
+                            if (ws.id < JAS.WaveBanks.Length)
+                            {
+                                JAS.WaveBanks[ws.id] = ws;
+                            }
 #endif
                             break;
                         }
                     default:
                         throw new FormatException("libjAudio failed to load bx file, bx file contains more sections than just WSYS/IBNK. Even though we (somehow) loaded the BX properly, we got a section other than just the two that are possible by the format.\n Hah. This is probably the most descriptive error you've ever seen. Which is ironic because the condition to meet it should never be met. I mean, technically its possible. Cosmic ray errors exist, and those things are weird.");
                 }
+            
             }
+            var ww = JaiSeqXLJA.JaiSeqXLJA.findDynamicNumberArgument("-jdsp.forcemap_ibnk_bx", -1);
+            if (ww != -1)
+            {
+                if (ww > JAS.Banks.Length)
+                    JaiSeqXLJA.JaiSeqXLJA.assert("forcemap_ibnk_bx is greater than number of banks!");
+                JAS.Banks[0] = JAS.Banks[ww];
+            }
+            Console.WriteLine(ww);
         }
 
         /* AAF is safe, we know it's always going to be a V1 instrument format. */
@@ -152,6 +171,8 @@ namespace libJAudio.Loaders
                             var v2L = new JA_IBankLoader_V2(); // Make a loader
                              ibnk = v2L.loadIBNK(read, current_section.start); // Load it
                              JAS.Banks[ibnk.id] = ibnk; //Push into bank array. 
+                            Console.WriteLine($"BANK NUMBER {current_section.number}");
+                            JAS.Banks[current_section.number] = ibnk;
                             break;
                         }
                     case JAIInitSectionType.WSYS: // Wave System -- the same as jaiv1?

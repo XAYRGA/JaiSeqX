@@ -19,6 +19,12 @@ namespace libJAudio.Loaders
             var JStream = new MemoryStream(data);
             var JReader = new BeBinaryReader(JStream);
             var hdr = JReader.ReadUInt32();
+            var force = JaiSeqXLJA.JaiSeqXLJA.findDynamicStringArgument("-libjaudio.force_init_version", "none");
+            if (force == "bx")
+                return JAIInitType.BX;
+
+            Console.WriteLine(force);
+ 
             if (hdr == 1094803260) // AA_< LITERAL , opening of BAA archive or BAA Format
             {
                 JReader.Close();
@@ -43,6 +49,7 @@ namespace libJAudio.Loaders
                         var WSYS = JReader.ReadInt32();
                         if (WSYS== 0x57535953) // 0x57535953 is literal WSYS
                         {
+                     
                             JReader.Close(); // flush / close streams
                             JStream.Close(); // flush and close streams
                             return JAIInitType.BX;

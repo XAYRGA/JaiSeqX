@@ -56,7 +56,8 @@ namespace JaiSeqXLJA.Visualizer
         }
 
         private static int changeFrames = 0;
-     
+
+        private static int tickSteps = 0;
         public static void SubmitUI()
         {
 
@@ -69,14 +70,32 @@ namespace JaiSeqXLJA.Visualizer
                 
                 var itn = Player.JAISeqPlayer.ppqn;
                 var itb = Player.JAISeqPlayer.bpm;
+                var pau = Player.JAISeqPlayer.paused;
+
                 ImGui.SliderInt("BPM", ref itb, 1, 256);
                 ImGui.SliderInt("PPQN", ref itn, 1, 8192);
                 ImGui.SliderFloat("Gain Multiplier", ref Player.JAISeqPlayer.gainMultiplier, 0, 1);
+                ImGui.Checkbox("Paused", ref Player.JAISeqPlayer.paused);
+                ImGui.SliderInt("Tick Steps", ref tickSteps, 1, 3000);
+
+                
                 if (itn!= Player.JAISeqPlayer.ppqn || itb!= Player.JAISeqPlayer.bpm)
                 {
                     Player.JAISeqPlayer.ppqn = itn;
                     Player.JAISeqPlayer.bpm = itb;
                     Player.JAISeqPlayer.recalculateTimebase();
+                }
+
+
+                if (ImGui.Button("Tick Step"))
+                {
+                    var oldPauseState = pau;
+                    Player.JAISeqPlayer.paused = false; 
+                    for (int i=0; i < tickSteps; i++)
+                    {
+                        Player.JAISeqPlayer.tick();
+                    }
+                    Player.JAISeqPlayer.paused = oldPauseState;
                 }
 
 
@@ -128,8 +147,7 @@ namespace JaiSeqXLJA.Visualizer
                         continue;
                     var w = Player.JAISeqPlayer.tracks[i];
                     ImGui.Dummy(new Vector2(0, 2f));
-                    ImGui.Text($"LST:{w.lastOpcode,-15} VOI: {w.activeVoices,-5} DEL: {w.delay,-5} PC: 0x{w.pc:X} ");
-                
+                    ImGui.Text($"LST:{w.lastOpcode,-15} VOI: {w.activeVoices,-5} DEL: {w.delay}!{w.lastDelay,-8:X}  PC: 0x{w.pc:X}");
                 }
             }
 
@@ -150,7 +168,7 @@ namespace JaiSeqXLJA.Visualizer
                         
                     if (changeFrames > 0 )
                         igPushStyleColor(ImGuiCol.Text, new Vector4(255, 0, 0, 255));
-                    ImGui.Text($"rS: {w.Registers[0]} rC:{w.Registers[3]} rA:{w.Registers[1],-6} p0:{w.Ports[0]} p1:{w.Ports[1]}");
+                    ImGui.Text($"rS: {w.Registers[0]:x} rC:{w.Registers[3]:x} rA:{w.Registers[1],-6:X} p0:{w.Ports[0]:x} p1:{w.Ports[1]}:x");
                     if (changeFrames > 0)
                     {
                         igPopStyleColor(1);

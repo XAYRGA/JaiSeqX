@@ -202,7 +202,7 @@ namespace JaiSeqXLJA.Player
 
         private bool checkCondition(byte cond)
         {
-            var conditionValue = Registers[3];
+            var conditionValue = Registers[0];
             // Explanation:
             // When a compare function is executed. the registers are subtracted. 
             // The subtracted result is stored in R3. 
@@ -296,16 +296,17 @@ namespace JaiSeqXLJA.Player
                     return;
                 }
 
-                if (opcode != JAISeqEvent.WAIT_8 && opcode != JAISeqEvent.WAIT_16 && opcode != JAISeqEvent.WAIT_VAR) 
+                if (opcode != JAISeqEvent.WAIT_8 && opcode != JAISeqEvent.WAIT_16 && opcode != JAISeqEvent.WAIT_VAR) //&& opcode!=JAISeqEvent.NOTE_OFF && opcode!=JAISeqEvent.NOTE_ON) 
                 {
                     lastOpcode = opcode.ToString();
+                   // Console.WriteLine($"(0x{pc:X} [{trackNumber}]:{opcode.ToString()} (0x{(int)opcode:X})");
 
                 }
 
                 //Console.ReadLine();
                 if (trackNumber==-1)
                 {
-                    muted = true;
+                    //muted = true;
                 }
 
                 if (trackNumber==0)
@@ -315,6 +316,9 @@ namespace JaiSeqXLJA.Player
    
                 switch (opcode)
                 {
+                    case JAISeqEvent.READPORT:
+                        Registers[0] = 3;
+                        break;
                     case JAISeqEvent.PERF_S8_NODUR:
                     case JAISeqEvent.PERF_S8_DUR_U8:
                     case JAISeqEvent.PERF_S8_DUR_U16:
@@ -390,15 +394,15 @@ namespace JaiSeqXLJA.Player
                         if (checkCondition((byte)(trkInter.rI[0] & 15)))
                         {
                             trkInter.jump(trkInter.rI[1]);
-                            Console.WriteLine("T({0}) == C-> {1:X}", trackNumber, trkInter.rI[1]);
+                            Console.WriteLine("T({0}) jmp C-> {1:X}", trackNumber, trkInter.rI[1]);
                         }
                         else
-                            Console.WriteLine("T({0}) ==XX C-!> : {1} {2:X}", trackNumber,trkInter.rI[0] & 15,trkInter.rI[1]);
+                            Console.WriteLine("skip T({0}) jmp C-!> : {1} {2:X} (condition fail)", trackNumber,trkInter.rI[0] & 15,trkInter.rI[1]);
                         break;
                     case JAISeqEvent.CALL:
          
                         CallStack.Push(trkInter.pc);
-                        Console.WriteLine("T({0}) -> 0x{1:X} | 0x{2:X}  D({3:X})", trackNumber, trkInter.rI[0], trkInter.pc, CallStack.Count);
+                        Console.WriteLine("T({0}) brn 0x{1:X} | 0x{2:X}  stack ({3:X})", trackNumber, trkInter.rI[0], trkInter.pc, CallStack.Count);
                         trkInter.jump(trkInter.rI[0]);
                 
                         break;
@@ -407,7 +411,7 @@ namespace JaiSeqXLJA.Player
                 
                         if (checkCondition(  (byte)(trkInter.rI[0] & 15)) )
                         {
-                            Console.WriteLine("T({0}) -> 0x{1:X} | 0x{2:X}  D({3:X})", trackNumber, trkInter.rI[1], trkInter.pc, CallStack.Count);
+                            Console.WriteLine("T({0}) bne 0x{1:X} | 0x{2:X}  stack ({3:X})", trackNumber, trkInter.rI[1], trkInter.pc, CallStack.Count);
                             CallStack.Push(trkInter.pc);
                             trkInter.jump(trkInter.rI[1]);
                         }
@@ -419,7 +423,7 @@ namespace JaiSeqXLJA.Player
                             crash();
                         }
                         var retaddr = CallStack.Pop();
-                        Console.WriteLine("T(0) <-- 0x{1:X} | 0x{2:X}  D({3:X})", trackNumber, retaddr, trkInter.pc, CallStack.Count);
+                        Console.WriteLine("T(0) ret 0x{1:X} | 0x{2:X}  stack ({3:X})", trackNumber, retaddr, trkInter.pc, CallStack.Count);
                         trkInter.jump(retaddr);
                         break;
                     case JAISeqEvent.RETURN_CONDITIONAL:
@@ -476,6 +480,7 @@ namespace JaiSeqXLJA.Player
                        // break;
                     case JAISeqEvent.NOTE_ON:
                         {
+                    
                             if (muted)
                                 continue;
                             var note = trkInter.rI[0];
@@ -496,8 +501,9 @@ namespace JaiSeqXLJA.Player
                             JWave ouData;
                             var snd = JAISeqPlayer.loadSound(keyNoteVel.wsysid, keyNoteVel.wave, out ouData);
                             if (snd == null) { Console.WriteLine("*screams in null wave buffer*",keyNoteVel.wsysid,keyNoteVel.wave); Console.WriteLine(" b{0} p{1} -- n{2} v{3}", bank, program, note, velocity);  break; }
-
-
+                            
+                           // Console.WriteLine($"PC = 0x{trkInter.pc:X6} B = {bank:X} P = {program:X} on N = {note:X} @ V = {velocity:X}");
+                            //Console.ReadLine();
                             var newVoice = new JAIDSPVoice(ref snd);
                             var desiredPitch = (float)Math.Pow(2, (note - ouData.key) / 12f) * currentInst.Pitch * keyNoteVel.Pitch * keyNote.Pitch;
                             if (currentInst.IsPercussion == false)
@@ -524,7 +530,7 @@ namespace JaiSeqXLJA.Player
                             if (currentInst.oscillatorCount > 0)
                             {
                                 newVoice.setOcillator(currentInst.oscillators[0]);
-                                newVoice.tickAdvanceValue = JAISeqPlayer.timebaseValue;// *currentInst.oscillators[0].rate;  ; //JAISeqPlayer.ppqn / 30f; ;//(JAISeqPlayer.timebaseValue);//* 0.5f; //* currentInst.oscillators[0].rate; //* 0.5f;
+                                newVoice.tickAdvanceValue =  3*currentInst.oscillators[0].rate;  ; //JAISeqPlayer.ppqn / 30f; ;//(JAISeqPlayer.timebaseValue);//* 0.5f; //* currentInst.oscillators[0].rate; //* 0.5f;
                             }
                  
                             newVoice.play();

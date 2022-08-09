@@ -134,6 +134,8 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.LASTSET:
                     case (byte)JAISeqEvent.TRANSPOSE:
                     case (byte)JAISeqEvent.CLOSE_TRACK:
+                    case 0xF3:
+                    case 0xEA: // BUS CONNECT
                         skip(3);
                         return JAISeqEvent.UNKNOWN;
                     /* 4 byte unknowns */
@@ -141,6 +143,8 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.INTERRUPT:
                     case (byte)JAISeqEvent.BITWISE:
                     case (int)JAISeqEvent.LOADTBL:
+
+                    case 0xDC:
                     //case (byte)JAISeqEvent.CLOSE_TRACK:
                         skip(4);
                         return JAISeqEvent.UNKNOWN;
@@ -163,7 +167,9 @@ namespace libJAudio.Sequence.Inter
                     case 0xBE: // Completely unknown
                     case (byte)JAISeqEvent.WRITE_CHILD_PORT:
                     case (byte)JAISeqEvent.CONNECT_NAME:
-                   
+                    case 0xE1:
+                    case 0xF4:
+                    case 0xEB:
                         skip(2);
                         return JAISeqEvent.UNKNOWN;
                     /* One byte unknowns */
@@ -172,9 +178,9 @@ namespace libJAudio.Sequence.Inter
             
                     case 0xDE: // don't know either.
                     case (byte)JAISeqEvent.IRCCUTOFF:
-                    case 0xF4:
+           
                     case (byte)JAISeqEvent.SIMPLE_OSC:
-                        skip(1);
+                        skip(2);
                         //Console.WriteLine(Sequence.ReadByte());
                         return JAISeqEvent.UNKNOWN;
                     case 0xBC: // nobody knows what the actual fuck this is. 
