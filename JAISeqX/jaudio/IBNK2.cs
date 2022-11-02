@@ -7,7 +7,7 @@ using Be.IO;
 
 namespace jaudio
 {
-    internal class JInstrumentBankv2 : InstrumentBank
+    public class JInstrumentBankv2 : InstrumentBank
     {
 
         public int flags; 
@@ -57,19 +57,6 @@ namespace jaudio
             }
         }
 
-        /*
-        private int findEnvelopeIndex(int addr)
-        {
-            for (int i=0; i < Envelopes.Length; i ++)
-            {
-                if ((Envelopes[i].mBaseAddress - (EnvTableOffset + 8) ) == addr) // i'm so sorry. 
-                    return i; // like really. 
-            }
-            Console.WriteLine($"!!! BUGGED IBNK !!! OSC INDEX LOOKUP FAIL {addr:X}\r\n==== DO NOT REBUILD ====");
-            return -1;
-        }
-        */
-
         private void loadFromStream(BeBinaryReader reader)
         {
             
@@ -102,7 +89,6 @@ namespace jaudio
             loadListMap(reader, ListTableOffset);
         }
 
-        // No safety checks for validity of envelope structure due to lack of titles. Beware! 
         private void loadEnvelopes(BeBinaryReader rd, int envTableOffset)
         {
             rd.BaseStream.Position = envTableOffset;
@@ -189,7 +175,7 @@ namespace jaudio
 
             Percussions = new JPercussionInstrumentv2[count];
             for (int i = 0; i < count; i++)
-                Percussions[i] = JPercussionInstrumentv2.CreateFromStream(rd);
+                Percussions[i] = JPercussionInstrumentv2.CreateFromStream(rd, this);
         }
 
         private void loadInstruments(BeBinaryReader rd, int instTableOffset)
@@ -402,10 +388,9 @@ namespace jaudio
             var OscillatorIndices = util.readInt32Array(reader, osciCount);
 
             for (int i = 0; i < OscillatorIndices.Length; i++)
-            {
                 Oscillators.Add(ibnk.Oscillators[OscillatorIndices[i]]);
-                Console.WriteLine($"Found osci {ibnk.Oscillators[OscillatorIndices[i]]} @ {ibnk.Oscillators[OscillatorIndices[i]].mBaseAddress:X}");
-            }
+               
+       
 
             var randCount = reader.ReadInt32(); // Uh... evil?
             var EffectIndices = util.readInt32Array(reader, randCount);
@@ -433,7 +418,9 @@ namespace jaudio
 
         private void loadFromStream(BeBinaryReader reader)
         {
+       
             mBaseAddress = (int)reader.BaseStream.Position;
+
             if (reader.ReadInt32() != Pmap)
                 throw new Exception("Expected 'Pmap'");
             Volume = reader.ReadSingle();
@@ -444,6 +431,7 @@ namespace jaudio
                 throw new Exception("libjaudio: Unexpected condition Pmap.oscCount > 0");
 
             var velRegCount = reader.ReadInt32();
+            Velocities = new JInstrumentVelocityRegionv2[velRegCount];
             for (int i=0; i < velRegCount; i++)
                 Velocities[i] = JInstrumentVelocityRegionv2.CreateFromStream(reader);
         }
@@ -460,20 +448,31 @@ namespace jaudio
     {
         private const int Perc = 0x50657263; // Percussion 
  
-        private void loadFromStream(BeBinaryReader reader)
+        private void loadFromStream(BeBinaryReader reader, JInstrumentBankv2 bank)
         {
             mBaseAddress = (int)reader.BaseStream.Position;
+
             if (reader.ReadInt32() != Perc)
                 throw new Exception("Expected 'Perc'");
             var count = reader.ReadInt32();
             var ptrs = util.readInt32Array(reader, count);
+            var anchor = reader.BaseStream.Position;
+
+            Keys = new JInstrumentPercussionMapv2[count];
             for (int i=0; i < ptrs.Length; i++)
             {
-                if (ptrs[i] < 0)
+                if (ptrs[i] <= 0)
                     continue;
-                reader.BaseStream.Position = ptrs[i];
-                Keys[i] = JInstrumentPercussionMapv2.CreateFromStream(reader);        
+                for (int x=0; x < bank.PercussionMaps.Length; x++)
+                {
+                    var map = bank.PercussionMaps[x];
+                    if (map.mBaseAddress == ptrs[i])
+                        Keys[i] = map;
+                }
+                if (Keys[i] == null)
+                    throw new Exception("Cannot find map for percussion pointer!");
             }
+            reader.BaseStream.Position = anchor;
         }
 
         public override JKeyRegion getKey(int key)
@@ -483,10 +482,10 @@ namespace jaudio
             return Keys[key];
         }
 
-        public static JPercussionInstrumentv2 CreateFromStream(BeBinaryReader reader)
+        public static JPercussionInstrumentv2 CreateFromStream(BeBinaryReader reader, JInstrumentBankv2 bank)
         {
             var b = new JPercussionInstrumentv2();
-            b.loadFromStream(reader);
+            b.loadFromStream(reader, bank);
             return b;
         }
     }

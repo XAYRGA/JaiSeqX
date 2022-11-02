@@ -23,6 +23,7 @@ namespace jaudio
 
         SOUNDCOLLECTION,
 
+        SEQUENCE,
         SEQBARC,
 
         STREAMTABLE1,
@@ -129,6 +130,7 @@ namespace jaudio
     internal class AudioArchiveSectionInfo
     {
         public AAFChunkType type;
+        public int id;
         public int offset;
         public int size;
         public int flags;
@@ -137,8 +139,9 @@ namespace jaudio
         public BeBinaryWriter writer;
         public object obj;
 
-        public AudioArchiveSectionInfo(AAFChunkType type, int offset, int size, int flags)
+        public AudioArchiveSectionInfo(AAFChunkType type, int offset, int size, int flags, int id = 0)
         {
+            this.id = id;
             this.type = type;
             this.offset = offset;
             this.size = size;

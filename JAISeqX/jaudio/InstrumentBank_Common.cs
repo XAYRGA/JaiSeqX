@@ -26,6 +26,7 @@ namespace jaudio
         public ushort WaveID;
         public float Volume;
         public float Pitch;
+
     }
 
     public class JKeyRegion
