@@ -157,9 +157,9 @@ namespace jaudio
         private const int C_EX = 0x432D4558;
         private const int C_ST = 0x432D5354;
 
-        public WSYSWaveID[] DEFAULT;
-        public WSYSWaveID[] EXTENDED;
-        public WSYSWaveID[] STATIC;
+        public WSYSWaveID[]? DEFAULT;
+        public WSYSWaveID[]? EXTENDED;
+        public WSYSWaveID[]? STATIC;
 
         private WSYSWaveID[] loadContainer(BeBinaryReader rd, int type)
         {

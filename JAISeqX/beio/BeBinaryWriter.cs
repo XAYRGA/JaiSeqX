@@ -75,6 +75,14 @@ namespace Be.IO
             OutStream.Write(buffer, 0, 4);
         }
 
+
+        public void Write(uint value, bool u24)
+        {
+            fixed (byte* p = buffer)
+                BigEndian.WriteInt32(p, (int)value);
+            OutStream.Write(buffer, 0, 3);
+        }
+
         public override void Write(ulong value)
         {
             fixed (byte* p = buffer)
@@ -88,13 +96,5 @@ namespace Be.IO
                 BigEndian.WriteInt16(p, (short)value);
             OutStream.Write(buffer, 0, 2);
         }
-
-        public void WriteU24(int value)
-        {
-            Write((byte)((value >> 16) & 0xFF));
-            Write((byte)((value >> 8) & 0xFF));
-            Write((byte)(value & 0xFF));
-        }
-
     }
 }
