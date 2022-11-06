@@ -62,7 +62,7 @@ namespace JaiSeqXLJA.Visualizer
         {
 
             ImGui.SetNextWindowPos(new Vector2(0, 0));
-            ImGui.SetNextWindowSize(new Vector2(132 + 512,168));
+            ImGui.SetNextWindowSize(new Vector2(132 + 512,200));
 
 
             ImGui.Begin("ControlWindow", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
@@ -78,7 +78,21 @@ namespace JaiSeqXLJA.Visualizer
                 ImGui.Checkbox("Paused", ref Player.JAISeqPlayer.paused);
                 ImGui.SliderInt("Tick Steps", ref tickSteps, 1, 3000);
 
-                
+
+                var totalVoices = 0f;
+                var totalTracks = 0f;
+                for (int i = 0; i < Player.JAISeqPlayer.tracks.Length; i++)
+                {
+                    
+                    if (Player.JAISeqPlayer.tracks[i] == null)
+                        continue;
+                    totalTracks++;
+                    var w = Player.JAISeqPlayer.tracks[i];
+              
+                    totalVoices += w.activeVoices;
+                }
+
+                totalVoices = ((totalVoices / totalTracks) / 7f) * 100f;
                 if (itn!= Player.JAISeqPlayer.ppqn || itb!= Player.JAISeqPlayer.bpm)
                 {
                     Player.JAISeqPlayer.ppqn = itn;
@@ -97,7 +111,8 @@ namespace JaiSeqXLJA.Visualizer
                     }
                     Player.JAISeqPlayer.paused = oldPauseState;
                 }
-
+                ImGui.Text("Remaining DSP Bandwidth");
+                ImGui.ProgressBar((100f - totalVoices) / 100f);
 
             }
             ImGui.End();
@@ -105,7 +120,7 @@ namespace JaiSeqXLJA.Visualizer
 
 
 
-            ImGui.SetNextWindowPos(new Vector2(0, 168));
+            ImGui.SetNextWindowPos(new Vector2(0, 200));
             ImGui.SetNextWindowSize(new Vector2(132, 600));
 
 
@@ -135,7 +150,7 @@ namespace JaiSeqXLJA.Visualizer
             ImGui.End();
 
 
-            ImGui.SetNextWindowPos(new Vector2(132, 168));
+            ImGui.SetNextWindowPos(new Vector2(132, 200));
             ImGui.SetNextWindowSize(new Vector2(512, 600));
 
             ImGui.Begin("TrackInfo", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
@@ -163,19 +178,22 @@ namespace JaiSeqXLJA.Visualizer
                         continue;
                     var w = Player.JAISeqPlayer.tracks[i];
                     ImGui.Dummy(new Vector2(0, 2f));
-                    if (w.Registers.changed[0])
-                        changeFrames = 30;
-                        
-                    if (changeFrames > 0 )
-                        igPushStyleColor(ImGuiCol.Text, new Vector4(255, 0, 0, 255));
-                    ImGui.Text($"rS: {w.Registers[0]:x} rC:{w.Registers[3]:x} rA:{w.Registers[1],-6:X} p0:{w.Ports[0]:x} p1:{w.Ports[1]}:x");
-                    if (changeFrames > 0)
+                    if (w.Registers.changed[0] > 0)
                     {
+                        w.Registers.changed[0]--;
+                        igPushStyleColor(ImGuiCol.Text, new Vector4(255, 255, 0, 255));
+                        ImGui.Text($"rS: {w.Registers[0]:x} rC:{w.Registers[3]:x} rA:{w.Registers[1],-6:X} p0:{w.Ports[0]:x} p1:{w.Ports[1]}:x");
                         igPopStyleColor(1);
-                        changeFrames--;
+                    } else
+                    {
+                        ImGui.Text($"rS: {w.Registers[0]:x} rC:{w.Registers[3]:x} rA:{w.Registers[1],-6:X} p0:{w.Ports[0]:x} p1:{w.Ports[1]}:x");
                     }
 
-                    w.Registers.clearChanged();
+           
+                    
+        
+
+                    //w.Registers.clearChanged();
                 }
             }
 

@@ -46,7 +46,7 @@ namespace JaiSeqXLJA.DSP
 
 
             voiceHandle = Bass.BASS_StreamCreateFile(buff.globalFileBuffer, 0, buff.fileBuffer.Length, BASSFlag.BASS_DEFAULT);
-            Bass.BASS_ChannelSetFX(voiceHandle, BASSFXType.BASS_FX_DX8_I3DL2REVERB, 1);
+
             if (buff.looped)
             {
                 //Console.WriteLine("Force loop!");
@@ -98,8 +98,8 @@ namespace JaiSeqXLJA.DSP
 
         public void destroy()
         {
-            Bass.BASS_ChannelStop(voiceHandle);
-            Bass.BASS_StreamFree(voiceHandle);
+            //Bass.BASS_ChannelStop(voiceHandle);
+            //Bass.BASS_StreamFree(voiceHandle);
             
             if (rootBuffer.looped)
             {
@@ -109,26 +109,11 @@ namespace JaiSeqXLJA.DSP
         }
         public void stop()
         {
-            //Console.WriteLine("STOP");
-           // internalVoice.Stop();
+            doDestroy = true;
+            FadeStop(130);
             
-            if (instOsc==null)
-            {
-                doDestroy = true;
-                destroy();
+               destroy();
                 return;
-            }
-            if (instOsc != null && instOsc.envelopes[1] == null)
-            {
-                doDestroy = true;
-                destroy();
-            }
-            else
-            {
-                //Console.WriteLine("Set voice stop env!");
-                swapEnvelope(instOsc.envelopes[1]);
-            }
-           // */
         }
 
         public void setOcillator(JOscillator osc)
@@ -160,7 +145,7 @@ namespace JaiSeqXLJA.DSP
 
         public byte updateVoice()
         {
-            oscTicks++; // noooooooooooooooooooooooooooooooooooooooooooo
+            oscTicks++; 
 
             if (doDestroy == true)
             {
@@ -178,55 +163,20 @@ namespace JaiSeqXLJA.DSP
             {
                 vv *= gain0Matrix[i];
             }
-            //Console.WriteLine("Final Gain {0}", vv);
+   
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv);
-
-            if (envCurrentVec==null)
-            {
-                return 3;
-            }
-            if (envCurrentVec.mode == JEnvelopeVectorMode.Stop)
-            {
-                destroy();
-
-                doDestroy = true;
-                return 3; // reeEEE EEE
-            } else if (envCurrentVec.mode== JEnvelopeVectorMode.Hold) { // hold keeps the current value
-                return 1;
-            }
-            if (envCurrentVec.next != null && envCurrentVec.next.time <= ticks)
-            {
-                envValueLast = envCurrentVec.value;
-               // Console.WriteLine("SWAP ENV Last Value {3}\nNext Mode {0}\nCurrent Ticks {1}\nNext time {2}\nNext Value {4}", envCurrentVec.next.mode, ticks, envCurrentVec.next.time, envValueLast, envCurrentVec.next.value);
-                envCurrentVec = envCurrentVec.next; // swap 
-                return updateVoice();
-            }
-            if (envCurrentVec.next == null)
-            {
-                if (crashed == false)
-                {
-                    crashed = true; // envelope progression crashed
-                }
-                return 3; // tell interpreter to deallocate envelope.
-            }
-            //Console.WriteLine(envCurrentVec.value);
-            var tickDist = envCurrentVec.next.time - envCurrentVec.time;
-
-            var currentBaseTicks = envCurrentVec.time;
-            //   Currently linear only implemented
-            var mult = ((float)(ticks - currentBaseTicks) / (float)tickDist);
-          
-            envValue = (float)envValueLast + (float)(envCurrentVec.value - envValueLast) * mult;
-            //Console.WriteLine(envValue);
-            gain0Matrix[1] = envValue / 32758f;
-            //Console.WriteLine(instOsc.rate);
-            ticks += tickAdvanceValue;
-            return 1;
-           // */
+            return 0;
         }
 
         public void setEffectParams(VoiceEffect eff,params float[] parameters)
         {
+
+        }
+
+        public void FadeStop(int miliseconds)
+        {
+            Bass.BASS_ChannelSlideAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL, 0, miliseconds);
+            Bass.BASS_ChannelSetSync(voiceHandle, BASSSync.BASS_SYNC_SLIDE, 0, JAIDSP.globalFadeFreeProc, new IntPtr(0));
 
         }
 

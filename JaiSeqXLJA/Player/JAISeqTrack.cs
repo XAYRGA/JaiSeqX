@@ -117,11 +117,14 @@ namespace JaiSeqXLJA.Player
         public void updateTrackVolume(float volume)
         {
 
+            this.volume = volume;
+   
             for (int i = 0; i < voices.Length; i++)
             {
                 if (voices[i] != null)
                 {  
                     voices[i].setVolumeMatrix(2,volume);
+
                 }
 
             }
@@ -328,11 +331,7 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.PERF_S16_NODUR:
                     case JAISeqEvent.PERF_S16_DUR_U8:
                     case JAISeqEvent.PERF_S16_DUR_U16:
-                        /*             rI[0] = perf;
-                        rI[1] = (value > 0x7F) ? value - 0xFF : value;
-                        rI[2] = 0;
-                        rF[0] = ((float)(rI[1]) / 0x7F);
-                        */
+         
                         {
                             if (trkInter.rI[0]==1)
                             {
@@ -343,7 +342,6 @@ namespace JaiSeqXLJA.Player
                             } else if (trkInter.rI[0]==0)
                             {
                                 volume = trkInter.rF[0];
-                                //Console.WriteLine("Trk{0} change volume {1}", trackNumber, trkInter.rF[0]);
                                 updateTrackVolume(volume); 
                             }
 
@@ -380,6 +378,11 @@ namespace JaiSeqXLJA.Player
                                 bendTargetTicks = 1;
                                 bendTarget = trkInter.rI[1];
                                 bendticks = 0;
+                            }
+                            if ((byte)trkInter.rI[0]==0)
+                            {
+                                //Console.WriteLine(trkInter.rI[1] / 128f);
+                                updateTrackVolume(trkInter.rI[1] / 128f);
                             }
                             break;
                         }
