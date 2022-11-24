@@ -66,15 +66,16 @@ namespace libJAudio.Sequence.Inter
                         {
                             var lastread = -1;
                             string v = "";
+                            var extra = 0;
                             while (lastread != 0)
                             {
+                                if (lastread == '%')
+                                    extra++;
                                 lastread = Sequence.ReadByte();
                                 v += (char)lastread;
                             }
-                            Console.WriteLine(v);
-                            var l = Sequence.ReadByte();
-                            if (l != 0)
-                                Sequence.BaseStream.Position = Sequence.BaseStream.Position - 1;
+
+                            Sequence.ReadBytes(extra);
                             return JAISeqEvent.J2_PRINTF;
                         }
                         return JAISeqEvent.UNKNOWN;

@@ -154,13 +154,22 @@ namespace JaiSeqXLJA.Player
             byte[] ou = new byte[waveData.wsys_size];
             fhnd.Read(ou, 0, waveData.wsys_size);
             var pcm = ADPCM.ADPCMToPCM16(ou, (ADPCM.ADPCMFormat)waveData.format);
+            /*
+            if (!Directory.Exists("wavout"))
+                Directory.CreateDirectory("wavout");
+            */
+
+           
             JAIDSPSoundBuffer sbuf; 
             if (waveData.loop)
                 sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16, waveData.loop_start, waveData.loop_end);
             else
                  sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16);
-
-
+            /*
+            File.WriteAllBytes($"wavout/{wsys_id}_{waveID}.wav",sbuf.generateFileBuffer());
+            if (waveData.loop)
+                File.WriteAllText($"wavout/{wsys_id}_{waveID}_loop.txt", $"{waveData.loop_start},{waveData.loop_end}");
+            */
 
             waveCache[cacheIndex] = sbuf;
             data = waveData;

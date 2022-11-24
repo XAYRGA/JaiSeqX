@@ -29,7 +29,7 @@ namespace JaiSeqXLJA.DSP
                         0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61,  0x00, 0x00, 0x00, 0x00
         };
         
-        public void generateFileBuffer()
+        public byte[] generateFileBuffer()
         {
             var MS = new MemoryStream();
             var beW = new BinaryWriter(MS);
@@ -50,7 +50,7 @@ namespace JaiSeqXLJA.DSP
             MS.Close();
             globalFileBuffer = Marshal.AllocHGlobal(fileBuffer.Length);
             Marshal.Copy(fileBuffer, 0, globalFileBuffer, fileBuffer.Length);
-            //beW.BaseStream.Position = 0;
+            return fileBuffer;
         }
 
         public void Dispose()

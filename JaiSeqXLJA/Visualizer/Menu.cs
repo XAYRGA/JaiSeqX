@@ -18,7 +18,9 @@ namespace JaiSeqXLJA.Visualizer
 
         private static ImGuiController _controller;
         private static Vector3 _clearColor = new Vector3(0.45f, 0.55f, 0.6f);
-
+        private static int piT = -1;
+        private static int piR = 0;
+        private static int piV = 0;
 
         public static void init()
         {
@@ -162,7 +164,7 @@ namespace JaiSeqXLJA.Visualizer
                         continue;
                     var w = Player.JAISeqPlayer.tracks[i];
                     ImGui.Dummy(new Vector2(0, 2f));
-                    ImGui.Text($"LST:{w.lastOpcode,-15} VOI: {w.activeVoices,-5} DEL: {w.delay}!{w.lastDelay,-8:X}  PC: 0x{w.pc:X}");
+                    ImGui.Text($"LST:{w.lastOpcode,-15} VOI: {w.activeVoices,-5} DEL: {w.delay:X4}!{w.lastDelay,-8:X4}  PC: 0x{w.pc:X}");
                 }
             }
 
@@ -198,6 +200,28 @@ namespace JaiSeqXLJA.Visualizer
             }
 
             ImGui.End();
+
+            ImGui.Begin("Port Injection");
+            {
+                ImGui.InputInt("Track", ref piT);
+                ImGui.InputInt("Register", ref piR);
+                ImGui.InputInt("Value", ref piV);
+                if (ImGui.Button("INJECT"))
+                {
+                    for (int i = 0; i < Player.JAISeqPlayer.tracks.Length; i++)
+                    {
+                        if (Player.JAISeqPlayer.tracks[i] == null)
+                            continue;
+                        var trk = Player.JAISeqPlayer.tracks[i];
+                        if (trk.trackNumber==piT)
+                        {
+                            trk.Registers[(byte)piR] = (short)piV;
+                        }
+
+                    }
+                }
+            }
+
         }
 
     }

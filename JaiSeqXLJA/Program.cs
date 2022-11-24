@@ -71,14 +71,17 @@ namespace JaiSeqXLJA
       */
             // Player.JAISeqPlayer.startPlayback("moonsetter.bms", ref JASystem, libJAudio.Sequence.Inter.JAISeqInterpreterVersion.JA1);
          
+            
             args = new string[]
             {
-                "smg1.baa",
+                "fsa.baa",
                 "visu",
-                "smg1/smg_boss02a_midi_cnv.bms",
+                "fsa/niwa.bms",
                 "1"
             };
             
+            
+
             Console.WriteLine("Initializing DSP.");
 
             cmdargs = args; // push args into global table.

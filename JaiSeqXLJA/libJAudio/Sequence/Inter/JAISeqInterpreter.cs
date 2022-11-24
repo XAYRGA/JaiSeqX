@@ -124,9 +124,9 @@ namespace libJAudio.Sequence.Inter
                             return JAISeqEvent.UNKNOWN;
                         }
                     case (byte)JAISeqEvent.SYNC_CPU:
-                       skip(2);
-                        // Console.WriteLine(Sequence.ReadByte());
-                        //Console.WriteLine(Sequence.ReadByte());
+                       //skip(2);
+                        Console.WriteLine(Sequence.ReadByte());
+                        Console.WriteLine(Sequence.ReadByte());
                         return JAISeqEvent.SYNC_CPU;
                     /* 3 byte unknowns */
                     case 0xDD:
@@ -180,11 +180,12 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.IRCCUTOFF:
            
                     case (byte)JAISeqEvent.SIMPLE_OSC:
-                        skip(2);
+                        skip(1);
                         //Console.WriteLine(Sequence.ReadByte());
-                        return JAISeqEvent.UNKNOWN;
+                        return JAISeqEvent.SIMPLE_OSC;
                     case 0xBC: // nobody knows what the actual fuck this is. 
                         return JAISeqEvent.UNKNOWN;
+                 
                 }
             }
             return JAISeqEvent.MISS; // ABSOLUTE FUCKING DEATH. 

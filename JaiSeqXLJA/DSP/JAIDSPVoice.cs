@@ -66,6 +66,11 @@ namespace JaiSeqXLJA.DSP
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_FREQ,rootBuffer.format.sampleRate * pv);
         }
 
+        public void setPanning(float panning)
+        {
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN, panning);
+        }
+
         public float getPitchMatrix(byte index)
         {
             return pitchMatrix[index];
@@ -110,7 +115,7 @@ namespace JaiSeqXLJA.DSP
         public void stop()
         {
             doDestroy = true;
-            FadeStop(130);
+            FadeStop(140);
             
                destroy();
                 return;

@@ -86,7 +86,7 @@ namespace libJAudio.Sequence.Inter
                              addr = (int)Helpers.ReadUInt24BE(Sequence);
                         } else
                         {
-                            addr = Sequence.ReadInt32();
+                            addr = (int)Helpers.ReadUInt24BE(Sequence);
                         }
                         rI[0] = cond; // Set to condition
                         rI[1] = addr; // set ir1 to address jumped

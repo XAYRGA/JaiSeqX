@@ -25,6 +25,8 @@ namespace JaiSeqXLJA.Player
         public int trackNumber;
         public int delay;
         public int lastDelay;
+        public float panning;
+
         float volume = 1;
 
         public int looppos = 0;
@@ -43,12 +45,12 @@ namespace JaiSeqXLJA.Player
         public bool halted;
         public bool crashed; 
 
-        private static byte[] bendCoefLUT;
+        private static byte[] bendCoefficientTable;
         bool bending = false;
         int bendticks = 0;
         int bendTargetTicks = 0;
         int bendTarget = 0;
-        float bendFinalValue = 1f;
+        float currentPitchBend = 1f;
 
         public int ticks = 0;
 
@@ -63,11 +65,11 @@ namespace JaiSeqXLJA.Player
 
 
 
-            bendCoefLUT = new byte[100];
-            bendCoefLUT[12] = 2;
-            bendCoefLUT[8] = 2;
-            bendCoefLUT[2] = 12;
-            bendCoefLUT[0] = 2;
+            bendCoefficientTable = new byte[100];
+            bendCoefficientTable[12] = 2;
+            bendCoefficientTable[8] = 2;
+            bendCoefficientTable[2] = 12;
+            bendCoefficientTable[0] = 2;
            
 
         }
@@ -116,18 +118,19 @@ namespace JaiSeqXLJA.Player
 
         public void updateTrackVolume(float volume)
         {
-
             this.volume = volume;
-   
             for (int i = 0; i < voices.Length; i++)
-            {
                 if (voices[i] != null)
-                {  
-                    voices[i].setVolumeMatrix(2,volume);
+                    voices[i].setVolumeMatrix(2, volume);
+        }
 
-                }
 
-            }
+        public void updateTrackPanning(float panning)
+        {
+            this.panning = panning;
+            for (int i = 0; i < voices.Length; i++)
+                if (voices[i] != null)
+                    voices[i].setVolumeMatrix(2, volume);
         }
         private void updateVoices()
         {
@@ -137,22 +140,28 @@ namespace JaiSeqXLJA.Player
                 {
                     if (bending==true)
                     {
-                        bendticks++;
-                        var bendCoef = bendCoefLUT[Registers[7]];
-                        var bend = (float)Math.Pow(2, (( (float)bendTarget)) / (4096f * bendCoef));
-                        var cnt = voices[i].getPitchMatrix(1);
-                        voices[i].setPitchMatrix(1, Lerp(cnt,bend,1f));
-                        bendFinalValue = bend;
-                        if (bendticks > bendTargetTicks)
-                        {
-                            bending = false;
-                        }
-                        
+                        var bendCoef = bendCoefficientTable[Registers[7]];
+              
+                        var bend = (float)Math.Pow(2, (( (float)bendTarget )) / (4096f * bendCoef));
+
+                        // Push changes to DSP lib
+                        voices[i].setPitchMatrix(1, bend);
+
+                        currentPitchBend = bend;
+                                      
                     }
                     voices[i].updateVoice();
                 }
                 
             }
+
+            bendticks++;
+            if (bendticks > bendTargetTicks)
+            {
+                bending = false;
+            }
+
+
             for (int i=0; i < voiceOrphans.Length; i++)
             {
                 if (voiceOrphans[i] != null)
@@ -174,7 +183,7 @@ namespace JaiSeqXLJA.Player
             voices[id] = voice;
             if (Registers[7]==2)
             {
-                voices[id].setPitchMatrix(1, (float)bendTarget / (4096f * 12) );
+                voices[id].setPitchMatrix(1, currentPitchBend );
             }
            // Console.WriteLine("VOICE BUFFER FULL: Trk{0} BA: 0x{1:X} PC: 0x{2:X}\n\nPREPARE FOR THE LEAKENING.", trackNumber, offsetAddr, trkInter.pc);
         }
@@ -184,7 +193,10 @@ namespace JaiSeqXLJA.Player
         
             if (voices[id] == null)
                 return;
-        
+
+            if (id >= voices.Length -1)
+                return;
+
             voices[id].stop();
          
 
@@ -302,7 +314,7 @@ namespace JaiSeqXLJA.Player
                 if (opcode != JAISeqEvent.WAIT_8 && opcode != JAISeqEvent.WAIT_16 && opcode != JAISeqEvent.WAIT_VAR) //&& opcode!=JAISeqEvent.NOTE_OFF && opcode!=JAISeqEvent.NOTE_ON) 
                 {
                     lastOpcode = opcode.ToString();
-                   // Console.WriteLine($"(0x{pc:X} [{trackNumber}]:{opcode.ToString()} (0x{(int)opcode:X})");
+                    //Console.WriteLine($"(0x{pc:X} [{trackNumber}]:{opcode.ToString()} (0x{(int)opcode:X})");
 
                 }
 
@@ -342,8 +354,14 @@ namespace JaiSeqXLJA.Player
                             } else if (trkInter.rI[0]==0)
                             {
                                 volume = trkInter.rF[0];
-                                updateTrackVolume(volume); 
+                                updateTrackVolume((float)Math.Pow(6.908f , (volume) ) / 1000f); 
+                            } else if (trkInter.rI[0]==3)
+                            {
+                                var nintendo = trkInter.rI[1];
+                                var fNintendo = (nintendo - 64f) / 64f ;
+                                updateTrackPanning(-fNintendo);
                             }
+                      
 
                             break;
                         }
@@ -476,11 +494,8 @@ namespace JaiSeqXLJA.Player
                         JAISeqPlayer.bpm = trkInter.rI[0];
                         JAISeqPlayer.recalculateTimebase();
                         break;
-                    //case JAISeqEvent.SYNC_CPU:
-                        //Registers[3] = Convert.ToInt16(Console.ReadLine());
-
-                      
-                       // break;
+                    case JAISeqEvent.SYNC_CPU:
+                        break;
                     case JAISeqEvent.NOTE_ON:
                         {
                     
@@ -518,14 +533,15 @@ namespace JaiSeqXLJA.Player
                                 //Console.WriteLine($"{trackNumber}@{trkInter.pc} -> PercussionSound -> {note},{velocity}");
                                 desiredPitch = 1;
                             }
-                            var true_volume =  ((float)velocity / 127f) * currentInst.Volume * keyNoteVel.Volume;
-                            //Console.WriteLine($"{currentInst.Volume} | {keyNoteVel.Volume} | {velocity}");
+                            var true_volume =  ((float)velocity / 127f) * currentInst.Volume * keyNoteVel.Volume * keyNote.Volume;
+                    
 
                             newVoice.setVolumeMatrix(0, true_volume* Player.JAISeqPlayer.gainMultiplier )  ;
                             newVoice.setVolumeMatrix(2, volume);
+                            newVoice.setPanning(panning);
                             if (Registers[7]==2)
                             {
-                                newVoice.setPitchMatrix(1, bendFinalValue);
+                                newVoice.setPitchMatrix(1, currentPitchBend);
                             }
                             newVoice.tickAdvanceValue = (JAISeqPlayer.timebaseValue) ;
 
