@@ -183,7 +183,8 @@ namespace libJAudio.Loaders
             var notpadding = binStream.ReadInt32(); // NOT PADDING. FUCK. Probably effects.
             Helpers.readInt32Array(binStream, notpadding);
             var keyRegCount = binStream.ReadInt32();
-            var keyLow = 0; // For region spanning. 
+            var keyLow = 0; // For region s
+                            // . 
             JInstrumentKey[] keys = new JInstrumentKey[0x81]; // Always go for one more.
             for (int i = 0; i < keyRegCount; i++) // Loop through all pointers.
             {

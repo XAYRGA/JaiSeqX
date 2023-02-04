@@ -24,9 +24,11 @@ namespace JaiSeqXLJA.DSP
         private JEnvelopeVector envCurrentVec;
         private float envValue = 1;
         private float envValueLast = 1; // In case we only have a release for this voice. 
+        public int fadeOutMS = 0;
 
         private float[] pitchMatrix = { 1f, 1f, 1f };
         private float[] gain0Matrix = { 1f, 1f, 1f };
+
 
         private int voiceHandle;
         private int syncHandle;
@@ -114,11 +116,34 @@ namespace JaiSeqXLJA.DSP
         }
         public void stop()
         {
-            doDestroy = true;
-            FadeStop(140);
-            
-               destroy();
-                return;
+           doDestroy = true;
+
+
+            if (instOsc != null && instOsc.envelopes != null && instOsc.envelopes.Length > 1 && instOsc.envelopes[1] != null)
+            {
+                if (instOsc.envelopes[1].vectorList[0] != null)
+                {
+                    var foT = 0;
+                    for (int i = 0; i < instOsc.envelopes[1].vectorList.Length; i++)
+                        foT += instOsc.envelopes[1].vectorList[i].time;
+                    FadeStop(foT);
+                }
+                else
+                {
+                    Console.WriteLine($"JAIDSP: Instance {voiceHandle}  No envelope for voice Using fallback envelope!");
+                    FadeStop(100);
+                }
+
+            }
+            else
+            {
+                //Console.WriteLine($"xayrga.JAIDSP: No envelope for voice {voiceHandle} Using fallback envelope!");
+                FadeStop(100);
+            }
+
+
+            destroy();
+            return;
         }
 
         public void setOcillator(JOscillator osc)

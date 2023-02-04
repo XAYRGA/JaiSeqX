@@ -39,7 +39,7 @@ namespace JaiSeqXLJA.Player
         {
             Console.WriteLine($"Engine statrting with intver {seqVer}");
             var contents = File.ReadAllBytes(file);
-            tracks[0] = new JAISeqTrack(ref contents,0,seqVer); // entry point.
+            tracks[0] = new JAISeqTrack(ref contents,0x00,seqVer); // entry point.
             tracks[0].trackNumber = -1;
             tickTimer = new Stopwatch();
             tickTimer.Start();
@@ -119,7 +119,12 @@ namespace JaiSeqXLJA.Player
             var ok = CWsys.WaveTable.TryGetValue(waveID, out waveData); // Check for the WAVEID inside of the WSYS
             if (!ok)
             {
+                var w = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("[JAIDSP]: ");
+                Console.ForegroundColor = w;
                 Console.WriteLine("WSYS doesn't contain wave id:{0} wavid:{1}", wsys_id,waveID);
+           
                 return null;
             }
             ok = waveCache.TryGetValue(cacheIndex, out ret); // check if it is in cache
@@ -154,10 +159,10 @@ namespace JaiSeqXLJA.Player
             byte[] ou = new byte[waveData.wsys_size];
             fhnd.Read(ou, 0, waveData.wsys_size);
             var pcm = ADPCM.ADPCMToPCM16(ou, (ADPCM.ADPCMFormat)waveData.format);
-            /*
+            
             if (!Directory.Exists("wavout"))
                 Directory.CreateDirectory("wavout");
-            */
+            
 
            
             JAIDSPSoundBuffer sbuf; 
@@ -165,11 +170,11 @@ namespace JaiSeqXLJA.Player
                 sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16, waveData.loop_start, waveData.loop_end);
             else
                  sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16);
-            /*
-            File.WriteAllBytes($"wavout/{wsys_id}_{waveID}.wav",sbuf.generateFileBuffer());
-            if (waveData.loop)
-                File.WriteAllText($"wavout/{wsys_id}_{waveID}_loop.txt", $"{waveData.loop_start},{waveData.loop_end}");
-            */
+            
+            //File.WriteAllBytes($"wavout/{wsys_id}_{waveID}.wav",sbuf.generateFileBuffer());
+           // if (waveData.loop)
+                //File.WriteAllText($"wavout/{wsys_id}_{waveID}_loop.txt", $"{waveData.loop_start},{waveData.loop_end}");
+            
 
             waveCache[cacheIndex] = sbuf;
             data = waveData;

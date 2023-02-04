@@ -60,9 +60,11 @@ namespace JaiSeqXLJA.Visualizer
         private static int changeFrames = 0;
 
         private static int tickSteps = 0;
+        private static long Ticks = 0;
         public static void SubmitUI()
         {
 
+            Ticks++;
             ImGui.SetNextWindowPos(new Vector2(0, 0));
             ImGui.SetNextWindowSize(new Vector2(132 + 512,200));
 
@@ -102,6 +104,7 @@ namespace JaiSeqXLJA.Visualizer
                     Player.JAISeqPlayer.recalculateTimebase();
                 }
 
+                ImGui.Columns(2);
 
                 if (ImGui.Button("Tick Step"))
                 {
@@ -113,8 +116,14 @@ namespace JaiSeqXLJA.Visualizer
                     }
                     Player.JAISeqPlayer.paused = oldPauseState;
                 }
-                ImGui.Text("Remaining DSP Bandwidth");
+
+        
+      
+                ImGui.Columns(1);
+
+                ImGui.Text("Remaining DSP Bandwidth\t\t JaiSeqX by Xayrga!");
                 ImGui.ProgressBar((100f - totalVoices) / 100f);
+      
 
             }
             ImGui.End();
@@ -184,11 +193,11 @@ namespace JaiSeqXLJA.Visualizer
                     {
                         w.Registers.changed[0]--;
                         igPushStyleColor(ImGuiCol.Text, new Vector4(255, 255, 0, 255));
-                        ImGui.Text($"rS: {w.Registers[0]:x} rC:{w.Registers[3]:x} rA:{w.Registers[1],-6:X} p0:{w.Ports[0]:x} p1:{w.Ports[1]}:x");
+                        ImGui.Text($"T {Player.JAISeqPlayer.tracks[i].trackNumber:X2} rS: {w.Registers[0]:x} rC:{w.Registers[3]:x} rA:{w.Registers[1],-6:X} p0:{w.Ports[0]:x} p1:{w.Ports[1]}:x");
                         igPopStyleColor(1);
                     } else
                     {
-                        ImGui.Text($"rS: {w.Registers[0]:x} rC:{w.Registers[3]:x} rA:{w.Registers[1],-6:X} p0:{w.Ports[0]:x} p1:{w.Ports[1]}:x");
+                        ImGui.Text($"T {Player.JAISeqPlayer.tracks[i].trackNumber:X2} rS: {w.Registers[0]:x} rC:{w.Registers[3]:x} rA:{w.Registers[1],-6:X} p0:{w.Ports[0]:x} p1:{w.Ports[1]}:x");
                     }
 
            

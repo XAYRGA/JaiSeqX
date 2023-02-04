@@ -63,8 +63,10 @@ namespace libJAudio.Loaders
                        
                             JAS.Banks[inscount] = ibnk; //Push into bank array.
 
+                          
                             inscount++;
                             Console.WriteLine("Load bank " + inscount);
+                            JAS.Banks[0] = JAS.Banks[6];
 #endif
                             break;
                         }

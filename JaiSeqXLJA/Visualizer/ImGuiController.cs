@@ -79,7 +79,8 @@ namespace ImGuiNET
             _windowHeight = height;
         }
 
-        public void DestroyDeviceObjects()
+        public void 
+            DeviceObjects()
         {
             Dispose();
         }

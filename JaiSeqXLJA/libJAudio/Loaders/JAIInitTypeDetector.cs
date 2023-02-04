@@ -37,7 +37,7 @@ namespace libJAudio.Loaders
                 * This is not 100% accurate, but the likelyhood of something like this actually getting confused with AAF is slim to none.
                 * Considering there's only one game that uses BX. 
                 */
-                 
+
                 JStream.Position = 0; // reset pos;
                 var BXWSOffs = JReader.ReadInt32(); // should point to location in file.
                 if (BXWSOffs < JStream.Length) // check if is within BX 
@@ -52,7 +52,8 @@ namespace libJAudio.Loaders
                      
                             JReader.Close(); // flush / close streams
                             JStream.Close(); // flush and close streams
-                            return JAIInitType.BX;
+                   
+                         
                         }
                     }
                 }

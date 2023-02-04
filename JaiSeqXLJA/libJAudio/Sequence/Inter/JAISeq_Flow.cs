@@ -102,6 +102,19 @@ namespace libJAudio.Sequence.Inter
                     {
                         return JAISeqEvent.RETURN;
                     }
+                case (byte)JAISeqEvent.CLOSE_TRACK:
+                    {
+                        var mask = Sequence.ReadByte();
+                        var ugh = Sequence.ReadByte();
+                        while (true)
+                        {
+                            mask >>= 1;
+                            Sequence.ReadByte();
+                            if (mask <= 1)
+                                break;
+                        }
+                        return JAISeqEvent.CLOSE_TRACK;
+                    }
             }
             return JAISeqEvent.UNKNOWN;
         }

@@ -91,6 +91,7 @@ namespace libJAudio.Sequence.Inter
             {
                 switch (current_opcode)
                 {
+              
                     default:
                         {
                             JAISeqEvent ret;
@@ -133,7 +134,7 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.FIRSTSET:
                     case (byte)JAISeqEvent.LASTSET:
                     case (byte)JAISeqEvent.TRANSPOSE:
-                    case (byte)JAISeqEvent.CLOSE_TRACK:
+      
                     case 0xF3:
                     case 0xEA: // BUS CONNECT
                         skip(3);
@@ -143,9 +144,9 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.INTERRUPT:
                     case (byte)JAISeqEvent.BITWISE:
                     case (int)JAISeqEvent.LOADTBL:
-
+            
                     case 0xDC:
-                    //case (byte)JAISeqEvent.CLOSE_TRACK:
+          
                         skip(4);
                         return JAISeqEvent.UNKNOWN;
                     /* special case unknowns? */

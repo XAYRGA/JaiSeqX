@@ -24,72 +24,24 @@ namespace JaiSeqXLJA
 
         static void Main(string[] args)
         {
-            /*
-            Console.WriteLine("Initializing DSP.");
-            JAIDSP.Init();
-            Console.ReadLine();
-            Console.WriteLine("Initializing JASystem.");
-            var jaiinit = File.ReadAllBytes("jaiinit.aaf"); // read entire JAIInitFile
-            JASystem = libJAudio.Loaders.JASystemLoader.loadJASystem(ref jaiinit); // Load the JASystem (will automatically be detected by JAIInitVersionDetector)
-            Console.WriteLine("Loaded JASystem");
-   
-            /*
-            foreach (JIBank bnk in JASystem.Banks)
-            {
-                if (bnk == null)
-                    continue;
-                var ii = 0;
-                foreach(JInstrument inst in bnk.Instruments)
-                {
-                    ii++;
-                    if (inst == null)
-                        continue;
-                    if (inst.oscillators == null)
-                        continue;
-                    var osc1 = inst.oscillators[0];
 
-                    var env = osc1.envelopes[0];
-                    //var FO = File.OpenWrite($"envOut/{bnk.id}_{inst.id}_0.csv");
-                    var SB = new StringBuilder();
-                    SB.Append("MODE,TIME,VALUE\r\n");
-
-                    JEnvelopeVector vec = env.vectorList[0];
-                    while (vec.next!=null)
-                    {
-                        SB.Append($"{vec.mode},{vec.time},{vec.value}\r\n");
-                        vec = vec.next;
-                    }
-                    File.WriteAllText($"envOut/{bnk.id}_{ii}_0.csv", SB.ToString());
-
-
-
-                }
-            }
-
-            if (true)
-                return;
-      */
-            // Player.JAISeqPlayer.startPlayback("moonsetter.bms", ref JASystem, libJAudio.Sequence.Inter.JAISeqInterpreterVersion.JA1);
-         
-            
+#if DEBUG 
             args = new string[]
             {
-                "fsa.baa",
+                @"psound.aaf",
                 "visu",
-                "fsa/niwa.bms",
-                "1"
+                @"pcki2/seq/id_test.bms",
+                "0"
             };
-            
-            
+
+#endif  
 
             Console.WriteLine("Initializing DSP.");
 
             cmdargs = args; // push args into global table.
             var jaiiInitFile = assertArg(0, "JAIInitFile");
             var taskFunction = assertArg(1, "Task");
-            //*//*//*//*
-            // Load JAIInitFile
-            // Load JASystem
+
             if (!File.Exists(jaiiInitFile))
                 assert("Cannot find JAIInitFile {0}", jaiiInitFile);
             var jaiinitf = File.ReadAllBytes(jaiiInitFile); // read entire JAIInitFile
