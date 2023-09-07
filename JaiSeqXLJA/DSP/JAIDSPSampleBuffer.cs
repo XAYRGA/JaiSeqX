@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 
 namespace JaiSeqXLJA.DSP
 {
-    public class JAIDSPSoundBuffer : IDisposable
+    public class JAIDSPSampleBuffer : IDisposable
     {
         public JAIDSPFormat format;
         public bool looped;

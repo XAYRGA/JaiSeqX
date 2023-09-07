@@ -22,19 +22,27 @@ namespace JaiSeqXLJA
         public static string[] cmdargs;
         public static JASystem JASystem;
 
+
         static void Main(string[] args)
         {
-
+            
 #if DEBUG 
             args = new string[]
             {
-                @"psound.aaf",
+                @"jaudio.aaf",
                 "visu",
-                @"pcki2/seq/id_test.bms",
-                "0"
+                "p_goma_a.bms",
+                "0",
+                //"-libjaudio.force_init_version",
+                //"bx",
+                //"-jdsp.forcemap_ibnk_bx",
+                //"10",
+                "-mute",
+                //"5,6,12,13,14,15",
+                "-paused"
             };
-
 #endif  
+
 
             Console.WriteLine("Initializing DSP.");
 
@@ -64,6 +72,7 @@ namespace JaiSeqXLJA
                         if (!File.Exists(sequenceFile))
                             assert("Cannot find SequenceFile {0}", sequenceFile);
                         JAIDSP.Init(); // bpth play and visu require the sound engine.       
+                        Player.JAISeqPlayer.init();
                         Player.JAISeqPlayer.startPlayback(sequenceFile, ref JASystem, (JAISeqInterpreterVersion)sequenceVersion);
                         var useVisu = taskFunction == "visu";
                         if (useVisu)
@@ -82,6 +91,7 @@ namespace JaiSeqXLJA
                     }
             }
             Console.ReadLine();
+            
         }
 
         public static string assertArg(int argn, string assert)
@@ -98,17 +108,15 @@ namespace JaiSeqXLJA
         {
             for (int i = 0; i < cmdargs.Length; i++)
             {
-       
-                if (cmdargs[i] == name)
+                if (cmdargs[i] == name || cmdargs[i] == "-" + name)
                 {
-
+                    if (cmdargs.Length >= i + 1)
                         return cmdargs[i + 1];
-         
+                    break;
                 }
             }
             return def;
         }
-
 
         public static int findDynamicNumberArgument(string name, int def)
         {

@@ -107,8 +107,9 @@ namespace libJAudio.Loaders
             if (binStream.ReadUInt32() != INST) // Check if first 4 bytes are INST
                 throw new InvalidDataException("Data is not an INST");
             binStream.ReadUInt32(); // oh god oh god oh god its null
-            Inst.Pitch = binStream.ReadSingle();
             Inst.Volume = binStream.ReadSingle();
+            Inst.Pitch = binStream.ReadSingle();
+
             var osc1Offset = binStream.ReadUInt32(); 
             var osc2Offset = binStream.ReadUInt32(); 
             binStream.ReadUInt32(); // *NOT IMPLEMENTED* //
@@ -256,7 +257,7 @@ namespace libJAudio.Loaders
             var Osc = new JOscillator(); // Create new oscillator
             var target = binStream.ReadByte(); // load target -- what is it affecting?
             binStream.BaseStream.Seek(3, SeekOrigin.Current); // read 3 bytes?
-            Osc.rate = binStream.ReadSingle(); // Read the rate at which the oscillator progresses -- this will be relative to the number of ticks per beat.
+            Osc.Rate = binStream.ReadSingle(); // Read the rate at which the oscillator progresses -- this will be relative to the number of ticks per beat.
             var attackSustainTableOffset = binStream.ReadInt32(); // Offset of AD table
             var releaseDecayTableOffset = binStream.ReadInt32(); // Offset of SR table
             Osc.Width = binStream.ReadSingle(); // We should load these next, this is the width, ergo the value of the oscillator at 32768. 
@@ -331,6 +332,8 @@ namespace libJAudio.Loaders
             newReg.wave = binStream.ReadInt16();
             newReg.Volume = binStream.ReadSingle();
             newReg.Pitch = binStream.ReadSingle();
+  
+ 
             return newReg;
         }
 
@@ -370,8 +373,11 @@ namespace libJAudio.Loaders
                 }
                 binStream.BaseStream.Position = keyPointers[i] + Base; // Set position to key pointer pos (relative to base)     
                 var newKey = new JInstrumentKey();
-                newKey.Pitch = binStream.ReadSingle(); // read the pitch
                 newKey.Volume = binStream.ReadSingle(); // read the volume
+                newKey.Pitch = binStream.ReadSingle(); // read the pitch
+         
+          
+            
                 binStream.BaseStream.Seek(8, SeekOrigin.Current); // runtime values, skip
                 var velRegCount = binStream.ReadInt32(); // read count of regions we have
                 newKey.Velocities = new JInstrumentKeyVelocity[0xff]; // 0xFF just in case.

@@ -7,7 +7,7 @@ using System.IO;
 
 namespace JaiSeqXLJA.DSP
 {
-    public static class ADPCM
+    public static class JAIDSPADPCM4
     {
         public enum ADPCMFormat
         {

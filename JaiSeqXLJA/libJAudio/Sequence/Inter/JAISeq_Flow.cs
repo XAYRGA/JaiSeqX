@@ -106,13 +106,7 @@ namespace libJAudio.Sequence.Inter
                     {
                         var mask = Sequence.ReadByte();
                         var ugh = Sequence.ReadByte();
-                        while (true)
-                        {
-                            mask >>= 1;
-                            Sequence.ReadByte();
-                            if (mask <= 1)
-                                break;
-                        }
+                        Console.WriteLine("GANG");
                         return JAISeqEvent.CLOSE_TRACK;
                     }
             }

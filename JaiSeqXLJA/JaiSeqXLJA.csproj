@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,6 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Bass.Net, Version=2.4.13.3, Culture=neutral, PublicKeyToken=b7566c273e6ef480, processorArchitecture=MSIL">
@@ -238,10 +240,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DSP\ADPCM.cs" />
+    <Compile Include="DSP\JAIDSPADPCM4.cs" />
+    <Compile Include="DSP\JAIDSPLinearSlide.cs" />
     <Compile Include="DSP\JAIDSPFormat.cs" />
+    <Compile Include="DSP\JAIDSPModulator.cs" />
     <Compile Include="DSP\JAIDSPVoice.cs" />
     <Compile Include="DSP\WAV.cs" />
+    <Compile Include="DSP\JAIDSPEnvelope.cs" />
     <Compile Include="libJAudio\Helpers.cs" />
     <Compile Include="libJAudio\JAIInit.cs" />
     <Compile Include="libJAudio\JASystem.cs" />
@@ -273,7 +278,7 @@
     <Compile Include="libJAudio\Sequence\Inter\JAISeq_Perf.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DSP\JAIDSPSoundBuffer.cs" />
+    <Compile Include="DSP\JAIDSPSampleBuffer.cs" />
     <Compile Include="Visualizer\ImGuiController.cs" />
     <Compile Include="Visualizer\Menu.cs" />
     <None Include="DSP\VoiceSource.cs.old" />

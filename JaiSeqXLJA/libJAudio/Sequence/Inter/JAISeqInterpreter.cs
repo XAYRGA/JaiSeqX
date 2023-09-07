@@ -125,9 +125,11 @@ namespace libJAudio.Sequence.Inter
                             return JAISeqEvent.UNKNOWN;
                         }
                     case (byte)JAISeqEvent.SYNC_CPU:
-                       //skip(2);
+                        //skip(2);
+                        Console.WriteLine("-- sync gate --");
                         Console.WriteLine(Sequence.ReadByte());
                         Console.WriteLine(Sequence.ReadByte());
+                       
                         return JAISeqEvent.SYNC_CPU;
                     /* 3 byte unknowns */
                     case 0xDD:
@@ -144,7 +146,7 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.INTERRUPT:
                     case (byte)JAISeqEvent.BITWISE:
                     case (int)JAISeqEvent.LOADTBL:
-            
+                    case (byte)JAISeqEvent.CONNECT_NAME:
                     case 0xDC:
           
                         skip(4);
@@ -162,14 +164,14 @@ namespace libJAudio.Sequence.Inter
                         if (flag == 0x80) { skip(4); }
                         return JAISeqEvent.UNKNOWN;
                     /* 2 Byte Unknowns */
-                    case (byte)JAISeqEvent.PANSWEEPSET:
+             
                     case 0xF9:
                     case (byte)JAISeqEvent.CONNECT_CLOSE:
                     case 0xBE: // Completely unknown
                     case (byte)JAISeqEvent.WRITE_CHILD_PORT:
-                    case (byte)JAISeqEvent.CONNECT_NAME:
+                
                     case 0xE1:
-                    case 0xF4:
+                    case 0xDA:
                     case 0xEB:
                         skip(2);
                         return JAISeqEvent.UNKNOWN;
@@ -179,11 +181,14 @@ namespace libJAudio.Sequence.Inter
             
                     case 0xDE: // don't know either.
                     case (byte)JAISeqEvent.IRCCUTOFF:
-           
+                    case 0xF4:
                     case (byte)JAISeqEvent.SIMPLE_OSC:
+                    
                         skip(1);
                         //Console.WriteLine(Sequence.ReadByte());
-                        return JAISeqEvent.SIMPLE_OSC;
+                        return JAISeqEvent.UNKNOWN;
+                    case (byte)JAISeqEvent.PANSWEEPSET:
+              
                     case 0xBC: // nobody knows what the actual fuck this is. 
                         return JAISeqEvent.UNKNOWN;
                  

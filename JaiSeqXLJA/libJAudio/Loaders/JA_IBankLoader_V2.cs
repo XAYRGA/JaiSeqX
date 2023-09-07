@@ -459,7 +459,7 @@ namespace libJAudio.Loaders
       
             var target = binStream.ReadByte(); // load target -- what is it affecting?
             binStream.BaseStream.Seek(3, SeekOrigin.Current); // read 3 bytes?
-            Osc.rate = binStream.ReadSingle(); // Read the rate at which the oscillator progresses -- this will be relative to the number of ticks per beat.
+            Osc.Rate = binStream.ReadSingle(); // Read the rate at which the oscillator progresses -- this will be relative to the number of ticks per beat.
             var attackSustainTableOffset = binStream.ReadInt32(); // Offset of AD table
             var releaseDecayTableOffset = binStream.ReadInt32(); // Offset of SR table
             Osc.Width = binStream.ReadSingle(); // We should load these next, this is the width, ergo the value of the oscillator at 32768. 

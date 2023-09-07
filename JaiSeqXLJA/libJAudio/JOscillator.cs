@@ -9,7 +9,7 @@ namespace libJAudio
     public class JOscillator
     {
         public JOscillatorTarget target;
-        public float rate;
+        public float Rate;
         public float Width;
         public float Vertex;
 

@@ -22,16 +22,23 @@ namespace JaiSeqXLJA.Player
 
         private static Stopwatch tickTimer;
         private static float tickLength;
+        public static float RuntimeMS;
         private static int ticks = 0;
-        public static float gainMultiplier = 0.3f;
+        public static float gainMultiplier = 1f;
         public static bool paused = false;
+        
+
+        public static void init()
+        {
+            paused = JaiSeqXLJA.findDynamicFlagArgument("-paused");
+        }
 
         public static float timebaseValue
         {
             get { return tickLength; }
         }
 
-        private static Dictionary<int, JAIDSPSoundBuffer> waveCache;
+        private static Dictionary<int, JAIDSPSampleBuffer> waveCache;
         private static Dictionary<string, Stream> awHandles;
         public static JASystem JASPtr;
 
@@ -39,12 +46,12 @@ namespace JaiSeqXLJA.Player
         {
             Console.WriteLine($"Engine statrting with intver {seqVer}");
             var contents = File.ReadAllBytes(file);
-            tracks[0] = new JAISeqTrack(ref contents,0x00,seqVer); // entry point.
+            tracks[0] = new JAISeqTrack(ref contents, 0x000, seqVer); // entry point.
             tracks[0].trackNumber = -1;
             tickTimer = new Stopwatch();
             tickTimer.Start();
             JASPtr = sys;
-            waveCache = new Dictionary<int, JAIDSPSoundBuffer>();
+            waveCache = new Dictionary<int, JAIDSPSampleBuffer>();
             awHandles = new Dictionary<string, Stream>();
             var wsc = sys.WaveBanks.Count();
             // Create AW Handles 
@@ -102,12 +109,31 @@ namespace JaiSeqXLJA.Player
             }
         }
 
+        public unsafe static byte[] PCM8216BYTE(byte[] adpdata)
+        {
+
+            byte[] retBuff = new byte[adpdata.Length * 2];
+
+            fixed (byte* BUFF = retBuff)
+            {
+                for (int sam = 0; sam < adpdata.Length; sam++) 
+                {
+                    var ww = (short)(adpdata[sam] * (adpdata[sam] < 0 ? 256 : 258));
+                    retBuff[sam*2] = (byte)(ww & 0xFF);
+                    retBuff[sam*2+1] = (byte)(ww >> 8);
+                }
+            }
+            return retBuff;
+        }
+
+
+
         /* Ugh god, this turned out more awful than i wanted it to. Redo this in the future. This currently has massive perf implications */
-        public static JAIDSPSoundBuffer loadSound(int wsys_id, int waveID, out JWave data)
+        public static JAIDSPSampleBuffer loadSound(int wsys_id, int waveID, out JWave data)
         {
             var cacheIndex = (wsys_id << 16) | waveID;
             data = null;
-            JAIDSPSoundBuffer ret;
+            JAIDSPSampleBuffer ret;
             // Not in cache.
             var CWsys = JASPtr.WaveBanks[wsys_id]; // Check for WSYS existence
             if (CWsys==null)
@@ -158,23 +184,39 @@ namespace JaiSeqXLJA.Player
             fhnd.Position = waveData.wsys_start;
             byte[] ou = new byte[waveData.wsys_size];
             fhnd.Read(ou, 0, waveData.wsys_size);
-            var pcm = ADPCM.ADPCMToPCM16(ou, (ADPCM.ADPCMFormat)waveData.format);
-            
+            byte[] pcm;
+            JAIDSPSampleBuffer sbuf;
+
+            switch (waveData.format)
+            {
+                case 0:
+                    pcm = JAIDSPADPCM4.ADPCMToPCM16(ou, (JAIDSPADPCM4.ADPCMFormat)waveData.format);
+                    if (waveData.loop)
+                        sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16, (int)Math.Floor((waveData.loop_start / 8f) * 16f), (int)Math.Floor((waveData.loop_end / 8f) * 16f));
+                    else
+                        sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16);
+                    break;
+                case 2:
+                    pcm = PCM8216BYTE(ou);
+                    if (waveData.loop)
+                        sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16, waveData.loop_start*2, waveData.loop_end*2);
+                    else
+                        sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16);
+                    break;
+                default:
+                    sbuf = null;
+                    break;
+
+            }
+
+
+
+
             if (!Directory.Exists("wavout"))
                 Directory.CreateDirectory("wavout");
             
 
-           
-            JAIDSPSoundBuffer sbuf; 
-            if (waveData.loop)
-                sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16, waveData.loop_start, waveData.loop_end);
-            else
-                 sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16);
-            
-            //File.WriteAllBytes($"wavout/{wsys_id}_{waveID}.wav",sbuf.generateFileBuffer());
-           // if (waveData.loop)
-                //File.WriteAllText($"wavout/{wsys_id}_{waveID}_loop.txt", $"{waveData.loop_start},{waveData.loop_end}");
-            
+  
 
             waveCache[cacheIndex] = sbuf;
             data = waveData;
@@ -192,6 +234,7 @@ namespace JaiSeqXLJA.Player
         public static void update()
         {
             var ts = tickTimer.ElapsedMilliseconds;
+            RuntimeMS = ts;
             var tt_n = ts / tickLength;
             while (ticks < tt_n)
                 try
@@ -202,10 +245,12 @@ namespace JaiSeqXLJA.Player
                 catch (Exception E)
                 {
                     var w = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine("SEQUENCER MISSED TICK");
-                    Console.WriteLine(E.ToString());
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("==DESYNC==\nSequence engine failed to complete a tick, now desync'd\n==DESYNC==");
+                 
                     Console.ForegroundColor = w;
+
+                    Console.WriteLine(E.ToString());
                 }
             
         }
@@ -223,6 +268,14 @@ namespace JaiSeqXLJA.Player
             if (tracks[id + 1]!=null)
                 tracks[id + 1].destroy();
             tracks[id + 1] = trk;
+
+            var muteIdx = JaiSeqXLJA.findDynamicStringArgument("-mute", "none").Split(',');
+            for (int i = 0; i < muteIdx.Length; i++)
+            {
+      
+                if (muteIdx[i] != null && muteIdx[i] == id.ToString())
+                    trk.muted = true;
+            }
         }
 
     }

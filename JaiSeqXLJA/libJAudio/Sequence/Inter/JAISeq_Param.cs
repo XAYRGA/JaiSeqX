@@ -91,12 +91,14 @@ namespace libJAudio.Sequence.Inter
                     {
                         rI[0] = Sequence.ReadByte();
                         rI[1] = Sequence.ReadByte();
+                        rF[1] = rI[1] / 128f;
                         return JAISeqEvent.J2_SET_PARAM_8;
                     }
                 case 0xB9: // J2_SET_PARAM_16
                     {
                         rI[0] = Sequence.ReadByte();
                         rI[1] = Sequence.ReadInt16();
+                        rF[1] = rI[1] / 32768f;
                         return JAISeqEvent.J2_SET_PARAM_16;
                     }
                 case 0xA0: // PARAM_SET_R

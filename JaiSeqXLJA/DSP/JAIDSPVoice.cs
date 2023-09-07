@@ -18,7 +18,7 @@ namespace JaiSeqXLJA.DSP
     }
     class JAIDSPVoice : IDisposable
     {
-        public JAIDSPSoundBuffer rootBuffer;
+        public JAIDSPSampleBuffer rootBuffer;
 
         private JOscillator instOsc;
         private JEnvelopeVector envCurrentVec;
@@ -42,16 +42,14 @@ namespace JaiSeqXLJA.DSP
         private bool doDestroy = false;
         private bool crashed = false;
 
-        public JAIDSPVoice(ref JAIDSPSoundBuffer buff)
+        public JAIDSPVoice(ref JAIDSPSampleBuffer buff)
         {
             rootBuffer = buff;  // save root buffer.
-
 
             voiceHandle = Bass.BASS_StreamCreateFile(buff.globalFileBuffer, 0, buff.fileBuffer.Length, BASSFlag.BASS_DEFAULT);
 
             if (buff.looped)
             {
-                //Console.WriteLine("Force loop!");
                 syncHandle = Bass.BASS_ChannelSetSync(voiceHandle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME , buff.loopEnd, JAIDSP.globalLoopProc, new IntPtr(buff.loopStart));
             }
         }
@@ -81,10 +79,9 @@ namespace JaiSeqXLJA.DSP
         {
             gain0Matrix[index] = volume;
             float vv = 1f;
-            for (int i = 0; i < gain0Matrix.Length; i++)
-            {
+            for (int i = 0; i < gain0Matrix.Length; i++)            
                 vv *= gain0Matrix[i];
-            }
+            
             //Console.WriteLine("Final Gain {0}", vv);
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv);
         }
@@ -94,6 +91,19 @@ namespace JaiSeqXLJA.DSP
             if (instOsc!=null && instOsc.envelopes[0]!=null)
             {
                 swapEnvelope(instOsc.envelopes[0]);
+               // setVolumeMatrix(1, instOsc.envelopes[0].vectorList[0].value / 32768f);
+
+                /*
+                var foT = 0;
+                var last_meaningful_value = 0;
+                for (int i = 0; i < instOsc.envelopes[0].vectorList.Length; i++) {
+                    foT += instOsc.envelopes[0].vectorList[i].time;
+                    if (instOsc.envelopes[0].vectorList[i].mode == JEnvelopeVectorMode.Linear)
+                        last_meaningful_value = instOsc.envelopes[0].vectorList[i].value;
+                }
+
+                Bass.BASS_ChannelSlideAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL, , miliseconds);
+                */
             }
             Bass.BASS_ChannelPlay(voiceHandle,false);
         }
@@ -123,6 +133,9 @@ namespace JaiSeqXLJA.DSP
             {
                 if (instOsc.envelopes[1].vectorList[0] != null)
                 {
+                  
+         
+                    // approximate osci / env relesae 
                     var foT = 0;
                     for (int i = 0; i < instOsc.envelopes[1].vectorList.Length; i++)
                         foT += instOsc.envelopes[1].vectorList[i].time;
@@ -130,15 +143,23 @@ namespace JaiSeqXLJA.DSP
                 }
                 else
                 {
-                    Console.WriteLine($"JAIDSP: Instance {voiceHandle}  No envelope for voice Using fallback envelope!");
-                    FadeStop(100);
+                    var ww = Console.ForegroundColor;
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.Write("JAIDSP");
+                    Console.ForegroundColor = ww;
+                    Console.WriteLine($"Instance {voiceHandle:X}  empty envelope vector");
+                    FadeStop(50);
                 }
 
             }
             else
             {
-                //Console.WriteLine($"xayrga.JAIDSP: No envelope for voice {voiceHandle} Using fallback envelope!");
-                FadeStop(100);
+                var ww = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Write("JAIDSP");
+                Console.ForegroundColor = ww;
+                Console.WriteLine($": No envelope for voice {voiceHandle:X} FS(50)");
+                FadeStop(50);
             }
 
 
@@ -146,6 +167,12 @@ namespace JaiSeqXLJA.DSP
             return;
         }
 
+        public void stopImmediately()
+        {
+            Bass.BASS_ChannelRemoveSync(voiceHandle, syncHandle);
+            Bass.BASS_StreamFree(voiceHandle);
+
+        }
         public void setOcillator(JOscillator osc)
         {
             instOsc = osc;

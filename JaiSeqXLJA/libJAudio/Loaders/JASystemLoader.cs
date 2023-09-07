@@ -57,16 +57,18 @@ namespace libJAudio.Loaders
                             var vx = new JA_IBankLoader_V1(); // Make a loader
                             var ibnk = vx.loadIBNK(read, current_section.start); // Load it
 #if BX_XAYR_WRONG_INST
-                            JAS.Banks[ibnk.id] = ibnk; //Push into bank array.
+                            
                           
 #else
-                       
+                            JAS.Banks[ibnk.id] = ibnk; //Push into bank array.
+                            /*
+                            Console.WriteLine($"bnk: {ibnk.id}");
                             JAS.Banks[inscount] = ibnk; //Push into bank array.
-
                           
                             inscount++;
-                            Console.WriteLine("Load bank " + inscount);
-                            JAS.Banks[0] = JAS.Banks[6];
+                            */
+
+
 #endif
                             break;
                         }
@@ -79,11 +81,13 @@ namespace libJAudio.Loaders
                             JAS.WaveBanks[wscount] = ws; // Push to wavebanks
                             wscount++;
 #else 
-                            Console.WriteLine(ws.id);
+                            
+                            Console.WriteLine($"wsid: {ws.id} {JAS.WaveBanks.Length}");
                             if (ws.id < JAS.WaveBanks.Length)
                             {
                                 JAS.WaveBanks[ws.id] = ws;
                             }
+                            
 #endif
                             break;
                         }
@@ -98,6 +102,7 @@ namespace libJAudio.Loaders
                 if (ww > JAS.Banks.Length)
                     JaiSeqXLJA.JaiSeqXLJA.assert("forcemap_ibnk_bx is greater than number of banks!");
                 JAS.Banks[0] = JAS.Banks[ww];
+                //JAS.WaveBanks[0] = 
             }
             Console.WriteLine(ww);
         }
@@ -173,8 +178,8 @@ namespace libJAudio.Loaders
                             var v2L = new JA_IBankLoader_V2(); // Make a loader
                              ibnk = v2L.loadIBNK(read, current_section.start); // Load it
                              JAS.Banks[ibnk.id] = ibnk; //Push into bank array. 
-                            Console.WriteLine($"BANK NUMBER {current_section.number}");
-                            JAS.Banks[current_section.number] = ibnk;
+                            //Console.WriteLine($"BANK NUMBER {current_section.number}");
+                            JAS.Banks[ibnk.id] = ibnk;
                             break;
                         }
                     case JAIInitSectionType.WSYS: // Wave System -- the same as jaiv1?

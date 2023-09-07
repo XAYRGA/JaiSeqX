@@ -38,7 +38,11 @@ namespace JaiSeqXLJA.DSP
             }
             #endregion
             Un4seen.Bass.BassNet.Registration(Encoding.ASCII.GetString(eml), Encoding.ASCII.GetString(rkey));
+#if DEBUG
+            Bass.BASS_Init(6, 48000, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero); // Initialize audio engine
+#else
             Bass.BASS_Init(-1, 48000, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero); // Initialize audio engine
+#endif 
             BassFx.LoadMe();
             BASS_DEVICEINFO info = new BASS_DEVICEINFO(); // Print device info. 
             for (int n = 0; Bass.BASS_GetDeviceInfo(n, info); n++)
@@ -62,10 +66,10 @@ namespace JaiSeqXLJA.DSP
             Bass.BASS_ChannelSetPosition(channel, user.ToInt64(),BASSMode.BASS_POS_BYTE);
         }
         private static int v1 = 0;
-        public static JAIDSPSoundBuffer SetupSoundBuffer(byte[] pcm, int cn, int sr, int bs, int ls, int le)
+        public static JAIDSPSampleBuffer SetupSoundBuffer(byte[] pcm, int cn, int sr, int bs, int ls, int le)
         {
             v1++;
-            var rt = new JAIDSPSoundBuffer()
+            var rt = new JAIDSPSampleBuffer()
             {
                 format = new JAIDSPFormat()
                 {
@@ -73,8 +77,8 @@ namespace JaiSeqXLJA.DSP
                     sampleRate = sr,
                 },
                 buffer = pcm,
-                loopStart = (int)Math.Floor((ls / 8f) * 16f), // 16 samples = 8 bytes
-                loopEnd = (int)Math.Floor((le / 8f) * 16f),
+                loopStart = ls,
+                loopEnd = le,
                 looped = true,
             };
             rt.generateFileBuffer();
@@ -88,15 +92,15 @@ namespace JaiSeqXLJA.DSP
         {
             Bass.BASS_ChannelRemoveSync(channel, syncHandle);
             Bass.BASS_StreamFree(channel);
-            //Console.Write("Dealloc {0}", channel);
+
 
         }
 
-        public static JAIDSPSoundBuffer SetupSoundBuffer(byte[] pcm, int cn, int sr, int bs)
+        public static JAIDSPSampleBuffer SetupSoundBuffer(byte[] pcm, int cn, int sr, int bs)
         {
             v1++;
             
-            var rt = new JAIDSPSoundBuffer()
+            var rt = new JAIDSPSampleBuffer()
             {
                 format = new JAIDSPFormat()
                 {

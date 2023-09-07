@@ -25,7 +25,7 @@ namespace JaiSeqXLJA.Visualizer
         public static void init()
         {
             VeldridStartup.CreateWindowAndGraphicsDevice(
-            new WindowCreateInfo(50, 50, 1024, 768, WindowState.Normal, "ProceduralOreGeneratorUI"),
+            new WindowCreateInfo(50, 50, 1024, 768, WindowState.Normal, "JAISeqX - LibJAudio"),
             new GraphicsDeviceOptions(true, null, true),
             out _window,
             out _gd);
@@ -63,6 +63,7 @@ namespace JaiSeqXLJA.Visualizer
         private static long Ticks = 0;
         public static void SubmitUI()
         {
+        
 
             Ticks++;
             ImGui.SetNextWindowPos(new Vector2(0, 0));
@@ -162,7 +163,7 @@ namespace JaiSeqXLJA.Visualizer
 
 
             ImGui.SetNextWindowPos(new Vector2(132, 200));
-            ImGui.SetNextWindowSize(new Vector2(512, 600));
+            ImGui.SetNextWindowSize(new Vector2(320, 600));
 
             ImGui.Begin("TrackInfo", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
             {
@@ -173,14 +174,83 @@ namespace JaiSeqXLJA.Visualizer
                         continue;
                     var w = Player.JAISeqPlayer.tracks[i];
                     ImGui.Dummy(new Vector2(0, 2f));
-                    ImGui.Text($"LST:{w.lastOpcode,-15} VOI: {w.activeVoices,-5} DEL: {w.delay:X4}!{w.lastDelay,-8:X4}  PC: 0x{w.pc:X}");
+                    if (w.lastOpcode == "FIN")
+                    {
+                        ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
+                        ImGui.Text($"LST:{w.lastOpcode,-15} VOI: {w.activeVoices,-5}  PC: 0x{w.pc:X}");
+                        ImGui.PopStyleColor();
+                    } else
+                    {
+                        //DEL: {w.delay:X4}!{w.lastDelay,-8:X4}
+                        ImGui.Text($"LST:{w.lastOpcode,-15} VOI: {w.activeVoices,-5}  PC: 0x{w.pc:X}");
+                    }
                 }
             }
 
-            ImGui.SetNextWindowPos(new Vector2(648, 168));
-            ImGui.SetNextWindowSize(new Vector2(375, 600));
+            ImGui.SetNextWindowPos(new Vector2( 452, 200));
+            ImGui.SetNextWindowSize(new Vector2(190, 600));
+            ImGui.Begin("TrackInfo2", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
+            {
+                var DrawList = ImGui.GetWindowDrawList();
+                for (int i = 0; i < Player.JAISeqPlayer.tracks.Length; i++)
+                {
+                    if (Player.JAISeqPlayer.tracks[i] == null)
+                        continue;
+                    var w = Player.JAISeqPlayer.tracks[i];
+                    ImGui.Dummy(new Vector2(0.0f, 0.1f));
+                    ImGui.ProgressBar((float)w.delay / (float)w.lastDelay, new Vector2(80,15), $"{w.delay:X4}/{w.lastDelay:X4}");
 
-            ImGui.Begin("CReg / TPrt", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
+                    DrawList.AddCircleFilled(new Vector2(590 + 20 * w.currentVibrato * (w.activeVoices > 0 ? 1 : 0) ,218 + i * 23.6f), 5, 0xFF0000FF);
+                }
+
+              
+
+            }
+            ImGui.End();
+
+
+            ImGui.SetNextWindowPos(new Vector2(643, 200));
+            ImGui.SetNextWindowSize(new Vector2(380, 600));
+
+
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarBg, 0xFF0000FF);
+            ImGui.Begin("Parameters", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
+            {
+                ImGui.Columns(3);
+                var ib = 0;
+                for (int i = 0; i < Player.JAISeqPlayer.tracks.Length; i++)
+                {
+                    if (Player.JAISeqPlayer.tracks[i] == null)
+                        continue;
+                    var w = Player.JAISeqPlayer.tracks[i];
+                    ImGui.Dummy(new Vector2(0, 2f));
+                    ImGui.ProgressBar(w.volume,new Vector2(100,13));
+                    ImGui.NextColumn();
+                    ImGui.Dummy(new Vector2(0, 2f));
+                    ImGui.ProgressBar(0.5f - w.panning, new Vector2(100, 13));
+   
+                    ImGui.NextColumn();
+                    ImGui.Dummy(new Vector2(0, 2f));
+                    // ImGui.ProgressBar(( (w.currentPitchBend-1f) / 0.1f) + 0.5f, new Vector2(100, 13));
+                    ImGui.ProgressBar( (w.pitchTarget / 0.4f) + 0.5f , new Vector2(100, 13));
+                    ImGui.NextColumn();
+
+                    //w.Registers.clearChanged();
+                }
+                ImGui.Text("MIX VOLU");
+                ImGui.NextColumn();
+                ImGui.Text("MIX POSI");
+                ImGui.NextColumn();
+                ImGui.Text("PTCH WHL");
+            }
+            ImGui.PopStyleColor();
+
+            ImGui.End();
+
+
+
+            /*
+            ImGui.Begin("CReg / TPrt");
             {
                 var ib = 0;
                 for (int i = 0; i < Player.JAISeqPlayer.tracks.Length; i++)
@@ -230,6 +300,7 @@ namespace JaiSeqXLJA.Visualizer
                     }
                 }
             }
+            */
 
         }
 
