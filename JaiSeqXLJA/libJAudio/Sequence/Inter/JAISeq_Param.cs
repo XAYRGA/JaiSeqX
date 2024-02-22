@@ -135,6 +135,12 @@ namespace libJAudio.Sequence.Inter
                         rI[0] = Sequence.ReadByte();
                         return JAISeqEvent.J2_SET_PROG;
                     }
+                case 0xE6:
+                    {
+                        var depth = Sequence.ReadUInt16();
+                        rI[0] = depth;
+                        return JAISeqEvent.VIBDEPTHMIDI;
+                    }
 
             }
             return JAISeqEvent.UNKNOWN;

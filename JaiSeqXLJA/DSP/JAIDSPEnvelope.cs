@@ -88,6 +88,7 @@ namespace xayrga.JAIDSP
             }
 
             fValue = (float)Value / 0x7FFF;
+            fValue*=fValue;
 
             if (currentDuration > 0)
                 currentDuration--;

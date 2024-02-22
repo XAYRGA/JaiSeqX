@@ -38,17 +38,17 @@ namespace JaiSeqXLJA.DSP
             }
             #endregion
             Un4seen.Bass.BassNet.Registration(Encoding.ASCII.GetString(eml), Encoding.ASCII.GetString(rkey));
-#if DEBUG
-            Bass.BASS_Init(6, 48000, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero); // Initialize audio engine
-#else
-            Bass.BASS_Init(-1, 48000, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero); // Initialize audio engine
-#endif 
+            Bass.BASS_Init(JaiSeqXLJA.findDynamicNumberArgument("-jdsp.device", -1), 48000, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero); // Initialize audio engine
+
             BassFx.LoadMe();
             BASS_DEVICEINFO info = new BASS_DEVICEINFO(); // Print device info. 
             for (int n = 0; Bass.BASS_GetDeviceInfo(n, info); n++)
             {
                 Console.WriteLine($"{n} = {info.ToString()} ");
             }
+            
+            
+
 
             globalLoopProc = new SYNCPROC(DoLoop);
             globalFadeFreeProc = new SYNCPROC(FadeCollect);
@@ -82,6 +82,7 @@ namespace JaiSeqXLJA.DSP
                 looped = true,
             };
             rt.generateFileBuffer();
+            //Console.WriteLine($"Dumping sample {v1}");
             //File.WriteAllBytes("test/" + v1.ToString() + ".wav", rt.fileBuffer) ;
             return rt;
         }
@@ -111,6 +112,7 @@ namespace JaiSeqXLJA.DSP
                 looped = false,
             };
             rt.generateFileBuffer();
+            //Console.WriteLine($"Dumping sample {v1}");
             //File.WriteAllBytes("test/" + v1.ToString() + ".wav", rt.fileBuffer);
             return rt;
         }

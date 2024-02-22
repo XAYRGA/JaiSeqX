@@ -177,14 +177,18 @@ namespace JaiSeqXLJA.Visualizer
                     if (w.lastOpcode == "FIN")
                     {
                         ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
-                        ImGui.Text($"LST:{w.lastOpcode,-15} VOI: {w.activeVoices,-5}  PC: 0x{w.pc:X}");
+                        ImGui.Text($"opcode:{w.lastOpcode,-15} VOI: {w.activeVoices,-3}  PC: 0x{w.pc:X}");
                         ImGui.PopStyleColor();
                     } else
                     {
                         //DEL: {w.delay:X4}!{w.lastDelay,-8:X4}
-                        ImGui.Text($"LST:{w.lastOpcode,-15} VOI: {w.activeVoices,-5}  PC: 0x{w.pc:X}");
+                        ImGui.Text($"opcode:{w.lastOpcode,-15} VOI: {w.activeVoices,-3}  PC: 0x{w.pc:X}");
                     }
                 }
+                ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
+                if (Player.JAISeqPlayer.noDKJBWhistle)
+                    ImGui.Text("nodkwhistle: Filtering out DK whistle sounds.");
+                ImGui.PopStyleColor();
             }
 
             ImGui.SetNextWindowPos(new Vector2( 452, 200));
@@ -192,15 +196,24 @@ namespace JaiSeqXLJA.Visualizer
             ImGui.Begin("TrackInfo2", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
             {
                 var DrawList = ImGui.GetWindowDrawList();
+                var trk = 0;
                 for (int i = 0; i < Player.JAISeqPlayer.tracks.Length; i++)
                 {
                     if (Player.JAISeqPlayer.tracks[i] == null)
                         continue;
+                  
                     var w = Player.JAISeqPlayer.tracks[i];
                     ImGui.Dummy(new Vector2(0.0f, 0.1f));
                     ImGui.ProgressBar((float)w.delay / (float)w.lastDelay, new Vector2(80,15), $"{w.delay:X4}/{w.lastDelay:X4}");
 
-                    DrawList.AddCircleFilled(new Vector2(590 + 20 * w.currentVibrato * (w.activeVoices > 0 ? 1 : 0) ,218 + i * 23.6f), 5, 0xFF0000FF);
+                    var ofs = w.currentVibrato * (w.activeVoices > 0 ? 1 : 0);
+                    var col = 0xFFFF0000;
+                    if (ofs != 0)
+                        col = 0xFFFFCfCf;
+
+
+                    DrawList.AddCircleFilled(new Vector2(590 + 20 * ofs ,218 + trk * 23.6f), 5, col);
+                    trk++;
                 }
 
               

@@ -166,7 +166,7 @@ namespace libJAudio.Sequence.Inter
                     /* 2 Byte Unknowns */
              
                     case 0xF9:
-                    case (byte)JAISeqEvent.CONNECT_CLOSE:
+           
                     case 0xBE: // Completely unknown
                     case (byte)JAISeqEvent.WRITE_CHILD_PORT:
                 
@@ -178,7 +178,10 @@ namespace libJAudio.Sequence.Inter
                     /* One byte unknowns */
 
                     case 0xD5: // TIMERELATE
-            
+
+                        skip(2);
+
+                        return JAISeqEvent.UNKNOWN;
                     case 0xDE: // don't know either.
                     case (byte)JAISeqEvent.IRCCUTOFF:
                     case 0xF4:

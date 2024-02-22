@@ -191,7 +191,7 @@ namespace libJAudio.Loaders
             binStream.BaseStream.Position = seekBase;  // After we have an idea how big the table is -- we want to seek back to the beginning of it.
             JEnvelopeVector[] OscVecs = new JEnvelopeVector[len]; // And create an array the size of our length.
 
-            for (int i=0; i < len - 1;i++) // we read - 1 because we don't want to read the end value yet
+            for (int i=0; i < len ;i++) // we read - 1 because we don't want to read the end value yet
             {              
                 var vector = new JEnvelopeVector
                 {
@@ -202,40 +202,6 @@ namespace libJAudio.Loaders
                 OscVecs[i] = vector;
             } // Go down below for the last vector, after sorting
 
-            // todo: Figure out why this doesn't sort right? 
-             
-            // -1 is so we don't sort the last object in the array, because its null. We're sorting from the bottom up.
-            for (int i=0; i < len - 1; i++) // a third __fucking iteration__ on these stupid vectors.
-            {
-                for (int j = 0; j < len -1 ; j++)
-                {
-                    var current = OscVecs[i]; // Grab current oscillator vector, notice the for loop starts at 1
-                    var cmp = OscVecs[j]; // Grab the previous object
-                    if (cmp.time > current.time) // if its time is greater than ours
-                    {
-                        OscVecs[j] = current; // shift us down
-                        OscVecs[i] = cmp; // shift it up
-                    }
-                }
-            } //*/
-            // Now that we've sorted the vectors because nintendo packs them out of fucking order.
-            // We can add the hold / stop vector :D
-            // We havent advanced any more bytes by the way, so we're still at the end of that vector array from before.
-
-            var lastVector = OscVecs[OscVecs.Length - 2]; // -2 gets the last indexed object.
-            // This is disgusting, i know.
-            OscVecs[OscVecs.Length - 1] = new JEnvelopeVector
-            {
-                mode = (JEnvelopeVectorMode)binStream.ReadInt16(), // Read the values of each into their places
-                time = (short)(lastVector.time), // read time 
-                value = lastVector.value // read value
-            };
-            // Setting up references. 
-            // can only be done after sorting :v...
-            for (int idx = 0; idx < OscVecs.Length -1 ; idx++)
-            {
-                    OscVecs[idx].next = OscVecs[idx + 1]; // current vector objects next is the one after it.
-            }
             var ret = new JEnvelope();
             ret.vectorList = OscVecs;
             return ret; // finally, return. 
@@ -300,14 +266,12 @@ namespace libJAudio.Loaders
             {
                 binStream.BaseStream.Position = velRegPointers[i] + Base;
                 var breg = readKeyVelRegion(binStream, Base);  // Read the vel region.
-                for (int b = 0; b <  breg.baseVel - velLow; b ++)
+                for (int b = 0; b <=breg.baseVel - velLow; b++)
                 {
-                    //  They're velocity regions, so we're going to have a toothy / gappy piano. So we need to span the missing gaps with the previous region config.
-                    // This means that if the last key was 4, and the next key was 8 -- whatever parameters 4 had will span keys 4 5 6 and 7. 
-                    newKey.Velocities[b] = breg;
-                    newKey.Velocities[127] = breg;
+                    newKey.Velocities[velLow + b] = breg;
+               
                 }
-                velLow = breg.baseVel;
+                velLow = breg.baseVel + 1;
             }
             return newKey;
         }
@@ -361,11 +325,11 @@ namespace libJAudio.Loaders
             Inst.Volume = 1.0f;
             Inst.IsPercussion = true;
             binStream.BaseStream.Seek(0x84, SeekOrigin.Current);
-            JInstrumentKey[] keys = new JInstrumentKey[100];
-            int[] keyPointers = new int[100];
-            keyPointers = Helpers.readInt32Array(binStream, 100); // read the pointers.
+            JInstrumentKey[] keys = new JInstrumentKey[128];
+            int[] keyPointers = new int[128];
+            keyPointers = Helpers.readInt32Array(binStream, 128); // read the pointers.
           
-            for (int i = 0; i < 100; i++) // Loop through all pointers.
+            for (int i = 0; i < 128; i++) // Loop through all pointers.
             {
                 if (keyPointers[i] == 0 )
                 {
@@ -388,14 +352,11 @@ namespace libJAudio.Loaders
                 {
                     binStream.BaseStream.Position = velRegPointers[b] + Base;
                     var breg = readKeyVelRegion(binStream, Base);  // Read the vel region.
-                    for (int c = 0; c < breg.baseVel - velLow; c++)
+                    for (int c = 0; c <= breg.baseVel - velLow; c++)
                     {
-                        //  They're velocity regions, so we're going to have a toothy / gappy piano. So we need to span the missing gaps with the previous region config.
-                        // This means that if the last key was 4, and the next key was 8 -- whatever parameters 4 had will span keys 4 5 6 and 7. 
-                        newKey.Velocities[c] = breg; // store the  region
-                        newKey.Velocities[127] = breg;
+                        newKey.Velocities[c + velLow] = breg; // store the  region
                     }
-                    velLow = breg.baseVel; // store the velocity for spanning
+                    velLow = breg.baseVel + 1; // store the velocity for spanning
                 }
                 keys[i] = newKey;
             }

@@ -14,6 +14,7 @@ using System.Threading;
 using libJAudio.Sequence.Inter;
 using JaiSeqXLJA.Player;
 using JaiSeqXLJA.Visualizer;
+using xayrga.JAIDSP;
 
 namespace JaiSeqXLJA
 {
@@ -29,26 +30,26 @@ namespace JaiSeqXLJA
 #if DEBUG 
             args = new string[]
             {
-                @"jaudio.aaf",
+                @"jaiinit_sms.aaf",
                 "visu",
-                "p_goma_a.bms",
+                "t_boss.com.bms",
                 "0",
-                //"-libjaudio.force_init_version",
-                //"bx",
-                //"-jdsp.forcemap_ibnk_bx",
-                //"10",
-                "-mute",
-                //"5,6,12,13,14,15",
-                "-paused"
+                "-paused",
+                "-jdsp.device",
+                "1"
+
             };
 #endif  
 
-
+      
+           // Console.ReadLine();
+            
             Console.WriteLine("Initializing DSP.");
 
             cmdargs = args; // push args into global table.
             var jaiiInitFile = assertArg(0, "JAIInitFile");
             var taskFunction = assertArg(1, "Task");
+
 
             if (!File.Exists(jaiiInitFile))
                 assert("Cannot find JAIInitFile {0}", jaiiInitFile);
@@ -73,6 +74,7 @@ namespace JaiSeqXLJA
                             assert("Cannot find SequenceFile {0}", sequenceFile);
                         JAIDSP.Init(); // bpth play and visu require the sound engine.       
                         Player.JAISeqPlayer.init();
+                        Player.JAISeqPlayer.noDKJBWhistle = findDynamicFlagArgument("-nodkwhistle");
                         Player.JAISeqPlayer.startPlayback(sequenceFile, ref JASystem, (JAISeqInterpreterVersion)sequenceVersion);
                         var useVisu = taskFunction == "visu";
                         if (useVisu)
@@ -91,6 +93,7 @@ namespace JaiSeqXLJA
                     }
             }
             Console.ReadLine();
+            //*/
             
         }
 

@@ -9,6 +9,8 @@ using Un4seen.Bass.Misc;
 using Un4seen.Bass.AddOn.Fx;
 using System.IO;
 using System.Runtime.InteropServices;
+using xayrga.JAIDSP;
+using JaiSeqXLJA.Player;
 
 namespace JaiSeqXLJA.DSP
 {
@@ -22,12 +24,11 @@ namespace JaiSeqXLJA.DSP
 
         private JOscillator instOsc;
         private JEnvelopeVector envCurrentVec;
-        private float envValue = 1;
-        private float envValueLast = 1; // In case we only have a release for this voice. 
+
         public int fadeOutMS = 0;
 
-        private float[] pitchMatrix = { 1f, 1f, 1f };
-        private float[] gain0Matrix = { 1f, 1f, 1f };
+        private float[] pitchMatrix = { 1f, 1f, 1f, 1f };
+        private float[] gain0Matrix = { 1f, 1f, 1f, 1f };
 
 
         private int voiceHandle;
@@ -38,9 +39,16 @@ namespace JaiSeqXLJA.DSP
         public float tickAdvanceValue = 1;
         private int oscTicks;       
         private float oscValue = 32755f;
-
+        public int addRelease = 0;
+        public int stopFadeTime = 0;
+        public int lastEnvValue;
+        private short lastEnvValue2 = 0;
         private bool doDestroy = false;
         private bool crashed = false;
+        private int toStop = 0;
+        private bool tryStop = false;
+
+        JAIDSPEnvelopeTemp currentEnv;
 
         public JAIDSPVoice(ref JAIDSPSampleBuffer buff)
         {
@@ -77,33 +85,31 @@ namespace JaiSeqXLJA.DSP
         }
         public void setVolumeMatrix(byte index,float volume)
         {
+            float envValue = 1f;
+            if (currentEnv != null)
+                envValue = currentEnv.fValue;          
+
+
+
             gain0Matrix[index] = volume;
             float vv = 1f;
             for (int i = 0; i < gain0Matrix.Length; i++)            
                 vv *= gain0Matrix[i];
             
             //Console.WriteLine("Final Gain {0}", vv);
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv);
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv *  envValue);
         }
 
+        public void updateDSP()
+        {
 
-        public void play() {
+        }
+
+        public void play(bool dbg = false) {
             if (instOsc!=null && instOsc.envelopes[0]!=null)
             {
-                swapEnvelope(instOsc.envelopes[0]);
-               // setVolumeMatrix(1, instOsc.envelopes[0].vectorList[0].value / 32768f);
-
-                /*
-                var foT = 0;
-                var last_meaningful_value = 0;
-                for (int i = 0; i < instOsc.envelopes[0].vectorList.Length; i++) {
-                    foT += instOsc.envelopes[0].vectorList[i].time;
-                    if (instOsc.envelopes[0].vectorList[i].mode == JEnvelopeVectorMode.Linear)
-                        last_meaningful_value = instOsc.envelopes[0].vectorList[i].value;
-                }
-
-                Bass.BASS_ChannelSlideAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL, , miliseconds);
-                */
+                currentEnv = new JAIDSPEnvelopeTemp(instOsc.envelopes[0].vectorList, 0,dbg);
+                //lastEnvValue2 = 32767;
             }
             Bass.BASS_ChannelPlay(voiceHandle,false);
         }
@@ -115,8 +121,8 @@ namespace JaiSeqXLJA.DSP
 
         public void destroy()
         {
-            //Bass.BASS_ChannelStop(voiceHandle);
-            //Bass.BASS_StreamFree(voiceHandle);
+            Bass.BASS_ChannelStop(voiceHandle);
+            Bass.BASS_StreamFree(voiceHandle);
             
             if (rootBuffer.looped)
             {
@@ -126,20 +132,18 @@ namespace JaiSeqXLJA.DSP
         }
         public void stop()
         {
-           doDestroy = true;
 
-
+ 
             if (instOsc != null && instOsc.envelopes != null && instOsc.envelopes.Length > 1 && instOsc.envelopes[1] != null)
             {
                 if (instOsc.envelopes[1].vectorList[0] != null)
                 {
-                  
-         
-                    // approximate osci / env relesae 
-                    var foT = 0;
-                    for (int i = 0; i < instOsc.envelopes[1].vectorList.Length; i++)
-                        foT += instOsc.envelopes[1].vectorList[i].time;
-                    FadeStop(foT);
+                    if (currentEnv != null)
+                        lastEnvValue2 = currentEnv.Value;
+                     
+
+
+                    currentEnv = new JAIDSPEnvelopeTemp(instOsc.envelopes[1].vectorList, lastEnvValue2);
                 }
                 else
                 {
@@ -161,9 +165,8 @@ namespace JaiSeqXLJA.DSP
                 Console.WriteLine($": No envelope for voice {voiceHandle:X} FS(50)");
                 FadeStop(50);
             }
-
-
-            destroy();
+     
+        
             return;
         }
 
@@ -179,36 +182,26 @@ namespace JaiSeqXLJA.DSP
         }
         private void swapEnvelope(JEnvelope env)
         {
-            ticks = 0;
-            var rqVec = env.vectorList[0];
-            if (rqVec.time == 0)
-            {
-                envCurrentVec = rqVec;  // This could be wrong, some envelopes might not have an initializer value.
-                envValue = envCurrentVec.value; // i hope
-                envValueLast = envCurrentVec.value;
-
-            } else { // the latter case, here, should never happen. But in case it does, here's a failsafe. 
-                envCurrentVec = new JEnvelopeVector()
-                {
-                    mode = rqVec.mode,
-                    next = rqVec,
-                    time = 0,
-                    value = 32700
-                };
-            }
+  
             //*/
         }
 
 
-        public byte updateVoice()
+        public byte updateVoice(double ms)
         {
-            oscTicks++; 
-
-            if (doDestroy == true)
+       
+            float envValue = 1;
+            if ((currentEnv != null && currentEnv.update(JAISeqPlayer.timebaseValue*0.95f)) || doDestroy == true)
             {
+                destroy();
                 return 3;
             }
-
+            else if (currentEnv != null)
+            {
+                lastEnvValue2 = currentEnv.Value;
+                envValue = currentEnv.fValue;
+            }
+            
             float pv = 1f;
             for (int i = 0; i < pitchMatrix.Length;i++)
             {
@@ -217,11 +210,10 @@ namespace JaiSeqXLJA.DSP
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_FREQ, rootBuffer.format.sampleRate * pv);
             float vv = 1f;
             for (int i = 0; i < gain0Matrix.Length; i++)
-            {
                 vv *= gain0Matrix[i];
-            }
+
    
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv);
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv * envValue );
             return 0;
         }
 
@@ -232,7 +224,8 @@ namespace JaiSeqXLJA.DSP
 
         public void FadeStop(int miliseconds)
         {
-            Bass.BASS_ChannelSlideAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL, 0, miliseconds);
+            doDestroy = true;
+            Bass.BASS_ChannelSlideAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL, 0, miliseconds + addRelease);
             Bass.BASS_ChannelSetSync(voiceHandle, BASSSync.BASS_SYNC_SLIDE, 0, JAIDSP.globalFadeFreeProc, new IntPtr(0));
 
         }

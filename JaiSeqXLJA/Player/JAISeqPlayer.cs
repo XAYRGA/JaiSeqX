@@ -20,13 +20,13 @@ namespace JaiSeqXLJA.Player
 
         public static JAISeqTrack[] tracks = new JAISeqTrack[64];
 
-        private static Stopwatch tickTimer;
+        public static Stopwatch tickTimer;
         private static float tickLength;
         public static float RuntimeMS;
         private static int ticks = 0;
         public static float gainMultiplier = 1f;
         public static bool paused = false;
-        
+        public static bool noDKJBWhistle = false;
 
         public static void init()
         {
@@ -229,10 +229,12 @@ namespace JaiSeqXLJA.Player
             tickLength = (60000f / (float)(bpm)) / ((float)ppqn);
             ticks = (int)(tickTimer.ElapsedMilliseconds / tickLength);
             Console.WriteLine("Timebase updated {0}bpm {1}ppqn cycle-length {2} @ {3}", bpm, ppqn, tickLength, ticks);
+          
         }
 
         public static void update()
         {
+
             var ts = tickTimer.ElapsedMilliseconds;
             RuntimeMS = ts;
             var tt_n = ts / tickLength;

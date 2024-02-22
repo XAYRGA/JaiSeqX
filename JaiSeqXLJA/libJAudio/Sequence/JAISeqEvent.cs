@@ -95,7 +95,7 @@ namespace libJAudio.Sequence
 
         BITWISE = 0xA9,
         CONNECT_NAME = 0xD0,
-        CONNECT_CLOSE = 0xE6,
+        VIBDEPTHMIDI = 0xE6,
         WRITE_PARENT_PORT = 0xD1, // <byte destination_port> <byte value>  // have no clue
         WRITE_CHILD_PORT = 0xD2,  // <byte destination_port> <byte value>  // have no clue. 
         PAUSE_STATUS = 0xD3, // <byte status> 

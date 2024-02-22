@@ -241,6 +241,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DSP\JAIDSPADPCM4.cs" />
+    <Compile Include="DSP\JAIDSPEnvelopeTemp.cs" />
     <Compile Include="DSP\JAIDSPLinearSlide.cs" />
     <Compile Include="DSP\JAIDSPFormat.cs" />
     <Compile Include="DSP\JAIDSPModulator.cs" />
