@@ -52,8 +52,6 @@ namespace xayrga.JAIDSP
             //Console.WriteLine(currentMode);
             // STOP, LOOP, HOLD vectormodes don't have value
 
-            if (debug)
-                Console.WriteLine($"Swap Vector #{currentVectorIndex} : {currentMode} {lastDuration} {eVector.value}");
 
             if ((short)eVector.mode < 0xA)
             {
@@ -80,28 +78,34 @@ namespace xayrga.JAIDSP
             else if (currentMode == JEnvelopeVectorMode.Stop)
                 return true;
 
-         
 
-            var deltaDepth = lastDuration - currentDuration;
+        
+                var deltaDepth = lastDuration - currentDuration;
 
-            var fdeltaDepth =  deltaDepth / lastDuration;
-           // if (debug)
-                //Console.WriteLine($"{deltaDepth}dd {fdeltaDepth} cd{currentDuration} ld{lastDuration} vd{valueDelta}");
-            switch (currentMode)
-            {
-                case JEnvelopeVectorMode.Linear:
-                    Value = (short)(lastValue + (valueDelta * fdeltaDepth));
-                    break;
-                case JEnvelopeVectorMode.Square:
-                    Value = (short)(lastValue + valueDelta * Math.Pow(fdeltaDepth , 2));
-                    break;
-                case JEnvelopeVectorMode.SampleCell:
-                    Value = (short)(lastValue + valueDelta * Math.Pow(fdeltaDepth, 3));
-                    break;
-                case JEnvelopeVectorMode.SquareRoot:
-                    Value = (short)(lastValue + valueDelta * Math.Sqrt(fdeltaDepth));
-                    break;
-            }
+                var fdeltaDepth = deltaDepth / lastDuration;
+
+                if (fdeltaDepth > 1)
+                    fdeltaDepth = 1f;
+
+               // if (debug)
+                    //Console.WriteLine($"{deltaDepth}dd {fdeltaDepth} cd{currentDuration} ld{lastDuration} vd{valueDelta}");
+
+                switch (currentMode)
+                {
+                    case JEnvelopeVectorMode.Linear:
+                        Value = (short)(lastValue + (valueDelta * fdeltaDepth));
+                        break;
+                    case JEnvelopeVectorMode.Square:
+                        Value = (short)(lastValue + valueDelta * Math.Pow(fdeltaDepth, 2));
+                        break;
+                    case JEnvelopeVectorMode.Cubic:
+                        Value = (short)(lastValue + valueDelta * Math.Pow(fdeltaDepth, 3));
+                        break;
+                    case JEnvelopeVectorMode.SqRoot:
+                        Value = (short)(lastValue + valueDelta * Math.Sqrt(fdeltaDepth));
+                        break;
+                }
+            
 
             fValue = (float)Value / (float)0x7FFF;
 

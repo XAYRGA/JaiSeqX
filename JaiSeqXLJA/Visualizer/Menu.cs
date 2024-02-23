@@ -79,7 +79,7 @@ namespace JaiSeqXLJA.Visualizer
 
                 ImGui.SliderInt("BPM", ref itb, 1, 256);
                 ImGui.SliderInt("PPQN", ref itn, 1, 8192);
-                ImGui.SliderFloat("Gain Multiplier", ref Player.JAISeqPlayer.gainMultiplier, 0, 1);
+                ImGui.SliderFloat("Gain Multiplier", ref Player.JAISeqPlayer.gainMultiplier, 0, 2);
                 ImGui.Checkbox("Paused", ref Player.JAISeqPlayer.paused);
                 ImGui.SliderInt("Tick Steps", ref tickSteps, 1, 3000);
 
@@ -174,15 +174,15 @@ namespace JaiSeqXLJA.Visualizer
                         continue;
                     var w = Player.JAISeqPlayer.tracks[i];
                     ImGui.Dummy(new Vector2(0, 2f));
-                    if (w.lastOpcode == "FIN")
+                    if (w.lastOpcode == "ff-FIN")
                     {
                         ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
-                        ImGui.Text($"opcode:{w.lastOpcode,-15} VOI: {w.activeVoices,-3}  PC: 0x{w.pc:X}");
+                        ImGui.Text($"{w.lastOpcode,-18} voi: {w.activeVoices,-3}  PC=0x{w.pc:X}");
                         ImGui.PopStyleColor();
                     } else
                     {
                         //DEL: {w.delay:X4}!{w.lastDelay,-8:X4}
-                        ImGui.Text($"opcode:{w.lastOpcode,-15} VOI: {w.activeVoices,-3}  PC: 0x{w.pc:X}");
+                        ImGui.Text($"{w.lastOpcode,-18} voi: {w.activeVoices,-3}  PC=0x{w.pc:X}");
                     }
                 }
                 ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);

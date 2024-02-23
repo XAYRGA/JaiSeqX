@@ -234,9 +234,9 @@ namespace libJAudio.Loaders
                         Console.WriteLine("ERROR: Invalid PMAP data {0:X} -- Potential misalignment!", binStream.BaseStream.Position);
                         continue;
                     }
-      
-                    newKey.Volume = binStream.ReadInt32();
-                    newKey.Pitch = binStream.ReadInt32();
+                    binStream.ReadInt64();
+                    newKey.Volume = 1f; //binStream.ReadInt32();
+                    newKey.Pitch = 1f; //binStream.ReadInt32();
                     //binStream.ReadInt32(); // byte panning 
                     binStream.BaseStream.Seek(8, SeekOrigin.Current); // runtime. 
                     var velRegCount = binStream.ReadInt32();
@@ -254,6 +254,7 @@ namespace libJAudio.Loaders
                         velLow = breg.baseVel; // store the velocity for spanning
                     }
                     iKeys[i] = newKey;
+
                 }
             }
             newPERC.Keys = iKeys;
@@ -273,6 +274,9 @@ namespace libJAudio.Loaders
         public JInstrumentKey readKeyRegion(BeBinaryReader binStream, int Base)
         {
             JInstrumentKey newKey = new JInstrumentKey();
+
+            newKey.Volume = 1f;
+            newKey.Pitch = 1f;
             newKey.Velocities = new JInstrumentKeyVelocity[0x81]; // Create region array
             //-------
             //Console.WriteLine(binStream.BaseStream.Position);
@@ -378,49 +382,18 @@ namespace libJAudio.Loaders
             binStream.BaseStream.Position = seekBase;  // After we have an idea how big the table is -- we want to seek back to the beginning of it.
             JEnvelopeVector[] OscVecs = new JEnvelopeVector[len]; // And create an array the size of our length.
 
-            for (int i = 0; i < len - 1; i++) // we read - 1 because we don't want to read the end value yet
+            for (int i = 0; i < len; i++) // we read - 1 because we don't want to read the end value yet
             {
                 var vector = new JEnvelopeVector
                 {
-                    mode = (JEnvelopeVectorMode)binStream.ReadInt16(), // Read the values of each into their places
+                    mode = (JEnvelopeVectorMode)(binStream.ReadInt16()), // Read the values of each into their places
                     time = binStream.ReadInt16(), // read time 
                     value = binStream.ReadInt16() // read value
                 };
+                Console.WriteLine(vector.mode);
                 OscVecs[i] = vector;
             } // Go down below for the last vector, after sorting
-            // todo: Figure out why this doesn't sort right? 
-            // -1 is so we don't sort the last object in the array, because its null. We're sorting from the bottom up.
-            for (int i = 0; i < len - 1; i++) // a third __fucking iteration__ on these stupid vectors.
-            {
-                for (int j = 0; j < len - 1; j++)
-                {
-                    var current = OscVecs[i]; // Grab current oscillator vector, notice the for loop starts at 1
-                    var cmp = OscVecs[j]; // Grab the previous object
-                    if (cmp.time > current.time) // if its time is greater than ours
-                    {
-                        OscVecs[j] = current; // shift us down
-                        OscVecs[i] = cmp; // shift it up
-                    }
-                }
-            } //*/
-
-            // Now that we've sorted the vectors because nintendo packs them out of fucking order.
-            // We can add the hold / stop vector :D
-            // We havent advanced any more bytes by the way, so we're still at the end of that vector array from before.
-            var lastVector = OscVecs[OscVecs.Length - 2]; // -2 gets the last indexed object.
-            // This is disgusting, i know.
-            OscVecs[OscVecs.Length - 1] = new JEnvelopeVector
-            {
-                mode = (JEnvelopeVectorMode)binStream.ReadInt16(), // Read the values of each into their places
-                time = (short)(lastVector.time), // read time 
-                value = lastVector.value // read value
-            };
-            // Setting up references. 
-            // can only be done after sorting :v...
-            for (int idx = 0; idx < OscVecs.Length - 1; idx++)
-            {
-                OscVecs[idx].next = OscVecs[idx + 1]; // current vector objects next is the one after it.
-            }
+          
             var ret = new JEnvelope();
             ret.vectorList = OscVecs;
             return ret; // finally, return. 

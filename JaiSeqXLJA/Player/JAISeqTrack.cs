@@ -9,6 +9,7 @@ using libJAudio.Sequence.Inter;
 using JaiSeqXLJA.DSP;
 using System.Security.Cryptography;
 using System.Diagnostics;
+using Un4seen.Bass;
 
 namespace JaiSeqXLJA.Player
 {
@@ -115,7 +116,7 @@ namespace JaiSeqXLJA.Player
         public void updateTrackVolume(float volume)
         {
 
-            this.volume = volume; // * volume;
+            this.volume = volume * volume;
             for (int i = 0; i < voices.Length; i++)
                 if (voices[i] != null)
                     voices[i].setVolumeMatrix(2, this.volume);
@@ -276,6 +277,7 @@ namespace JaiSeqXLJA.Player
 
         private void crash()
         {
+
             Console.WriteLine("[!] Track {0} crashed at {1:X}", trackNumber, trkInter.pc);
             halted = true;
             crashed = true;
@@ -318,7 +320,7 @@ namespace JaiSeqXLJA.Player
 
             if (delay > 0) { delay--; }
             if (halted) { return; }
-            while (delay < 1 && !halted)
+            while (delay <= 0 && !halted)
             {
                 TrackRegisters[3] = 2;
                 var opcode = JAISeqEvent.UNKNOWN;
@@ -340,7 +342,7 @@ namespace JaiSeqXLJA.Player
 
                 if (opcode != JAISeqEvent.WAIT_8 && opcode != JAISeqEvent.WAIT_16 && opcode != JAISeqEvent.WAIT_VAR) //&& opcode!=JAISeqEvent.NOTE_OFF && opcode!=JAISeqEvent.NOTE_ON) 
                 {
-                    lastOpcode = opcode.ToString();
+                    lastOpcode = $"{(int)opcode:x2}-{opcode}";
              
 
                 }
@@ -390,7 +392,7 @@ namespace JaiSeqXLJA.Player
                             {
                                 var nintendo = trkInter.rI[1];
                                 var fNintendo = (nintendo - 64f) / 64f;
-                                updateTrackPanning(-fNintendo);
+                                updateTrackPanning((-fNintendo));
                             }
                             else if (trkInter.rI[0] == 9)
                             {
@@ -604,8 +606,7 @@ namespace JaiSeqXLJA.Player
                             var snd = JAISeqPlayer.loadSound(keyNoteVel.wsysid, keyNoteVel.wave, out ouData);
                             if (snd == null) { var w = Console.ForegroundColor; Console.ForegroundColor = ConsoleColor.Red; Console.Write("[JAISeqTrack - Error] "); Console.ForegroundColor = w; Console.WriteLine("ADPCM Buffer NULL!", keyNoteVel.wsysid, keyNoteVel.wave); Console.WriteLine(" b{0} p{1} -- n{2} v{3}", bank, program, note, velocity); Console.ForegroundColor = ConsoleColor.Yellow; Console.ForegroundColor = w; break; }
 
-                            // Console.WriteLine($"PC = 0x{trkInter.pc:X6} B = {bank:X} P = {program:X} on N = {note:X} @ V = {velocity:X}");
-                            //Console.ReadLine();
+    
                             var newVoice = new JAIDSPVoice(ref snd);
 
 
@@ -617,9 +618,9 @@ namespace JaiSeqXLJA.Player
                             }
                             newVoice.setPitchMatrix(0, desiredPitch);
                             var fVel = ((float)velocity / 127f);
-                 
+
                             var true_volume = fVel * currentInst.Volume * keyNoteVel.Volume * keyNote.Volume;
-                            true_volume *= Player.JAISeqPlayer.gainMultiplier;
+                            true_volume *= Player.JAISeqPlayer.gainMultiplier * true_volume;
 
                             newVoice.setVolumeMatrix(0,  true_volume );
                             newVoice.setVolumeMatrix(2, volume);
@@ -639,7 +640,7 @@ namespace JaiSeqXLJA.Player
                             }
 
                         
-                            newVoice.play(trackNumber==9);
+                            newVoice.play(trackNumber==0);
                             addVoice(newVoice, (byte)voice);
                             break;
                         }
@@ -667,6 +668,14 @@ namespace JaiSeqXLJA.Player
                             break;
                         }
                     case JAISeqEvent.UNKNOWN:
+
+                        var ww = Console.ForegroundColor;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("E: ");
+                        Console.WriteLine("Trk{0} unknown opcode 0x{1:X}({2}) @ {3:X}", trackNumber, (int)opcode, opcode, trkInter.pc);
+                        Console.ForegroundColor = ww;
+                        crash();
+
                         break;
                     case JAISeqEvent.CLOSE_TRACK:
 
@@ -676,12 +685,12 @@ namespace JaiSeqXLJA.Player
                         crash();
                         break;
                     default:
-                        var ww = Console.ForegroundColor;
+                        ww = Console.ForegroundColor;
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("E: ");
                         Console.WriteLine("Trk{0} unimplemented opcode 0x{1:X}({2}) @ {3:X}", trackNumber, (int)opcode, opcode, trkInter.pc);
                         Console.ForegroundColor = ww;
-                        continue;
+                        break;
                         break;
 
 

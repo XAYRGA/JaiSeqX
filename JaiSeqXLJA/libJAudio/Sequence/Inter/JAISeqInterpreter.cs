@@ -109,7 +109,10 @@ namespace libJAudio.Sequence.Inter
                                 return ret;                    
                             break; // We didn't find anything, and this is our default case -- drop out. 
                         }
-                     case (byte)JAISeqEvent.PRINTF:
+                    case (byte)JAISeqEvent.IRCCUTOFF:
+                        skip(1);
+                        return JAISeqEvent.IRCCUTOFF;
+                    case (byte)JAISeqEvent.PRINTF:
                         {
                             var lastread = -1;
                             string v = "";
@@ -132,11 +135,16 @@ namespace libJAudio.Sequence.Inter
                        
                         return JAISeqEvent.SYNC_CPU;
                     /* 3 byte unknowns */
+
+
+                    case (byte)JAISeqEvent.SIMPLE_OSC:
+                        skip(3);
+                        return JAISeqEvent.SIMPLE_OSC;
+
                     case 0xDD:
                     case (byte)JAISeqEvent.FIRSTSET:
                     case (byte)JAISeqEvent.LASTSET:
                     case (byte)JAISeqEvent.TRANSPOSE:
-      
                     case 0xF3:
                     case 0xEA: // BUS CONNECT
                         skip(3);
@@ -183,10 +191,10 @@ namespace libJAudio.Sequence.Inter
 
                         return JAISeqEvent.UNKNOWN;
                     case 0xDE: // don't know either.
-                    case (byte)JAISeqEvent.IRCCUTOFF:
+             
                     case 0xF4:
-                    case (byte)JAISeqEvent.SIMPLE_OSC:
-                    
+               
+         
                         skip(1);
                         //Console.WriteLine(Sequence.ReadByte());
                         return JAISeqEvent.UNKNOWN;

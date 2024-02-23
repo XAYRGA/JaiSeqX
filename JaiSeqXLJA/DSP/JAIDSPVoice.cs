@@ -191,7 +191,7 @@ namespace JaiSeqXLJA.DSP
         {
        
             float envValue = 1;
-            if ((currentEnv != null && currentEnv.update(JAISeqPlayer.timebaseValue*0.95f)) || doDestroy == true)
+            if ((currentEnv != null && currentEnv.update(JAISeqPlayer.timebaseValue * instOsc.Rate)) || doDestroy == true)
             {
                 destroy();
                 return 3;
@@ -199,7 +199,7 @@ namespace JaiSeqXLJA.DSP
             else if (currentEnv != null)
             {
                 lastEnvValue2 = currentEnv.Value;
-                envValue = currentEnv.fValue;
+                envValue = currentEnv.fValue * instOsc.Width + instOsc.Vertex;
             }
             
             float pv = 1f;
@@ -213,7 +213,7 @@ namespace JaiSeqXLJA.DSP
                 vv *= gain0Matrix[i];
 
    
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv * envValue );
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv * envValue * envValue);
             return 0;
         }
 

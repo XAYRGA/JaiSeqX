@@ -30,13 +30,15 @@ namespace JaiSeqXLJA
 #if DEBUG 
             args = new string[]
             {
-                @"jaiinit_sms.aaf",
+                @"jaudio.aaf",
                 "visu",
-                "t_boss.com.bms",
+                "sea.bms",
                 "0",
                 "-paused",
                 "-jdsp.device",
-                "1"
+                "1",
+          
+              
 
             };
 #endif  
