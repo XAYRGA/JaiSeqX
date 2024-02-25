@@ -38,7 +38,10 @@ namespace JaiSeqXLJA.DSP
             }
             #endregion
             Un4seen.Bass.BassNet.Registration(Encoding.ASCII.GetString(eml), Encoding.ASCII.GetString(rkey));
+            Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_SRC, 6); //  SINC POLYPOINT 128
             Bass.BASS_Init(JaiSeqXLJA.findDynamicNumberArgument("-jdsp.device", -1), 48000, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero); // Initialize audio engine
+
+    
 
             BassFx.LoadMe();
             BASS_DEVICEINFO info = new BASS_DEVICEINFO(); // Print device info. 

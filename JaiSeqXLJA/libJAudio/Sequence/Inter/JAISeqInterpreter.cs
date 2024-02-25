@@ -128,11 +128,7 @@ namespace libJAudio.Sequence.Inter
                             return JAISeqEvent.UNKNOWN;
                         }
                     case (byte)JAISeqEvent.SYNC_CPU:
-                        //skip(2);
-                        Console.WriteLine("-- sync gate --");
-                        Console.WriteLine(Sequence.ReadByte());
-                        Console.WriteLine(Sequence.ReadByte());
-                       
+                        skip(2);     
                         return JAISeqEvent.SYNC_CPU;
                     /* 3 byte unknowns */
 

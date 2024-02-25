@@ -461,7 +461,7 @@ namespace JaiSeqXLJA.Player
                             TrackRegisters[(byte)trkInter.rI[0]] = (short)trkInter.rI[1];
                             //Console.WriteLine($"PARAM {trkInter.rI[0]} {trkInter.rI[1]}" );
                             if (trkInter.rI[0] == 7)
-                                Console.WriteLine($"Pitchbend mode for {trackNumber} to {trkInter.rI[1]}/12");
+                                Console.WriteLine($"[0x{trkInter.pcl:X5}] pbm 0x{trackNumber:X2} {trkInter.rI[1]} ");
                             else Console.WriteLine($"[0x{trkInter.pcl:X5}] movp 0x{trackNumber:X2} 0x{trkInter.rI[0]:X2} 0x{trkInter.rI[1]:X3}");
 
 
@@ -494,7 +494,7 @@ namespace JaiSeqXLJA.Player
                         {
 
                             CallStack.Push(trkInter.pc);
-                            Console.WriteLine($"[0x{trkInter.pcl:X5}] bl  0x{trackNumber:X2},0x{trkInter.rI[0]:X6} >>> SP=0x{CallStack.Count}");
+                            Console.WriteLine($"[0x{trkInter.pcl:X5}] bl  0x{trackNumber:X2},0x{trkInter.rI[1]:X6} >>> SP=0x{CallStack.Count}");
 
                             trkInter.jump(trkInter.rI[1]);
                         }

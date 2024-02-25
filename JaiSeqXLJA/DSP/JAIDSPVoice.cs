@@ -89,15 +89,12 @@ namespace JaiSeqXLJA.DSP
             if (currentEnv != null)
                 envValue = currentEnv.fValue;          
 
-
-
             gain0Matrix[index] = volume;
             float vv = 1f;
             for (int i = 0; i < gain0Matrix.Length; i++)            
                 vv *= gain0Matrix[i];
             
-            //Console.WriteLine("Final Gain {0}", vv);
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv *  envValue);
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv *  envValue * envValue);
         }
 
         public void updateDSP()
@@ -140,8 +137,6 @@ namespace JaiSeqXLJA.DSP
                 {
                     if (currentEnv != null)
                         lastEnvValue2 = currentEnv.Value;
-                     
-
 
                     currentEnv = new JAIDSPEnvelopeTemp(instOsc.envelopes[1].vectorList, lastEnvValue2);
                 }
