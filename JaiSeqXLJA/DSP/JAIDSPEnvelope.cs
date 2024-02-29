@@ -1,4 +1,5 @@
-﻿using System;
+﻿using libJAudio;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,36 +9,32 @@ namespace xayrga.JAIDSP
 {
     internal class JAIDSPEnvelope
     {
-        public enum Mode
-        {
-            LINEAR = 0,
-            SQUARE = 1, 
-            SQUAREROOT = 2,
-            CUBIC = 3,
-
-            ENVELOPE_LOOP = 0x0D, 
-            ENVELOPE_HOLD = 0x0E,
-            ENVELOPE_STOP = 0x0F,            
-        }
-
-        public class Point
-        {
-            public Mode Mode;
-            public short Duration;
-            public short Value; 
-        }
-
         public short Value;
         public float fValue;
 
-        private short lastDuration = 0;
-        private short currentDuration = 0;
+        private double lastDuration = 0;
+        private double currentDuration = 0;
         private int valueDelta = 0;
         private short lastValue = 0;
 
-        private Point[] Vectors;
+        public bool debug = false;
+
+        private JEnvelopeVector[] Vectors;
         private short currentVectorIndex = -1;
-        private Mode currentMode;
+        private JEnvelopeVectorMode currentMode;
+
+        bool pv1 = false;
+        bool pv2 = false;
+
+        public JAIDSPEnvelope(JEnvelopeVector[] env, short init, bool dbg = false)
+        {
+            Value = init;
+            fValue = (float)Value / 0x7FFF;
+            Vectors = env;
+
+            debug = dbg;
+            swapNextVector();
+        }
 
 
         private void swapNextVector()
@@ -49,49 +46,71 @@ namespace xayrga.JAIDSP
             var eVector = Vectors[currentVectorIndex];
 
             // Init duration
-            lastDuration = currentDuration = eVector.Duration;
-            currentMode = eVector.Mode;
+            lastDuration = currentDuration = eVector.time;
+            currentMode = eVector.mode;
 
+            //Console.WriteLine(currentMode);
             // STOP, LOOP, HOLD vectormodes don't have value
-            if ((short)eVector.Mode < 0xA)
+
+
+            if ((short)eVector.mode < 0xA)
             {
-                var envVal = eVector.Value;
-                valueDelta = envVal - lastValue;
-                lastValue = Value;            
-            }      
+                var envVal = eVector.value;
+                valueDelta = envVal - Value;
+                lastValue = Value;
+              
+                if (eVector.time == 0)
+                {
+                    Value = eVector.value;
+                    fValue = (float)Value / 0x7FFF;
+                    swapNextVector();
+                }
+            }
+         
+    
         }
 
-        public bool update()
+        public bool update(double ms)
         {
-            if (currentMode == Mode.ENVELOPE_HOLD)
+
+            if (currentMode == JEnvelopeVectorMode.Hold)
                 return false; 
-            else if (currentMode == Mode.ENVELOPE_STOP)
+            else if (currentMode == JEnvelopeVectorMode.Stop)
                 return true;
 
-            var deltaDepth = lastDuration - currentDuration;
-            var fdeltaDepth = lastDuration / deltaDepth;
 
-            switch (currentMode)
-            {
-                case Mode.LINEAR:
-                    Value = (short)(lastValue + (valueDelta * fdeltaDepth));
-                    break;
-                case Mode.SQUARE:
-                    Value = (short)(lastValue + valueDelta * Math.Pow(fdeltaDepth , 2));
-                    break;
-                case Mode.CUBIC:
-                    Value = (short)(lastValue + valueDelta * Math.Pow(fdeltaDepth, 3));
-                    break;
-                case Mode.SQUAREROOT:
-                    Value = (short)(lastValue + valueDelta * Math.Sqrt(fdeltaDepth));
-                    break;
-            }
+        
+                var deltaDepth = lastDuration - currentDuration;
 
-            fValue = (float)Value / 0x7FFF;
-            fValue*=fValue;
+                var fdeltaDepth = deltaDepth / lastDuration;
+
+                if (fdeltaDepth > 1)
+                    fdeltaDepth = 1f;
+
+               // if (debug)
+                    //Console.WriteLine($"{deltaDepth}dd {fdeltaDepth} cd{currentDuration} ld{lastDuration} vd{valueDelta}");
+
+                switch (currentMode)
+                {
+                    case JEnvelopeVectorMode.Linear:
+                        Value = (short)(lastValue + (valueDelta * fdeltaDepth));
+                        break;
+                    case JEnvelopeVectorMode.Square:
+                        Value = (short)(lastValue + valueDelta * Math.Pow(fdeltaDepth, 2));
+                        break;
+                    case JEnvelopeVectorMode.Cubic:
+                        Value = (short)(lastValue + valueDelta * Math.Pow(fdeltaDepth, 3));
+                        break;
+                    case JEnvelopeVectorMode.SqRoot:
+                        Value = (short)(lastValue + valueDelta * Math.Sqrt(fdeltaDepth));
+                        break;
+                }
+            
+
+            fValue = (float)Value / (float)0x7FFF;
 
             if (currentDuration > 0)
-                currentDuration--;
+                currentDuration-=ms;
             else
                 swapNextVector();
 

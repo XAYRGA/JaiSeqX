@@ -48,7 +48,7 @@ namespace JaiSeqXLJA.DSP
         private int toStop = 0;
         private bool tryStop = false;
 
-        JAIDSPEnvelopeTemp currentEnv;
+        JAIDSPEnvelope currentEnv;
 
         public JAIDSPVoice(ref JAIDSPSampleBuffer buff)
         {
@@ -94,7 +94,7 @@ namespace JaiSeqXLJA.DSP
             for (int i = 0; i < gain0Matrix.Length; i++)            
                 vv *= gain0Matrix[i];
             
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv *  envValue * envValue);
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv *  envValue);
         }
 
         public void updateDSP()
@@ -105,7 +105,7 @@ namespace JaiSeqXLJA.DSP
         public void play(bool dbg = false) {
             if (instOsc!=null && instOsc.envelopes[0]!=null)
             {
-                currentEnv = new JAIDSPEnvelopeTemp(instOsc.envelopes[0].vectorList, 0,dbg);
+                currentEnv = new JAIDSPEnvelope(instOsc.envelopes[0].vectorList, 0,dbg);
                 //lastEnvValue2 = 32767;
             }
             Bass.BASS_ChannelPlay(voiceHandle,false);
@@ -138,7 +138,7 @@ namespace JaiSeqXLJA.DSP
                     if (currentEnv != null)
                         lastEnvValue2 = currentEnv.Value;
 
-                    currentEnv = new JAIDSPEnvelopeTemp(instOsc.envelopes[1].vectorList, lastEnvValue2);
+                    currentEnv = new JAIDSPEnvelope(instOsc.envelopes[1].vectorList, lastEnvValue2);
                 }
                 else
                 {
@@ -189,7 +189,7 @@ namespace JaiSeqXLJA.DSP
             if ((currentEnv != null && currentEnv.update(JAISeqPlayer.timebaseValue * instOsc.Rate)) || doDestroy == true)
             {
                 destroy();
-                return 3;
+                return 3; // VOICE_DESTROY
             }
             else if (currentEnv != null)
             {
@@ -199,16 +199,14 @@ namespace JaiSeqXLJA.DSP
             
             float pv = 1f;
             for (int i = 0; i < pitchMatrix.Length;i++)
-            {
-                pv *= pitchMatrix[i];
-            }
+                pv *= pitchMatrix[i];            
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_FREQ, rootBuffer.format.sampleRate * pv);
+
             float vv = 1f;
             for (int i = 0; i < gain0Matrix.Length; i++)
-                vv *= gain0Matrix[i];
+                vv *= gain0Matrix[i];   
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv * envValue);
 
-   
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv * envValue * envValue);
             return 0;
         }
 

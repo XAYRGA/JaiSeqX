@@ -241,13 +241,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DSP\JAIDSPADPCM4.cs" />
-    <Compile Include="DSP\JAIDSPEnvelopeTemp.cs" />
+    <Compile Include="DSP\JAIDSPEnvelope.cs" />
     <Compile Include="DSP\JAIDSPLinearSlide.cs" />
     <Compile Include="DSP\JAIDSPFormat.cs" />
     <Compile Include="DSP\JAIDSPModulator.cs" />
     <Compile Include="DSP\JAIDSPVoice.cs" />
     <Compile Include="DSP\WAV.cs" />
-    <Compile Include="DSP\JAIDSPEnvelope.cs" />
+    <Compile Include="DSP\JAIDSPEnvelopeTrue.cs" />
     <Compile Include="libJAudio\Helpers.cs" />
     <Compile Include="libJAudio\JAIInit.cs" />
     <Compile Include="libJAudio\JASystem.cs" />

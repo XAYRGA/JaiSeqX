@@ -38,9 +38,9 @@ namespace JaiSeqXLJA
                 "-jdsp.device",
                 "1",
                 //"-mute",
-                //"12,13,14,15"
-          
-              
+                //"1,4,5,8,9,10"
+
+
 
             };
 #endif  

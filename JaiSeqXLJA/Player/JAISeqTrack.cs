@@ -40,6 +40,7 @@ namespace JaiSeqXLJA.Player
         private int trackArticulation = 4;
         public int activeVoices;
         public string lastOpcode;
+        private float uhoh = 0f;
 
 
         public JAISeqTrack parent;
@@ -58,8 +59,9 @@ namespace JaiSeqXLJA.Player
         
         public float oscW = 1f;
         public float oscR = 1f;
-        public float oscV = 1f; 
+        public float oscV = 1f;
 
+        public static Random wxxxx;
 
 
         public JAISeqTrack(ref byte[] SeqFile, int address, JAISeqInterpreterVersion seqVersion)
@@ -70,7 +72,16 @@ namespace JaiSeqXLJA.Player
             voices = new JAIDSPVoice[0xA]; // Even though we only support 7 voices, I can tell that some will linger whenever we stop them.            
             voiceOrphans = new JAIDSPVoice[0xFF];
             interVer = seqVersion;
+            if (wxxxx == null)
+                wxxxx = new Random(DateTime.Now.Second);
 
+
+            //uhoh = (float)wxxxx.NextDouble();
+
+            //if (uhoh > 0.5f)
+            //   uhoh -= 1;
+            //uhoh *= 2;
+                
 
             TrackRegisters[7] = 12;
         }
@@ -143,49 +154,32 @@ namespace JaiSeqXLJA.Player
             var bendCalc = ((pitchBend.Value / 8192f) * (bendSemitones)) / 12f;
             pitchBendValue = (float)Math.Pow(2, bendCalc);
 
-
+            
             var runtimeSeconds = (JAISeqPlayer.RuntimeMS/ 1000f);
             var tau = (2f * Math.PI);
-            currentVibrato = (float)(Math.Sin(6f * tau * runtimeSeconds) * (vibratoDepth / 4096f));  // Semitones 
+            currentVibrato = (float)(Math.Cos(6f * tau * runtimeSeconds) * (vibratoDepth / 4096f));  // Semitones 
             var vibratoValue = (float)Math.Pow(2, currentVibrato / 12f); // Semitones to frequency ratio 
-
-
-           // var oscillator = (float)(Math.Sin(6f * runtimeSeconds * tau * oscR) * oscW) + oscV;
-
-
-
-
-            /*
-             * 
-            var bendCoef = bendCoefficientTable[Registers[7]];
-            var bend = (float)Math.Pow(2, (((float)bendTarget)) / (4096f * bendCoef));
-            currentPitchBend = bend;
-
-            */
 
             for (int i = 0; i < voices.Length; i++)
             {
                 if (voices[i] != null)
                 {
-                    voices[i].setPitchMatrix(1, pitchBendValue);
+                    voices[i].setPitchMatrix(1, pitchBendValue + uhoh);
                     voices[i].setPitchMatrix(2, vibratoValue);
-                    voices[i].updateVoice(timeDiffMS);
+                    if (voices[i].updateVoice(timeDiffMS)==3)
+                        voices[i].stop(); 
                 }
             }
 
             for (int i = 0; i < voiceOrphans.Length; i++)
-            {
                 if (voiceOrphans[i] != null)
                 {
-                    voiceOrphans[i].setPitchMatrix(1, pitchBendValue);
-                    var voiceRes = voiceOrphans[i].updateVoice(timeDiffMS);
-                    if (voiceRes == 3)
-                    {
+                    // kill the orphans when necessary
+                    voiceOrphans[i].setPitchMatrix(1, pitchBendValue + uhoh);
+                    voiceOrphans[i].setPitchMatrix(2, vibratoValue);
+                    if (voiceOrphans[i].updateVoice(timeDiffMS) == 3)
                         voiceOrphans[i] = null;
-                    }
-
                 }
-            }
         }
 
         private void addVoice(JAIDSPVoice voice, byte id)
@@ -231,26 +225,6 @@ namespace JaiSeqXLJA.Player
         private bool checkCondition(byte cond)
         {
             var conditionValue = TrackRegisters[0];
-            // Explanation:
-            // When a compare function is executed. the registers are subtracted. 
-            // The subtracted result is stored in R3. 
-            // This means:
-
-            //if (Console.KeyAvailable) {
-            /*
-                var w = Console.ReadKey();
-
-                //JAISeqPlayer.cycleTrackMuted((int)w.Key - 64);
-
-                if (w.Key != ConsoleKey.A)
-                {
-                    return true;
-                } else { return false; }
-                */
-            //}
-            // */
-
-
             switch (cond)
             {
 
@@ -674,7 +648,7 @@ namespace JaiSeqXLJA.Player
                         Console.Write("E: ");
                         Console.WriteLine("Trk{0} unknown opcode 0x{1:X}({2}) @ {3:X}", trackNumber, (int)opcode, opcode, trkInter.pc);
                         Console.ForegroundColor = ww;
-                        crash();
+                       // crash();
 
                         break;
                     case JAISeqEvent.CLOSE_TRACK:
@@ -691,8 +665,7 @@ namespace JaiSeqXLJA.Player
                         Console.WriteLine("Trk{0} unimplemented opcode 0x{1:X}({2}) @ {3:X}", trackNumber, (int)opcode, opcode, trkInter.pc);
                         Console.ForegroundColor = ww;
                         break;
-                        break;
-
+                 
 
                 }
 

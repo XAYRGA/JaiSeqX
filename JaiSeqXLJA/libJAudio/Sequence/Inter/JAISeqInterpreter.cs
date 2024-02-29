@@ -140,7 +140,7 @@ namespace libJAudio.Sequence.Inter
                     case 0xDD:
                     case (byte)JAISeqEvent.FIRSTSET:
                     case (byte)JAISeqEvent.LASTSET:
-                    case (byte)JAISeqEvent.TRANSPOSE:
+            
                     case 0xF3:
                     case 0xEA: // BUS CONNECT
                         skip(3);
@@ -189,16 +189,21 @@ namespace libJAudio.Sequence.Inter
                     case 0xDE: // don't know either.
              
                     case 0xF4:
+                
                
          
                         skip(1);
-                        //Console.WriteLine(Sequence.ReadByte());
+  
                         return JAISeqEvent.UNKNOWN;
                     case (byte)JAISeqEvent.PANSWEEPSET:
               
                     case 0xBC: // nobody knows what the actual fuck this is. 
                         return JAISeqEvent.UNKNOWN;
-                 
+
+                    case (byte)JAISeqEvent.TRANSPOSE:
+                        skip(3);
+                        return JAISeqEvent.TRANSPOSE;
+
                 }
             }
             return JAISeqEvent.MISS; // ABSOLUTE FUCKING DEATH. 
