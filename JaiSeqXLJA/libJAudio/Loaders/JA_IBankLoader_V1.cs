@@ -126,14 +126,14 @@ namespace libJAudio.Loaders
             {
                 binStream.BaseStream.Position = keyRegionPointers[i] + Base; // Set position to key pointer pos (relative to base)
                 var bkey = readKeyRegion(binStream, Base); // Read the key region
-                for (int b=0; b < bkey.baseKey - keyLow; b++) 
+                for (int b=0; b <= bkey.baseKey - keyLow; b++) 
                 {
                     //  They're key regions, so we're going to have a toothy / gappy piano. So we need to span the missing gaps with the previous region config.
                     // This means that if the last key was 4, and the next key was 8 -- whatever parameters 4 had will span keys 4 5 6 and 7. 
                     keys[b + keyLow] = bkey; // span the keys
-                    keys[127] = bkey;
+
                 }
-                keyLow = bkey.baseKey; // Store our last key 
+                keyLow = bkey.baseKey + 1; // Store our last key 
             }
             Inst.Keys = keys;
             byte oscCount = 0;

@@ -87,8 +87,7 @@ namespace xayrga.JAIDSP
                 if (fdeltaDepth > 1)
                     fdeltaDepth = 1f;
 
-               // if (debug)
-                    //Console.WriteLine($"{deltaDepth}dd {fdeltaDepth} cd{currentDuration} ld{lastDuration} vd{valueDelta}");
+            
 
                 switch (currentMode)
                 {

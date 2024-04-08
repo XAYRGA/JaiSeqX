@@ -20,6 +20,7 @@ namespace JaiSeqXLJA.DSP
         public float fValue { get => currentValue; }
         public void setTarget(float value, int durationTicks)
         {
+            //Console.WriteLine($"JAIDSPLinearSlide: Set target Δ={value} t={durationTicks}");
             if (durationTicks == 0)
             {
                 // Setting both duration  and targetDuration to 0 locks out the update method

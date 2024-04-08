@@ -187,13 +187,7 @@ namespace libJAudio.Sequence.Inter
 
                         return JAISeqEvent.UNKNOWN;
                     case 0xDE: // don't know either.
-             
-                    case 0xF4:
-                
-               
-         
                         skip(1);
-  
                         return JAISeqEvent.UNKNOWN;
                     case (byte)JAISeqEvent.PANSWEEPSET:
               

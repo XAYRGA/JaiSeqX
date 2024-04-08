@@ -52,6 +52,7 @@ namespace xayrga.JAIDSP
             lastDuration = currentDuration = eVector.Duration;
             currentMode = eVector.Mode;
 
+
             if ((short)eVector.Mode < 0xA)
             {
                 var envVal = eVector.Value;

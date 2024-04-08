@@ -94,6 +94,7 @@ namespace libJAudio.Sequence.Inter
                         var value = Sequence.ReadInt16();
                         rI[0] = perf;
                         rI[1] = value;
+                        rI[2] = 0;
                         rF[0] = ((float)(value) / 0x7FFF);
                         return JAISeqEvent.PERF_S16_NODUR;
                     }

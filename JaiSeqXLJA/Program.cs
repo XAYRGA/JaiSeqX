@@ -30,18 +30,13 @@ namespace JaiSeqXLJA
 #if DEBUG 
             args = new string[]
             {
-                @"jaudio.aaf",
+                @"jaiinit.aaf",
                 "visu",
-                "sea.bms",
+                "luijap/OyamaPress.co.bms",
                 "0",
                 "-paused",
                 "-jdsp.device",
                 "1",
-                //"-mute",
-                //"1,4,5,8,9,10"
-
-
-
             };
 #endif  
 

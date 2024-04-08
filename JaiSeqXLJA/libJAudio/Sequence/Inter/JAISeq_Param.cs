@@ -21,6 +21,11 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = dest_reg; // push register to ir1
                         return JAISeqEvent.READPORT;
                     }
+                case 0xF4:
+                    {
+                        rI[0] = Sequence.ReadByte();                   
+                        return JAISeqEvent.VIBRATO_PITCH;
+                    }
 
                 case 0xCC:
                     {

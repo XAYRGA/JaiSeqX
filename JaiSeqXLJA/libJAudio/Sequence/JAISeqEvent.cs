@@ -119,6 +119,7 @@ namespace libJAudio.Sequence
         PANSWEEPSET = 0xEF, // <byte speed>?
         OSCILLATORFULL = 0xF2, 
         VOLUME_MODE = 0xF3, // <byte mode>
+        VIBRATO_PITCH = 0xF4,
         PRINTF = 0xFB, // READ UNTIL 0x00, advance one byte.
         NOP = 0xFC, // NO ARGS
         TIME_BASE = 0xFD, // Short tempo

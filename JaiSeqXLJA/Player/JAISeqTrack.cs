@@ -143,9 +143,10 @@ namespace JaiSeqXLJA.Player
 
         }
         double lastUpdate = 0;
+        double timeDiffMS = 0;
         private void updateVoices()
         {
-            var timeDiffMS = JAISeqPlayer.tickTimer.Elapsed.TotalMilliseconds - lastUpdate;
+            timeDiffMS = JAISeqPlayer.tickTimer.Elapsed.TotalMilliseconds - lastUpdate;
             lastUpdate = JAISeqPlayer.tickTimer.Elapsed.TotalMilliseconds;
 
             pitchBend.update();
@@ -206,7 +207,6 @@ namespace JaiSeqXLJA.Player
                 {
                     if (voiceOrphans[i] == null)
                     {
-                        //Console.WriteLine("found voice orphan buffer.");
                         voiceOrphans[i] = voices[id];
                         break;
                     }
@@ -341,17 +341,7 @@ namespace JaiSeqXLJA.Player
                         {
                             if (trkInter.rI[0] == 1)
                             {
-                                /*
-                                bending = true;
-                                bendTargetTicks = trkInter.rI[2];
-                                if (bendTargetTicks < 1)
-                                    bendTargetTicks = 1;
-                         
-                                bendTarget = trkInter.rI[1];//opcode == JAISeqEvent.PERF_S16_NODUR ? trkInter.rI[1] / 2 : trkInter.rI[1];
-                                bendticks = 0;
-                                //Console.WriteLine($"{bendTargetTicks} {bendTarget}");
-                                pitchTarget = (bendTarget / (float)0x7FFF) * 0.7f ;
-                                */
+                                //Console.WriteLine($"{opcode} v={trkInter.rI[1]} t={trkInter.rI[2]} a=0x{pc:X}");
                                 pitchTarget = (trkInter.rI[1] / (float)0x7FFF) * 0.7f;
                                 pitchBend.setTarget(trkInter.rI[1], trkInter.rI[2]);
 
@@ -546,6 +536,9 @@ namespace JaiSeqXLJA.Player
                                 stopVoice(ixf);
                         */
                         break;
+                    case JAISeqEvent.VIBRATO_PITCH:
+                        Console.WriteLine($"Vibpitch {trkInter.rI[0]}");
+                        break;
                     case JAISeqEvent.NOTE_ON:
                         {
 
@@ -601,20 +594,15 @@ namespace JaiSeqXLJA.Player
 
                             newVoice.setPanning(panning);
                             newVoice.setPitchMatrix(1, pitchBendValue);
-
-
-
-                            newVoice.tickAdvanceValue = (JAISeqPlayer.timebaseValue);
-
                    
                             if (currentInst.oscillatorCount > 0)
-                            {
-                                var osc = currentInst.oscillators[0];
                                 newVoice.setOcillator(currentInst.oscillators[0]);
-                            }
 
-                        
-                            newVoice.play(trackNumber==0);
+                            if (currentInst.oscillatorCount > 1)
+                                Console.WriteLine($"Unsupported multi-oscillator instrument :( {currentInst.oscillators[1].target}");
+                            
+                            newVoice.play();
+                     
                             addVoice(newVoice, (byte)voice);
                             break;
                         }
@@ -646,7 +634,7 @@ namespace JaiSeqXLJA.Player
                         var ww = Console.ForegroundColor;
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("E: ");
-                        Console.WriteLine("Trk{0} unknown opcode 0x{1:X}({2}) @ {3:X}", trackNumber, (int)opcode, opcode, trkInter.pc);
+                        Console.WriteLine("Trk{0} unknown opcode 0x{1:X}({2}) @ {3:X}", trackNumber, trkInter.last_opcode, (JAISeqEvent)trkInter.last_opcode, trkInter.pc);
                         Console.ForegroundColor = ww;
                        // crash();
 

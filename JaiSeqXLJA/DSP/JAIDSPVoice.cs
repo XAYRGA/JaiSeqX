@@ -11,9 +11,11 @@ using System.IO;
 using System.Runtime.InteropServices;
 using xayrga.JAIDSP;
 using JaiSeqXLJA.Player;
+using System.Diagnostics;
 
 namespace JaiSeqXLJA.DSP
 {
+
     public enum VoiceEffect {
         REVERB = 0,
         ECHO = 1,
@@ -25,7 +27,7 @@ namespace JaiSeqXLJA.DSP
         private JOscillator instOsc;
         private JEnvelopeVector envCurrentVec;
 
-        public int fadeOutMS = 0;
+        public float fadeOutMS = 0;
 
         private float[] pitchMatrix = { 1f, 1f, 1f, 1f };
         private float[] gain0Matrix = { 1f, 1f, 1f, 1f };
@@ -47,6 +49,7 @@ namespace JaiSeqXLJA.DSP
         private bool crashed = false;
         private int toStop = 0;
         private bool tryStop = false;
+        public bool debug = false;
 
         JAIDSPEnvelope currentEnv;
 
@@ -56,21 +59,19 @@ namespace JaiSeqXLJA.DSP
 
             voiceHandle = Bass.BASS_StreamCreateFile(buff.globalFileBuffer, 0, buff.fileBuffer.Length, BASSFlag.BASS_DEFAULT);
 
+
             if (buff.looped)
-            {
                 syncHandle = Bass.BASS_ChannelSetSync(voiceHandle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME , buff.loopEnd, JAIDSP.globalLoopProc, new IntPtr(buff.loopStart));
-            }
+
         }
 
         public void setPitchMatrix(byte index,float pitch)
         {
             pitchMatrix[index] = pitch;
-            //internalVoice.SetFrequencyRatio(pitch);
             float pv = 1f;
             for (int i = 0; i < pitchMatrix.Length; i++)
-            {
                 pv *= pitchMatrix[i];
-            }
+
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_FREQ,rootBuffer.format.sampleRate * pv);
         }
 
@@ -94,21 +95,18 @@ namespace JaiSeqXLJA.DSP
             for (int i = 0; i < gain0Matrix.Length; i++)            
                 vv *= gain0Matrix[i];
             
+      
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv *  envValue);
         }
 
-        public void updateDSP()
-        {
 
-        }
 
         public void play(bool dbg = false) {
             if (instOsc!=null && instOsc.envelopes[0]!=null)
-            {
                 currentEnv = new JAIDSPEnvelope(instOsc.envelopes[0].vectorList, 0,dbg);
-                //lastEnvValue2 = 32767;
-            }
+
             Bass.BASS_ChannelPlay(voiceHandle,false);
+            debug = dbg;
         }
 
         public void forceStop()
@@ -122,15 +120,13 @@ namespace JaiSeqXLJA.DSP
             Bass.BASS_StreamFree(voiceHandle);
             
             if (rootBuffer.looped)
-            {
                 Bass.BASS_ChannelRemoveSync(voiceHandle, syncHandle);
-            }
+            
     
         }
         public void stop()
         {
 
- 
             if (instOsc != null && instOsc.envelopes != null && instOsc.envelopes.Length > 1 && instOsc.envelopes[1] != null)
             {
                 if (instOsc.envelopes[1].vectorList[0] != null)
@@ -167,8 +163,8 @@ namespace JaiSeqXLJA.DSP
 
         public void stopImmediately()
         {
-            Bass.BASS_ChannelRemoveSync(voiceHandle, syncHandle);
-            Bass.BASS_StreamFree(voiceHandle);
+
+            FadeStop(10);
 
         }
         public void setOcillator(JOscillator osc)
@@ -184,10 +180,18 @@ namespace JaiSeqXLJA.DSP
 
         public byte updateVoice(double ms)
         {
-       
+
             float envValue = 1;
+            fadeOutMS -= (float)ms;
+            if (fadeOutMS < 0 && tryStop)
+            {
+                destroy();
+                return 3;
+            }
+
             if ((currentEnv != null && currentEnv.update(JAISeqPlayer.timebaseValue * instOsc.Rate)) || doDestroy == true)
             {
+     
                 destroy();
                 return 3; // VOICE_DESTROY
             }
@@ -217,9 +221,11 @@ namespace JaiSeqXLJA.DSP
 
         public void FadeStop(int miliseconds)
         {
-            doDestroy = true;
+            
             Bass.BASS_ChannelSlideAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL, 0, miliseconds + addRelease);
             Bass.BASS_ChannelSetSync(voiceHandle, BASSSync.BASS_SYNC_SLIDE, 0, JAIDSP.globalFadeFreeProc, new IntPtr(0));
+            fadeOutMS = miliseconds;
+            tryStop = true;
 
         }
 
