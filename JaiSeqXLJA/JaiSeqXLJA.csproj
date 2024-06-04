@@ -285,7 +285,6 @@
     <None Include="DSP\VoiceSource.cs.old" />
     <None Include="DSP\Voice.cs.old" />
     <Compile Include="DSP\JAIDSP.cs" />
-    <None Include="Player\sequenceops.tmp" />
     <EmbeddedResource Include="Shaders\GLSL\imgui-frag.glsl" />
     <EmbeddedResource Include="Shaders\GLSL\imgui-vertex.glsl" />
     <EmbeddedResource Include="Shaders\HLSL\imgui-frag.hlsl.bytes" />

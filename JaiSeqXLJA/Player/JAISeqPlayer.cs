@@ -27,6 +27,8 @@ namespace JaiSeqXLJA.Player
         public static float gainMultiplier = 1f;
         public static bool paused = false;
         public static bool noDKJBWhistle = false;
+        public static int loadedSampleBytes = 0;
+        public static int loadedSamples = 0;
 
         public static void init()
         {
@@ -169,9 +171,9 @@ namespace JaiSeqXLJA.Player
                     awHandles[waveData.wsysFile] = w;
                     var fg = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write("EMERGENCY: ");
+                    Console.Write("DELAY WARNING: ");
                     Console.ForegroundColor = fg;
-                    Console.WriteLine("Handle for {0} missing. Attempting hot load...", waveData.wsysFile);
+                    Console.WriteLine("Handle for {0} missing! Hotloading...", waveData.wsysFile);
 
                     fhnd = w;
                 } catch
@@ -195,6 +197,7 @@ namespace JaiSeqXLJA.Player
                         sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16, (int)Math.Floor((waveData.loop_start / 8f) * 16f), (int)Math.Floor((waveData.loop_end / 8f) * 16f));
                     else
                         sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16);
+                    loadedSampleBytes += pcm.Length;
                     break;
                 case 2:
                     pcm = PCM8216BYTE(ou);
@@ -202,6 +205,7 @@ namespace JaiSeqXLJA.Player
                         sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16, waveData.loop_start*2, waveData.loop_end*2);
                     else
                         sbuf = JAIDSP.SetupSoundBuffer(pcm, 1, (int)waveData.sampleRate, 16);
+                    loadedSampleBytes += pcm.Length;
                     break;
                 default:
                     sbuf = null;
@@ -214,9 +218,10 @@ namespace JaiSeqXLJA.Player
 
             if (!Directory.Exists("wavout"))
                 Directory.CreateDirectory("wavout");
-            
 
-  
+
+
+            loadedSamples++;
 
             waveCache[cacheIndex] = sbuf;
             data = waveData;

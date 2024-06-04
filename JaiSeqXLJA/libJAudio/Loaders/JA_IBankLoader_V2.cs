@@ -390,7 +390,6 @@ namespace libJAudio.Loaders
                     time = binStream.ReadInt16(), // read time 
                     value = binStream.ReadInt16() // read value
                 };
-                Console.WriteLine(vector.mode);
                 OscVecs[i] = vector;
             } // Go down below for the last vector, after sorting
           

@@ -328,6 +328,7 @@ namespace libJAudio.Loaders
             JInstrumentKey[] keys = new JInstrumentKey[128];
             int[] keyPointers = new int[128];
             keyPointers = Helpers.readInt32Array(binStream, 128); // read the pointers.
+            var finalPos = binStream.BaseStream.Position;
           
             for (int i = 0; i < 128; i++) // Loop through all pointers.
             {
@@ -361,6 +362,19 @@ namespace libJAudio.Loaders
                 keys[i] = newKey;
             }
             Inst.Keys = keys;
+
+            binStream.BaseStream.Position = finalPos;
+            for (int i=0; i < 128; i++)
+            {
+                var pn = binStream.ReadByte();
+                if (keys[i] != null)
+                    keys[i].Pan = pn;
+
+            }                    
+                
+
+
+            
             return Inst;
         }
 

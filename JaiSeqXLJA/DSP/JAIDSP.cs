@@ -94,10 +94,11 @@ namespace JaiSeqXLJA.DSP
 
         private static void FadeCollect(int syncHandle, int channel, int data, IntPtr user)
         {
-            Bass.BASS_ChannelRemoveSync(channel, syncHandle);
-            Bass.BASS_StreamFree(channel);
-
-
+            if (Bass.BASS_ChannelIsActive(channel)==BASSActive.BASS_ACTIVE_PLAYING)
+            {
+                Bass.BASS_ChannelRemoveSync(channel, syncHandle);
+                Bass.BASS_StreamFree(channel);
+            }
         }
 
         public static JAIDSPSampleBuffer SetupSoundBuffer(byte[] pcm, int cn, int sr, int bs)

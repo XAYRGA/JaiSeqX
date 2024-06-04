@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,9 +24,6 @@ namespace xayrga.JAIDSP
         private short currentVectorIndex = -1;
         private JEnvelopeVectorMode currentMode;
 
-        bool pv1 = false;
-        bool pv2 = false;
-
         public JAIDSPEnvelope(JEnvelopeVector[] env, short init, bool dbg = false)
         {
             Value = init;
@@ -36,12 +34,12 @@ namespace xayrga.JAIDSP
             swapNextVector();
         }
 
-
         private void swapNextVector()
         {
 
             if (++currentVectorIndex >= Vectors.Length)
-                throw new IndexOutOfRangeException("DSPEnvelope vector index exceeded vector list boundary!");
+                throw new Exception($"Enveloped exited vector list boundary!");
+
 
             var eVector = Vectors[currentVectorIndex];
 
@@ -49,11 +47,7 @@ namespace xayrga.JAIDSP
             lastDuration = currentDuration = eVector.time;
             currentMode = eVector.mode;
 
-            //Console.WriteLine(currentMode);
-            // STOP, LOOP, HOLD vectormodes don't have value
-
-
-            if ((short)eVector.mode < 0xA)
+            if ((short)eVector.mode < 0xA) // < 0xA is from the disasm
             {
                 var envVal = eVector.value;
                 valueDelta = envVal - Value;
@@ -66,28 +60,28 @@ namespace xayrga.JAIDSP
                     swapNextVector();
                 }
             }
-         
-    
         }
 
-        public bool update(double ms)
+        public unsafe bool update(double ms)
         {
 
             if (currentMode == JEnvelopeVectorMode.Hold)
-                return false; 
+                return false;
             else if (currentMode == JEnvelopeVectorMode.Stop)
                 return true;
-
-
+            else if (currentMode == JEnvelopeVectorMode.Loop)
+            {
+                var eVector = Vectors[currentVectorIndex];
+                currentVectorIndex = (short)(eVector.value - 1);
+                swapNextVector();
+                return false;
+            }
         
-                var deltaDepth = lastDuration - currentDuration;
-
-                var fdeltaDepth = deltaDepth / lastDuration;
+                var deltaDepth = lastDuration - currentDuration; // Integer Depth
+                var fdeltaDepth = deltaDepth / lastDuration; // Floating point depth percentage
 
                 if (fdeltaDepth > 1)
                     fdeltaDepth = 1f;
-
-            
 
                 switch (currentMode)
                 {
@@ -103,11 +97,11 @@ namespace xayrga.JAIDSP
                     case JEnvelopeVectorMode.SqRoot:
                         Value = (short)(lastValue + valueDelta * Math.Sqrt(fdeltaDepth));
                         break;
+                   
                 }
-            
 
             fValue = (float)Value / (float)0x7FFF;
-
+                
             if (currentDuration > 0)
                 currentDuration-=ms;
             else

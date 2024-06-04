@@ -11,6 +11,8 @@ namespace libJAudio
     {
         public float Volume = 1;
         public float Pitch = 1;
+        public float Pan = 64f;
+
         public int baseKey;
         public JInstrumentKeyVelocity[] Velocities; 
     }

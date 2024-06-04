@@ -7,6 +7,8 @@ using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 using ImGuiNET;
 using static ImGuiNET.ImGuiNative;
+using System.Diagnostics;
+using JaiSeqXLJA.Player;
 
 namespace JaiSeqXLJA.Visualizer
 {
@@ -86,6 +88,7 @@ namespace JaiSeqXLJA.Visualizer
 
                 var totalVoices = 0f;
                 var totalTracks = 0f;
+                var totalOrphans = 0;
                 for (int i = 0; i < Player.JAISeqPlayer.tracks.Length; i++)
                 {
                     
@@ -93,11 +96,12 @@ namespace JaiSeqXLJA.Visualizer
                         continue;
                     totalTracks++;
                     var w = Player.JAISeqPlayer.tracks[i];
-              
-                    totalVoices += w.activeVoices;
+
+                    totalOrphans += w.activeVoiceOrphans;
+                    totalVoices += w.activeVoices + w.activeVoiceOrphans;
                 }
 
-                totalVoices = ((totalVoices / totalTracks) / 7f) * 100f;
+                //totalVoices = ((totalVoices / totalTracks) / 7f) * 100f;
                 if (itn!= Player.JAISeqPlayer.ppqn || itb!= Player.JAISeqPlayer.bpm)
                 {
                     Player.JAISeqPlayer.ppqn = itn;
@@ -121,10 +125,31 @@ namespace JaiSeqXLJA.Visualizer
         
       
                 ImGui.Columns(1);
+                var DrawList = ImGui.GetWindowDrawList();
 
-                ImGui.Text("Remaining DSP Bandwidth\t\t JaiSeqX by Xayrga!");
-                ImGui.ProgressBar((64f - totalVoices) / 64f);
-      
+
+                var proc = Process.GetCurrentProcess();
+                var usage = JAISeqPlayer.loadedSampleBytes / (1024);
+                ImGui.Text($"SAMPLE RAM: {usage}KB ({JAISeqPlayer.loadedSamples:D2} samples)   \\  ENGINE RAM: {proc.WorkingSet64/(1047576)}MB");
+                DrawList.AddRectFilled(new Vector2(9, 160), new Vector2( (usage/8192f) * 200f, 165), 0xFFFF00FF);
+
+                var totalWidth = 330f;          
+
+                var percNormal = totalWidth * ((totalVoices - totalOrphans) / 64);
+                DrawList.AddRectFilled(new Vector2(9, 175), new Vector2(percNormal + 9 ,180),0xFF0000FF);
+
+
+                var percOrphans = totalWidth * ((totalOrphans) / 64f);
+                DrawList.AddRectFilled(new Vector2(percNormal + 9, 175), new Vector2( percNormal + 9 + percOrphans, 180), 0xFFFF0000);
+
+
+                DrawList.AddRectFilled(new Vector2(percNormal + percOrphans + 9, 175), new Vector2(totalWidth, 180), 0xFF00FFFF);
+
+                ImGui.Dummy(new Vector2(0,12.5f));
+                ImGui.Text($"DSP CHN: {(int)totalVoices:D2}/64 total, {(int)(totalVoices - totalOrphans):D2} active, {totalOrphans:D2} orphans   \\   {(int)(totalVoices * 44100):D7}/{44100 * 7 * 16} buffer   \\   {(totalVoices / 64f) *100f,3:00.0}%%");
+              
+
+
 
             }
             ImGui.End();
@@ -166,7 +191,7 @@ namespace JaiSeqXLJA.Visualizer
 
             ImGui.Begin("TrackInfo", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
             {
-                ImGui.Text($"{"INSTRUCTION",-23} {"VOICE",-6} {"ADDRESS",-10} {"STACK"}");
+                ImGui.Text($"  {"INSTRUCTION",-23} {"VOICE",-6} {"ADDRESS",-10} {"STACK"}");
                 var ib = 0;
                 for (int i = 0; i < Player.JAISeqPlayer.tracks.Length; i++)
                 {
@@ -177,12 +202,12 @@ namespace JaiSeqXLJA.Visualizer
                     if (w.lastOpcode == "ff-FIN")
                     {
                         ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
-                        ImGui.Text($"{"((STOPPED)) - 0xFF",-23} {w.activeVoices,-5}  0x{w.pc,-8:X3} 0x{(w.CallStack.Count > 0 ? w.CallStack.Peek() : 0):X3}");
+                        ImGui.Text($"{"((STOPPED)) - 0xFF",-23} {w.activeVoices + "/7",-5}  0x{w.pc,-8:X3} 0x{(w.CallStack.Count > 0 ? w.CallStack.Peek() : 0):X3}");
                         ImGui.PopStyleColor();
                     } else
                     {
                         //DEL: {w.delay:X4}!{w.lastDelay,-8:X4}
-                        ImGui.Text($"{w.lastOpcode,-23} {w.activeVoices,-5}  0x{w.pc,-8:X3} 0x{(w.CallStack.Count > 0 ? w.CallStack.Peek() : 0):X3}");
+                        ImGui.Text($"0x{w.lastOpcode,-23} {w.activeVoices + "/7",-5}  0x{w.pc,-8:X3} 0x{(w.CallStack.Count > 0 ? w.CallStack.Peek() : 0):X3}");
                     }
                 }
                 ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
@@ -250,7 +275,7 @@ namespace JaiSeqXLJA.Visualizer
                     ImGui.ProgressBar(w.volume,new Vector2(100,13));
                     ImGui.NextColumn();
                     ImGui.Dummy(new Vector2(0, 2f));
-                    ImGui.ProgressBar(0.5f - w.panning, new Vector2(100, 13));
+                    ImGui.ProgressBar( (w.panning/64f) * 0.5f, new Vector2(100, 13));
    
                     ImGui.NextColumn();
                     ImGui.Dummy(new Vector2(0, 2f));

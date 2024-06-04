@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace JaiSeqXLJA.DSP
 {
-    // Floating Linearally Interpolated Point 
     internal class JAIDSPLinearSlide
     {
         float lastValue = 0;

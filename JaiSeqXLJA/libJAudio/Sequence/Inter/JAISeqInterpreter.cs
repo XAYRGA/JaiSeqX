@@ -110,7 +110,8 @@ namespace libJAudio.Sequence.Inter
                             break; // We didn't find anything, and this is our default case -- drop out. 
                         }
                     case (byte)JAISeqEvent.IRCCUTOFF:
-                        skip(1);
+                        Console.WriteLine(Sequence.ReadByte());
+                        //skip(1);
                         return JAISeqEvent.IRCCUTOFF;
                     case (byte)JAISeqEvent.PRINTF:
                         {
