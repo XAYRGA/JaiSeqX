@@ -93,6 +93,11 @@ namespace libJAudio.Sequence
 
         //************//
 
+        OVERRIDE_1 = 0xB1,
+
+
+        //************//
+
         BITWISE = 0xA9,
         CONNECT_NAME = 0xD0,
         VIBDEPTHMIDI = 0xE6,

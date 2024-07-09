@@ -22,27 +22,37 @@ namespace JaiSeqXLJA
     {
         public static string[] cmdargs;
         public static JASystem JASystem;
+        public static float fDamp = 0.204f;
+        public static float fDryMix = 1f;
+        public static float fRoomSize = 1f;
+        public static float fWetMix = 0.824f;
+        public static float fWidth = 0.7f;
+  
 
 
         static void Main(string[] args)
         {
+
+            //var kk = File.ReadAllBytes("ghhgh.adpcm");
+            //File.WriteAllBytes("data.pcm", DSP.JAIDSPADPCM4.ADPCMToPCM16(kk, JAIDSPADPCM4.ADPCMFormat.FOUR_BIT));
             
 #if DEBUG 
             args = new string[]
             {
-                @"jaudio.aaf",
+                @"jaiinit.aaf",
                 "visu",
-                "i_ryu.bms",
+                "BabyBattle.bms",
                 "0",
            
                 "-jdsp.device",
                 "1",
-                //"-mute",
-                //"0,5,6,9,10",
+                "-mute",
+                //"12,13,14,15",
+                //"0,1,2,3,4,5,6,7,8,9,10,11,12,13,15",
 
                 
                 "-paused",
-               // "-nodkwhistle",
+               //"-nodkwhistle",
 
             };
 #endif  
@@ -91,7 +101,7 @@ namespace JaiSeqXLJA
                         while (true)
                         {
                             Player.JAISeqPlayer.update();
-                            Thread.Sleep(1);
+                            //Thread.Sleep(1);
                             if (useVisu)
                                 Menu.update();
                         }

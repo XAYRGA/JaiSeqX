@@ -63,7 +63,22 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = value;
                         return JAISeqEvent.CMP8;
                     }
-
+                case 0xAA:
+                    {
+                      
+                        var mode = Sequence.ReadByte();
+                        if (mode == 0x20)
+                        {
+                            rI[0] = mode;
+                            var dest_register = Sequence.ReadByte();
+                            var address_register = Sequence.ReadByte();
+                            var relative_register = Sequence.ReadByte();
+                            rI[1] = dest_register;
+                            rI[2] = address_register;
+                            rI[3] = relative_register;
+                        }
+                        return JAISeqEvent.LOADTBL;
+                    }
                 case 0xAD: // ADD16
                     {
                         var destination_reg = Sequence.ReadByte();

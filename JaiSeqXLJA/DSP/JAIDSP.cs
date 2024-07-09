@@ -14,7 +14,7 @@ namespace JaiSeqXLJA.DSP
     {
 
         public static SYNCPROC globalLoopProc;
-        public static SYNCPROC globalFadeFreeProc;
+
         public static bool Init()
         {
             #region dumb obfuscation for email and registration key, just to prevent bots.
@@ -39,6 +39,9 @@ namespace JaiSeqXLJA.DSP
             #endregion
             Un4seen.Bass.BassNet.Registration(Encoding.ASCII.GetString(eml), Encoding.ASCII.GetString(rkey));
             Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_SRC, 6); //  SINC POLYPOINT 128
+            Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_UPDATETHREADS, 3);
+
+
             Bass.BASS_Init(JaiSeqXLJA.findDynamicNumberArgument("-jdsp.device", -1), 48000, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero); // Initialize audio engine
 
     
@@ -49,12 +52,12 @@ namespace JaiSeqXLJA.DSP
             {
                 Console.WriteLine($"{n} = {info.ToString()} ");
             }
-            
-            
 
 
+
+         
             globalLoopProc = new SYNCPROC(DoLoop);
-            globalFadeFreeProc = new SYNCPROC(FadeCollect);
+ 
             return true;
         }
         public static bool Deinit() // free's engine thread
@@ -90,16 +93,6 @@ namespace JaiSeqXLJA.DSP
             return rt;
         }
 
-
-
-        private static void FadeCollect(int syncHandle, int channel, int data, IntPtr user)
-        {
-            if (Bass.BASS_ChannelIsActive(channel)==BASSActive.BASS_ACTIVE_PLAYING)
-            {
-                Bass.BASS_ChannelRemoveSync(channel, syncHandle);
-                Bass.BASS_StreamFree(channel);
-            }
-        }
 
         public static JAIDSPSampleBuffer SetupSoundBuffer(byte[] pcm, int cn, int sr, int bs)
         {

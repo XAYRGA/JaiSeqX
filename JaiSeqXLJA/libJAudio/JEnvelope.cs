@@ -25,7 +25,7 @@ namespace libJAudio
         Linear = 0,
         Square = 1,
         SqRoot = 2,
-        Cubic = 3,
+        SampleCell = 3,
 
         Loop = 13,
         Hold = 14,

@@ -27,10 +27,11 @@ namespace JaiSeqXLJA.Player
         public int trackNumber;
         public int delay;
         public int lastDelay;
-        public float panning;
+        public float panning = 64f;
         public float vibratoDepth = 0;
 
         public float volume = 1;
+        public float reverb = 0f;
 
         public int looppos = 0;
 
@@ -81,18 +82,18 @@ namespace JaiSeqXLJA.Player
 
         private void error(string function, string data)
         {
-            /*
-            var w = Console.ForegroundColor; Console.ForegroundColor = ConsoleColor.Red; Console.Write($"JAISeqTrack::{function} > "); Console.ForegroundColor = w;
-            Console.WriteLine(data);
-            */
+            
+           // var w = Console.ForegroundColor; Console.ForegroundColor = ConsoleColor.Red; Console.Write($"JAISeqTrack::{function} > "); Console.ForegroundColor = w;
+           // Console.WriteLine(data);
+         
 
         }
         private void error(string function, string data, params object[] format)
         {
-            /*
-            var w = Console.ForegroundColor; Console.ForegroundColor = ConsoleColor.Red; Console.Write($"JAISeqTrack::{function} > "); Console.ForegroundColor = w;
-            Console.WriteLine(data,format);
-            */
+           
+           // var w = Console.ForegroundColor; Console.ForegroundColor = ConsoleColor.Red; Console.Write($"JAISeqTrack::{function} > "); Console.ForegroundColor = w;
+           // Console.WriteLine(data,format);
+            
         }
     
 
@@ -136,18 +137,37 @@ namespace JaiSeqXLJA.Player
             for (int i = 0; i < voices.Length; i++)
                 if (voices[i] != null)
                     voices[i].setVolumeMatrix(2, this.volume);
+
+            for (int i = 0; i < voiceOrphans.Length; i++)
+                if (voiceOrphans[i] != null)
+                    voiceOrphans[i].setVolumeMatrix(2, this.volume);
         }
 
+        public void updateTrackReverb(float reverb)
+        {
+            this.reverb = reverb;
+            for (int i = 0; i < voices.Length; i++)
+                if (voices[i] != null)
+                    voices[i].setReverb(reverb);
+
+            for (int i = 0; i < voiceOrphans.Length; i++)
+                if (voiceOrphans[i] != null)
+                    voiceOrphans[i].setReverb(reverb);
+        }
 
         public void updateTrackPanning(float panning)
         {
 
             var fp = (64f - panning) + 64f;
+
             this.panning = fp;
             for (int i = 0; i < voices.Length; i++)
                 if (voices[i] != null)
                     voices[i].setPanMatrix(0, fp);
 
+            for (int i = 0; i < voiceOrphans.Length; i++)
+                if (voiceOrphans[i] != null)
+                    voiceOrphans[i].setPanMatrix(0, fp);
         }
         double lastUpdate = 0;
         double timeDiffMS = 0;
@@ -198,7 +218,6 @@ namespace JaiSeqXLJA.Player
             activeVoices++;
             stopVoice(id);
             voices[id] = voice;
-            // Console.WriteLine("VOICE BUFFER FULL: Trk{0} BA: 0x{1:X} PC: 0x{2:X}\n\nPREPARE FOR THE LEAKENING.", trackNumber, offsetAddr, trkInter.pc);
         }
         private void stopVoice(byte id, bool imm = false)
         {
@@ -220,10 +239,9 @@ namespace JaiSeqXLJA.Player
                     break;
                 }
 
-            voices[id] = null; // FuuF
-
+            voices[id] = null;
             activeVoices--;
-            //*/
+
         }
 
 
@@ -283,15 +301,9 @@ namespace JaiSeqXLJA.Player
 
         public void update()
         {
-           // try
-            //{
+
                 realUpdate();
-            //}
-            //catch (Exception E)
-            //{
-               // crash();
-                //throw E;
-            //}
+    
         }
         private void realUpdate()
         {
@@ -361,6 +373,7 @@ namespace JaiSeqXLJA.Player
                             {
                                 var nintendo = trkInter.rI[1];
                                 //var fNintendo = (nintendo - 64f) / 64f;
+         
                                 updateTrackPanning(nintendo);
                             }
                             else if (trkInter.rI[0] == 9)
@@ -368,9 +381,6 @@ namespace JaiSeqXLJA.Player
                                 vibratoDepth = trkInter.rI[1];
                                 //Console.WriteLine($"Vibrato depth for {trackNumber} set to {vibratoDepth}");
                             }
-
-                     
-                           
                             break;
                         }
 
@@ -403,23 +413,27 @@ namespace JaiSeqXLJA.Player
                             {
                                 pitchBend.setTarget(trkInter.rI[1], 0);
                                 pitchTarget = trkInter.rF[1];
-                                Console.WriteLine($"[T{trackNumber:X2}@0x{trkInter.pcl:X5}] pitchbend to {trkInter.rI[1]}");
+                                //Console.WriteLine($"[T{trackNumber:X2}@0x{trkInter.pcl:X5}] pitchbend to {trkInter.rI[1]}");
                             }
                             else if ((byte)trkInter.rI[0] == 0)
                             {
                                 //Console.WriteLine(trkInter.rI[1] / 128f);
                                 updateTrackVolume(trkInter.rI[1] / 128f);
-                                Console.WriteLine($"[T{trackNumber:X2}@0x{trkInter.pcl:X5}] volume to {trkInter.rI[1]}");
-               
+                                //Console.WriteLine($"[T{trackNumber:X2}@0x{trkInter.pcl:X5}] volume to {trkInter.rI[1]}");
+                            } else if (trkInter.rI[0]==2)
+                            {
+                                updateTrackReverb( (trkInter.rI[1] / 128f));
+                                //Console.WriteLine($"!!!!!!!![T{trackNumber:X2}@0x{trkInter.pcl:X5}] reverb to {trkInter.rI[1]}");
                             }
                             else if (trkInter.rI[0] == 3)
                             {
-                                var nintendo = trkInter.rI[1];
+                                var nintendo = ( 64f - trkInter.rI[1]) + 64f;
                                 //var fNintendo = (nintendo - 64f) / 64f;
+                                //Console.WriteLine(opcode / 128f);
                                 updateTrackPanning(nintendo);
                             } else
                             {
-                                Console.WriteLine($"[T{trackNumber:X2}@0x{trkInter.pcl:X5}] set f-prm {trkInter.rI[0]} to 0x{trkInter.rI[1]:X3} ???");
+                                //Console.WriteLine($"[T{trackNumber:X2}@0x{trkInter.pcl:X5}] set f-prm {trkInter.rI[0]} to 0x{trkInter.rI[1]:X3} ???");
                             }
                             
 
@@ -429,13 +443,13 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.PARAM_SET_8:
                         {
                             TrackRegisters[(byte)trkInter.rI[0]] = (short)trkInter.rI[1];
-                            //Console.WriteLine($"PARAM {trkInter.rI[0]} {trkInter.rI[1]}" );
+                            Console.WriteLine($"PARAM {trkInter.rI[0]} {trkInter.rI[1]}" );
                             if (trkInter.rI[0] == 7)
                                 Console.WriteLine($"[T{trackNumber:X2}@0x{trkInter.pcl:X5}] bend octaves to {trkInter.rI[1]} ");
                             else Console.WriteLine($"[T{trackNumber:X2}@0x{trkInter.pcl:X5}] iprm {trkInter.rI[0]} to 0x{trkInter.rI[1]:X3}");
 
 
-
+                      
                             break;
                         }
                     case JAISeqEvent.VIBDEPTHMIDI:
@@ -582,6 +596,8 @@ namespace JaiSeqXLJA.Player
     
                             var newVoice = new JAIDSPVoice(ref snd);
 
+                            //if (trackNumber == 3)
+                                //Console.WriteLine($"VOL {volume} VEL {velocity} kn{keyNote.Volume} knv{keyNoteVel.Volume} ci{currentInst.Volume}");
                          
 
                             var desiredPitch = (float)Math.Pow(2, ((note - ouData.key)) / 12f) * currentInst.Pitch * keyNoteVel.Pitch * keyNote.Pitch;
@@ -590,8 +606,8 @@ namespace JaiSeqXLJA.Player
                             
                             newVoice.setPitchMatrix(0, desiredPitch);
                             var fVel = ((float)velocity / 127f);
-                            fVel *= fVel;
-                            var true_volume = fVel * currentInst.Volume * keyNoteVel.Volume * keyNote.Volume;
+                            fVel *= (fVel * currentInst.Volume * keyNoteVel.Volume * keyNote.Volume);
+                            var true_volume = fVel ;
                             true_volume *= Player.JAISeqPlayer.gainMultiplier;
 
                             newVoice.setVolumeMatrix(0,  true_volume );
@@ -599,14 +615,16 @@ namespace JaiSeqXLJA.Player
 
                             newVoice.setPanMatrix(0,panning);
                             newVoice.setPanMatrix(1,keyNote.Pan);
+
                             newVoice.setPitchMatrix(1, pitchBendValue);
+                            newVoice.setReverb(reverb);
                           
                    
                             if (currentInst.oscillatorCount > 0)
                                 newVoice.setOcillator(currentInst.oscillators[0]);
 
-                           // if (currentInst.oscillatorCount > 1)
-                               // Console.WriteLine($"Unsupported multi-oscillator instrument :( {currentInst.oscillators[1].target}");
+                            //if (currentInst.oscillatorCount > 1)
+                            //    Console.WriteLine($"Unsupported multi-oscillator instrument :( {currentInst.oscillators[1].target}");
                             
                             newVoice.play();
                      
@@ -643,14 +661,58 @@ namespace JaiSeqXLJA.Player
                         Console.Write("E: ");
                         Console.WriteLine("Trk{0} unknown opcode 0x{1:X}({2}) @ {3:X}", trackNumber, trkInter.last_opcode, (JAISeqEvent)trkInter.last_opcode, trkInter.pc);
                         Console.ForegroundColor = ww;
-                       // crash();
+                        //crash();
 
                         break;
                     case JAISeqEvent.CLOSE_TRACK:
 
                         break;
-                    case JAISeqEvent.MISS:
+                    case JAISeqEvent.PARAM_SET_R:
+                        TrackRegisters[(byte)trkInter.rI[1]] = TrackRegisters[(byte)trkInter.rI[0]];
+                        break;
+
                     case JAISeqEvent.LOADTBL:
+                        if (trkInter.rI[0] == 0x20)
+                        {
+                            var dest_register = trkInter.rI[1]  ;
+                            var address_register = trkInter.rI[2]  ;
+                            var relative_register = trkInter.rI[3] ;
+                            var reader = trkInter.Sequence;
+                            // This codebase is too old, I just want to see if this works. 
+
+                            var old_pos = reader.BaseStream.Position;
+                          
+                            reader.BaseStream.Position = TrackRegisters[(byte)address_register] + 3 * TrackRegisters[(byte)relative_register];
+                            Console.WriteLine($"[{old_pos:X}]{trackNumber} Reading from 0x{reader.BaseStream.Position:X}");
+                            TrackRegisters[(byte)dest_register] = (short)Helpers.ReadUInt24BE(trkInter.Sequence);
+
+                            Console.WriteLine($"Loaded address 0x{TrackRegisters[(byte)dest_register]:X} ");
+                            reader.BaseStream.Position = old_pos;
+                     
+                            break;
+                  
+                        }
+                        crash();
+                        break;
+                    case JAISeqEvent.OVERRIDE_1:
+                        {
+                            if (trkInter.rI[0] != 0xC1) { crash(); break; }
+                            if (trkInter.rI[1] != 0x40 ) { crash(); break; }
+                            var trackID = trkInter.rI[2];
+                            var data = TrackRegisters[(byte)trkInter.rI[3]];
+
+                            var newTrk = new JAISeqTrack(ref bmsData, data, interVer);
+                            newTrk.trackNumber = trackID;
+                            Console.WriteLine($"OVERRIDE {trackID} New track at 0x{data:X}");
+                            JAISeqPlayer.addTrack(newTrk.trackNumber, newTrk);
+                     
+                            break;
+                        }
+                    case JAISeqEvent.WAIT_REGISTER:
+                        //crash();
+                        delay += 0xFF;
+                        break;
+                    case JAISeqEvent.MISS:
                         crash();
                         break;
                     default:

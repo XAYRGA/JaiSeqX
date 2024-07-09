@@ -18,7 +18,7 @@ namespace libJAudio.Sequence.Inter
     {
        
         byte[] SeqData; // Full .BMS  file.  
-        BeBinaryReader Sequence; // Reader for SeqData
+        public BeBinaryReader Sequence; // Reader for SeqData
         private int baseAddress; // The address at which this subroutine starts in the file.
         public byte last_opcode; // The last opcode that was executed.
         public Stack<int> AddrStack; // JAISeq return stack, depth of 8, used for CALL and RETURN commands.
@@ -150,14 +150,12 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.OUTSWITCH:
                     case (byte)JAISeqEvent.INTERRUPT:
                     case (byte)JAISeqEvent.BITWISE:
-                    case (int)JAISeqEvent.LOADTBL:
                     case (byte)JAISeqEvent.CONNECT_NAME:
                     case 0xDC:
           
                         skip(4);
                         return JAISeqEvent.UNKNOWN;
                     /* special case unknowns? */
-                    case 0xB1:
                     case 0xB2:
                     case 0xB3:
                     case 0xB4:
@@ -176,7 +174,7 @@ namespace libJAudio.Sequence.Inter
                     case (byte)JAISeqEvent.WRITE_CHILD_PORT:
                 
                     case 0xE1:
-                    case 0xDA:
+            
                     case 0xEB:
                         skip(2);
                         return JAISeqEvent.UNKNOWN;
@@ -187,6 +185,7 @@ namespace libJAudio.Sequence.Inter
                         skip(2);
 
                         return JAISeqEvent.UNKNOWN;
+                    case 0xDA:
                     case 0xDE: // don't know either.
                         skip(1);
                         return JAISeqEvent.UNKNOWN;

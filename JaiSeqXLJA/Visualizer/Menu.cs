@@ -9,6 +9,8 @@ using ImGuiNET;
 using static ImGuiNET.ImGuiNative;
 using System.Diagnostics;
 using JaiSeqXLJA.Player;
+using Un4seen.Bass;
+using JaiSeqXLJA.DSP;
 
 namespace JaiSeqXLJA.Visualizer
 {
@@ -128,9 +130,8 @@ namespace JaiSeqXLJA.Visualizer
                 var DrawList = ImGui.GetWindowDrawList();
 
 
-                var proc = Process.GetCurrentProcess();
                 var usage = JAISeqPlayer.loadedSampleBytes / (1024);
-                ImGui.Text($"SAMPLE RAM: {usage}KB ({JAISeqPlayer.loadedSamples:D2} samples)   \\  ENGINE RAM: {proc.WorkingSet64/(1047576)}MB");
+                ImGui.Text($"SAMPLE RAM: {usage}KB ({JAISeqPlayer.loadedSamples:D2} samples)  ");
                 DrawList.AddRectFilled(new Vector2(9, 160), new Vector2( (usage/8192f) * 200f, 165), 0xFFFF00FF);
 
                 var totalWidth = 330f;          
@@ -146,7 +147,7 @@ namespace JaiSeqXLJA.Visualizer
                 DrawList.AddRectFilled(new Vector2(percNormal + percOrphans + 9, 175), new Vector2(totalWidth, 180), 0xFF00FFFF);
 
                 ImGui.Dummy(new Vector2(0,12.5f));
-                ImGui.Text($"DSP CHN: {(int)totalVoices:D2}/64 total, {(int)(totalVoices - totalOrphans):D2} active, {totalOrphans:D2} orphans   \\   {(int)(totalVoices * 44100):D7}/{44100 * 7 * 16} buffer   \\   {(totalVoices / 64f) *100f,3:00.0}%%");
+                ImGui.Text($"DSP CHNL: {(int)totalVoices:D2}/64 total, {(int)(totalVoices - totalOrphans):D2} active, {totalOrphans:D2} orphans  \\  {(int)(totalVoices * 44100):D7}/{44100 * 7 * 16} buffer  \\  {(totalVoices / 64f) *100f,3:00.0}%%");
               
 
 
@@ -204,7 +205,16 @@ namespace JaiSeqXLJA.Visualizer
                         ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
                         ImGui.Text($"{"((STOPPED)) - 0xFF",-23} {w.activeVoices + "/7",-5}  0x{w.pc,-8:X3} 0x{(w.CallStack.Count > 0 ? w.CallStack.Peek() : 0):X3}");
                         ImGui.PopStyleColor();
-                    } else
+
+                    } else if (w.crashed)
+                    {
+                        var col = 0xFFFFFFFF;
+                        if (Math.Sin(JAISeqPlayer.tickTimer.ElapsedMilliseconds / 100f) > 0)
+                            col = 0xFF0000FF;
+                        ImGui.PushStyleColor(ImGuiCol.Text, col) ;
+                        ImGui.Text($"{"((CRASHED)) - XXXX",-23}   {w.activeVoices + "/7",-5}  0x{w.pc,-8:X3} 0x{(w.CallStack.Count > 0 ? w.CallStack.Peek() : 0):X3}");
+                        ImGui.PopStyleColor();
+                    } else 
                     {
                         //DEL: {w.delay:X4}!{w.lastDelay,-8:X4}
                         ImGui.Text($"0x{w.lastOpcode,-23} {w.activeVoices + "/7",-5}  0x{w.pc,-8:X3} 0x{(w.CallStack.Count > 0 ? w.CallStack.Peek() : 0):X3}");
@@ -222,28 +232,24 @@ namespace JaiSeqXLJA.Visualizer
             {
                 ImGui.Text($"{"WAIT",-13}  VIBRATO");
                 var DrawList = ImGui.GetWindowDrawList();
-                var trk = 0;
-                for (int i = 0; i < Player.JAISeqPlayer.tracks.Length; i++)
+                var trackRowIndex = 0;
+                for (int trackIndex = 0; trackIndex < Player.JAISeqPlayer.tracks.Length; trackIndex++)
                 {
-                    if (Player.JAISeqPlayer.tracks[i] == null)
+                    if (Player.JAISeqPlayer.tracks[trackIndex] == null)
                         continue;
                   
-                    var w = Player.JAISeqPlayer.tracks[i];
+                    var w = Player.JAISeqPlayer.tracks[trackIndex];
                     ImGui.Dummy(new Vector2(0.0f, 0.1f));
                     ImGui.ProgressBar((float)w.delay / (float)w.lastDelay, new Vector2(80,15), $"{w.delay:X4}/{w.lastDelay:X4}");
 
-                    var ofs = w.currentVibrato * (w.activeVoices > 0 ? 1 : 0);
+                    var offsetSide = w.currentVibrato * (w.activeVoices > 0 ? 1 : 0);
                     var col = 0xFFFF0000;
-                    if (ofs != 0)
+                    if (offsetSide != 0)
                         col = 0xFFFFCfCf;
 
-
-                    DrawList.AddCircleFilled(new Vector2(590 + 20 * ofs ,235 + trk * 23.6f), 5, col);
-                    trk++;
+                    DrawList.AddCircleFilled(new Vector2(590f + 19.5f * offsetSide ,235 + trackRowIndex * 23.6f), 5, col);
+                    trackRowIndex++;
                 }
-
-              
-
             }
             ImGui.End();
 
@@ -257,12 +263,14 @@ namespace JaiSeqXLJA.Visualizer
             {
           
 
-                ImGui.Columns(3);
-                ImGui.Text("MIX VOL");
+                ImGui.Columns(4);
+                ImGui.Text("VOL");
                 ImGui.NextColumn();
-                ImGui.Text("PANNING");
+                ImGui.Text("PAN");
                 ImGui.NextColumn();
-                ImGui.Text("PTCH BND");
+                ImGui.Text("PCH");
+                ImGui.NextColumn();
+                ImGui.Text("RVB");
                 ImGui.NextColumn();
 
                 var ib = 0;
@@ -272,15 +280,18 @@ namespace JaiSeqXLJA.Visualizer
                         continue;
                     var w = Player.JAISeqPlayer.tracks[i];
                     ImGui.Dummy(new Vector2(0, 2f));
-                    ImGui.ProgressBar(w.volume,new Vector2(100,13));
+                    ImGui.ProgressBar(w.volume,new Vector2(85,13));
                     ImGui.NextColumn();
                     ImGui.Dummy(new Vector2(0, 2f));
-                    ImGui.ProgressBar( (w.panning/64f) * 0.5f, new Vector2(100, 13));
+                    ImGui.ProgressBar( w.panning/128f , new Vector2(85, 13));
    
                     ImGui.NextColumn();
                     ImGui.Dummy(new Vector2(0, 2f));
                     // ImGui.ProgressBar(( (w.currentPitchBend-1f) / 0.1f) + 0.5f, new Vector2(100, 13));
-                    ImGui.ProgressBar( (w.pitchTarget / 0.4f) + 0.5f , new Vector2(100, 13));
+                    ImGui.ProgressBar( (w.pitchTarget / 0.4f) + 0.5f , new Vector2(85, 13));
+                    ImGui.NextColumn();
+                    ImGui.Dummy(new Vector2(0, 2f));
+                    ImGui.ProgressBar(w.reverb , new Vector2(85, 13));
                     ImGui.NextColumn();
 
                     //w.Registers.clearChanged();
@@ -289,6 +300,15 @@ namespace JaiSeqXLJA.Visualizer
             }
             ImGui.PopStyleColor();
 
+            ImGui.End();
+
+
+            ImGui.Begin("Reverb Settings");
+            ImGui.SliderFloat("fDamp", ref JaiSeqXLJA.fDamp, 0, 1);
+            ImGui.SliderFloat("fDryMix", ref JaiSeqXLJA.fDryMix, 0, 1);
+            ImGui.SliderFloat("fRoomSize", ref JaiSeqXLJA.fRoomSize, 0, 1);
+            ImGui.SliderFloat("fWetMix", ref JaiSeqXLJA.fWetMix, 0, 3);
+            ImGui.SliderFloat("fWidth", ref JaiSeqXLJA.fWidth,0,1);
             ImGui.End();
 
 

@@ -36,6 +36,7 @@ namespace JaiSeqXLJA.DSP
 
         private int voiceHandle;
         private int syncHandle;
+        private int fxHandle;
 
 
         private float ticks;
@@ -54,15 +55,29 @@ namespace JaiSeqXLJA.DSP
 
         JAIDSPEnvelope currentEnv;
 
+        
+        public BASS_BFX_FREEVERB reverbSettings = new BASS_BFX_FREEVERB()
+        {
+            fDamp = JaiSeqXLJA.fDamp,
+            fDryMix = JaiSeqXLJA.fDryMix,
+            fRoomSize = JaiSeqXLJA.fRoomSize,
+            //fWetMix = JaiSeqXLJA.fWetMix,
+            fWidth = JaiSeqXLJA.fWidth,
+        };
+
         public JAIDSPVoice(ref JAIDSPSampleBuffer buff)
         {
             rootBuffer = buff;  // save root buffer.
 
+
+            
             voiceHandle = Bass.BASS_StreamCreateFile(buff.globalFileBuffer, 0, buff.fileBuffer.Length, BASSFlag.BASS_DEFAULT);
+           // fxHandle = Bass.BASS_ChannelSetFX(voiceHandle, BASSFXType.BASS_FX_BFX_FREEVERB, 1);
+            //Bass.BASS_FXSetParameters(fxHandle, reverbSettings); 
+  
 
             if (buff.looped)
-                syncHandle = Bass.BASS_ChannelSetSync(voiceHandle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME , buff.loopEnd, JAIDSP.globalLoopProc, new IntPtr(buff.loopStart));
-
+                syncHandle = Bass.BASS_ChannelSetSync(voiceHandle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME | BASSSync.BASS_SYNC_THREAD | BASSSync.BASS_SYNC_MIXTIME, buff.loopEnd, JAIDSP.globalLoopProc, new IntPtr(buff.loopStart));
         }
 
         public void setPitchMatrix(byte index,float pitch)
@@ -81,7 +96,15 @@ namespace JaiSeqXLJA.DSP
             var panValue = 1f;
             for (int i = 0; i < panMatrix.Length; i++)
                 panValue *= ((panMatrix[i]) / 64f);
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN, 1f - panValue);
+
+            //panValue *= panValue;
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,  panValue -1f );
+        }
+        
+        public void setReverb(float reverb)
+        {
+     
+            reverbSettings.fWetMix = reverb * JaiSeqXLJA.fWetMix;
         }
 
 
@@ -120,8 +143,10 @@ namespace JaiSeqXLJA.DSP
 
         public void destroy()
         {
+            //Bass.BASS_ChannelRemoveFX(fxHandle, 0);
             Bass.BASS_ChannelStop(voiceHandle);
             Bass.BASS_StreamFree(voiceHandle);
+    
             
             if (rootBuffer.looped)
                 Bass.BASS_ChannelRemoveSync(voiceHandle, syncHandle);
@@ -138,6 +163,7 @@ namespace JaiSeqXLJA.DSP
                         lastEnvValue2 = currentEnv.Value;
 
                     currentEnv = new JAIDSPEnvelope(instOsc.envelopes[1].vectorList, lastEnvValue2);
+            
                 }
                 else
                 {
@@ -187,9 +213,8 @@ namespace JaiSeqXLJA.DSP
 
             float envValue = 1;
             fadeOutMS -= (float)ms;
- 
 
-            if (((currentEnv != null && currentEnv.update(JAISeqPlayer.timebaseValue * instOsc.Rate)) || doDestroy == true) && ! tryStop )
+            if (((currentEnv != null && currentEnv.update(ms * instOsc.Rate )) || doDestroy == true) && ! tryStop )
             {     
                 destroy();
                 return 3;
@@ -197,7 +222,7 @@ namespace JaiSeqXLJA.DSP
             else if (currentEnv != null && !tryStop)
             {
                 lastEnvValue2 = currentEnv.Value;
-                envValue = currentEnv.fValue * instOsc.Width - instOsc.Vertex;
+                envValue = (currentEnv.fValue * instOsc.Width) + instOsc.Vertex;
             } else if (tryStop)
             {
                 envValue = fadeOutMS / fadeOutMSInit;
@@ -207,7 +232,7 @@ namespace JaiSeqXLJA.DSP
                     return 3;
                 }
             }
-            
+      
             float pv = 1f;
             for (int i = 0; i < pitchMatrix.Length;i++)
                 pv *= pitchMatrix[i];            
@@ -221,7 +246,9 @@ namespace JaiSeqXLJA.DSP
             var panValue = 1f;
             for (int i = 0; i < panMatrix.Length; i++)
                 panValue *= ((panMatrix[i]) / 64f);
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,  1f - panValue);
+            //panValue *= panValue;
+
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,  panValue -1f );
 
             return 0;
         }

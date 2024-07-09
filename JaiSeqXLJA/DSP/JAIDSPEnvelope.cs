@@ -77,8 +77,8 @@ namespace xayrga.JAIDSP
                 return false;
             }
         
-                var deltaDepth = lastDuration - currentDuration; // Integer Depth
-                var fdeltaDepth = deltaDepth / lastDuration; // Floating point depth percentage
+                var deltaDepth = lastDuration - currentDuration; 
+                var fdeltaDepth = deltaDepth / lastDuration; 
 
                 if (fdeltaDepth > 1)
                     fdeltaDepth = 1f;
@@ -91,8 +91,8 @@ namespace xayrga.JAIDSP
                     case JEnvelopeVectorMode.Square:
                         Value = (short)(lastValue + valueDelta * Math.Pow(fdeltaDepth, 2));
                         break;
-                    case JEnvelopeVectorMode.Cubic:
-                        Value = (short)(lastValue + valueDelta * Math.Pow(fdeltaDepth, 3));
+                    case JEnvelopeVectorMode.SampleCell:
+                        Value = (short)(lastValue + valueDelta * (Math.Pow(fdeltaDepth - 1,3) + 1f));
                         break;
                     case JEnvelopeVectorMode.SqRoot:
                         Value = (short)(lastValue + valueDelta * Math.Sqrt(fdeltaDepth));
@@ -101,7 +101,7 @@ namespace xayrga.JAIDSP
                 }
 
             fValue = (float)Value / (float)0x7FFF;
-                
+
             if (currentDuration > 0)
                 currentDuration-=ms;
             else

@@ -109,6 +109,14 @@ namespace libJAudio.Sequence.Inter
                         Console.WriteLine("GANG");
                         return JAISeqEvent.CLOSE_TRACK;
                     }
+                case 0xB1:
+                    {
+                        rI[0] = Sequence.ReadByte(); // Instruction 
+                        rI[1] = Sequence.ReadByte(); // Override mask 
+                        rI[2] = Sequence.ReadByte(); // Data 1(WRONG) 
+                        rI[3] = Sequence.ReadByte(); // Data Register
+                        return JAISeqEvent.OVERRIDE_1;
+                    }
             }
             return JAISeqEvent.UNKNOWN;
         }

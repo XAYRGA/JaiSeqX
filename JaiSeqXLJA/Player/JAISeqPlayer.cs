@@ -46,10 +46,11 @@ namespace JaiSeqXLJA.Player
 
         public static void startPlayback(string file, ref JASystem sys, JAISeqInterpreterVersion seqVer)
         {
-            Console.WriteLine($"Engine statrting with intver {seqVer}");
+          
             var contents = File.ReadAllBytes(file);
-            tracks[0] = new JAISeqTrack(ref contents, 0x000, seqVer); // entry point.
+            tracks[0] = new JAISeqTrack(ref contents, 0x00, seqVer); // entry point.
             tracks[0].trackNumber = -1;
+            tracks[0].TrackRegisters[0] = 0;
             tickTimer = new Stopwatch();
             tickTimer.Start();
             JASPtr = sys;
@@ -216,8 +217,8 @@ namespace JaiSeqXLJA.Player
 
 
 
-            if (!Directory.Exists("wavout"))
-                Directory.CreateDirectory("wavout");
+            //if (!Directory.Exists("wavout"))
+             //   Directory.CreateDirectory("wavout");
 
 
 
@@ -268,6 +269,7 @@ namespace JaiSeqXLJA.Player
                 if (tracks[i]!=null)
                     if (!paused)
                         tracks[i].update();
+  
         }
 
         public static void addTrack(int id, JAISeqTrack trk)

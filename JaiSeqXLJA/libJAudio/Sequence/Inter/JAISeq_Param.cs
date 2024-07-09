@@ -111,7 +111,7 @@ namespace libJAudio.Sequence.Inter
                         var register1 = Sequence.ReadByte();
                         var register2 = Sequence.ReadByte();
                         rI[0] = register1;
-                        rI[2] = register2;
+                        rI[1] = register2;
                         return JAISeqEvent.PARAM_SET_R;
                     }
                 case 0xA4: //  PARAM_SET_8
