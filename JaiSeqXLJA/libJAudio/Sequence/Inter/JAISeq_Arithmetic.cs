@@ -83,6 +83,7 @@ namespace libJAudio.Sequence.Inter
                     {
                         var destination_reg = Sequence.ReadByte();
                         var value = Sequence.ReadInt16();
+                        //Console.WriteLine($"VALUE IS {value}");
                         rI[0] = destination_reg;
                         rI[1] = value;
                         return JAISeqEvent.ADD16;

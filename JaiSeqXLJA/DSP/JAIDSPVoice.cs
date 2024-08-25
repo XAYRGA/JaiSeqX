@@ -72,8 +72,8 @@ namespace JaiSeqXLJA.DSP
 
             
             voiceHandle = Bass.BASS_StreamCreateFile(buff.globalFileBuffer, 0, buff.fileBuffer.Length, BASSFlag.BASS_DEFAULT);
-           // fxHandle = Bass.BASS_ChannelSetFX(voiceHandle, BASSFXType.BASS_FX_BFX_FREEVERB, 1);
-            //Bass.BASS_FXSetParameters(fxHandle, reverbSettings); 
+            fxHandle = Bass.BASS_ChannelSetFX(voiceHandle, BASSFXType.BASS_FX_BFX_FREEVERB, 1);
+            Bass.BASS_FXSetParameters(fxHandle, reverbSettings); 
   
 
             if (buff.looped)
@@ -105,6 +105,7 @@ namespace JaiSeqXLJA.DSP
         {
      
             reverbSettings.fWetMix = reverb * JaiSeqXLJA.fWetMix;
+            Bass.BASS_FXSetParameters(fxHandle, reverbSettings);
         }
 
 
@@ -143,7 +144,7 @@ namespace JaiSeqXLJA.DSP
 
         public void destroy()
         {
-            //Bass.BASS_ChannelRemoveFX(fxHandle, 0);
+            Bass.BASS_ChannelRemoveFX(fxHandle, 0);
             Bass.BASS_ChannelStop(voiceHandle);
             Bass.BASS_StreamFree(voiceHandle);
     
@@ -177,18 +178,9 @@ namespace JaiSeqXLJA.DSP
             }
             else
             {
-                if (errCnt == 0)
-                {
-                    var ww = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.Write("JAIDSP");
-                    Console.ForegroundColor = ww;
-                    Console.WriteLine($": Fallback envelope for 0x{voiceHandle:X} (lookup fail) -- track may sound loose.");
-                }
-                else if (errCnt == 10)
-                    errCnt = -1;
 
-                errCnt++;
+
+     
                 FadeStop(100);
             }
      

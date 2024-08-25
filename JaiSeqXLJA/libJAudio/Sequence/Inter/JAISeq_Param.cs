@@ -63,6 +63,7 @@ namespace libJAudio.Sequence.Inter
                     }
                 case 0xFD: // (v1)TIME_BASE (v2)J2_PRINTF TODOTODO
                     {
+              
                         if (InterpreterVersion == JAISeqInterpreterVersion.JA1) { 
                             rI[0] = (short)(Sequence.ReadInt16());
                             return JAISeqEvent.TIME_BASE;
@@ -79,8 +80,8 @@ namespace libJAudio.Sequence.Inter
                                 lastread = Sequence.ReadByte();
                                 v += (char)lastread;
                             }
-
-                            Sequence.ReadBytes(extra);
+                            Sequence.ReadBytes(extra);                          
+                            Console.WriteLine($"JAISeq -- printf: {v}");
                             return JAISeqEvent.J2_PRINTF;
                         }
                         return JAISeqEvent.UNKNOWN;
@@ -145,6 +146,55 @@ namespace libJAudio.Sequence.Inter
                         var depth = Sequence.ReadUInt16();
                         rI[0] = depth;
                         return JAISeqEvent.VIBDEPTHMIDI;
+                    }
+                case 0xDC:
+                    {
+                        var mode = Sequence.ReadByte();
+                        if (mode != 0xE )
+                        {
+                            skip(4);
+                            return JAISeqEvent.J2_LOADTBL;
+                        }
+                        rI[0] = mode;
+                        rI[1] = Sequence.ReadByte();
+                        rI[2] = (int)Helpers.ReadUInt24BE(Sequence);
+                        rI[3] = Sequence.ReadByte();
+
+                        return JAISeqEvent.J2_LOADTBL;
+                    }
+                case 0xDA:
+                    {
+                        if (InterpreterVersion == JAISeqInterpreterVersion.JA2)
+                        {
+                            var mode = Sequence.ReadByte();                          
+                            var reg = Sequence.ReadByte();
+                            var value = Sequence.ReadInt16();
+
+                            rI[0] = mode;
+                            rI[1] = reg;
+                            rI[2] = value;
+
+                            return JAISeqEvent.J2_COMPARE;
+                        }
+
+                        rI[0] = Sequence.ReadByte();
+               
+           
+                        return JAISeqEvent.CLOSE_TRACK;
+
+                        skip(1);
+                        break;
+                    }
+                case 0xD0:
+                    {
+                        if (InterpreterVersion == JAISeqInterpreterVersion.JA2)
+                        {
+                            rI[0] = Sequence.ReadByte();
+                            rI[1] = Sequence.ReadByte();
+                            return JAISeqEvent.J2_READPORT;
+                        }
+                        skip(4);
+                        return JAISeqEvent.CONNECT_NAME;
                     }
 
             }

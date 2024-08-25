@@ -22,11 +22,12 @@ namespace JaiSeqXLJA
     {
         public static string[] cmdargs;
         public static JASystem JASystem;
-        public static float fDamp = 0.204f;
+        public static float fDamp = 0.032f;
         public static float fDryMix = 1f;
-        public static float fRoomSize = 1f;
+        public static float fRoomSize = 0.634f;
         public static float fWetMix = 0.824f;
-        public static float fWidth = 0.7f;
+        public static float fWidth = 1f;
+        public static bool sequenceTransitioning = false;
   
 
 
@@ -39,20 +40,20 @@ namespace JaiSeqXLJA
 #if DEBUG 
             args = new string[]
             {
-                @"jaiinit.aaf",
+                @"psound.aaf",
                 "visu",
-                "BabyBattle.bms",
+                "pcki2/seq/last.bms",
                 "0",
            
                 "-jdsp.device",
                 "1",
                 "-mute",
-                //"12,13,14,15",
-                //"0,1,2,3,4,5,6,7,8,9,10,11,12,13,15",
+                //"0.0,0.11,0.15",
+                //"0",
+                //"0,1,2,3,4,5,6,7,8,9,10,12,13,14,15",
 
-                
                 "-paused",
-               //"-nodkwhistle",
+                //"-nodkwhistle",
 
             };
 #endif  

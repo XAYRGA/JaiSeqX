@@ -141,20 +141,23 @@ namespace libJAudio.Sequence.Inter
                     case 0xDD:
                     case (byte)JAISeqEvent.FIRSTSET:
                     case (byte)JAISeqEvent.LASTSET:
-            
+         
                     case 0xF3:
                     case 0xEA: // BUS CONNECT
                         skip(3);
                         return JAISeqEvent.UNKNOWN;
                     /* 4 byte unknowns */
                     case (byte)JAISeqEvent.OUTSWITCH:
-                    case (byte)JAISeqEvent.INTERRUPT:
+
                     case (byte)JAISeqEvent.BITWISE:
-                    case (byte)JAISeqEvent.CONNECT_NAME:
-                    case 0xDC:
+            
+               
           
                         skip(4);
                         return JAISeqEvent.UNKNOWN;
+                    case (byte)JAISeqEvent.INTERRUPT:
+                        skip(4);
+                        return JAISeqEvent.INTERRUPT;
                     /* special case unknowns? */
                     case 0xB2:
                     case 0xB3:
@@ -167,11 +170,12 @@ namespace libJAudio.Sequence.Inter
                         if (flag == 0x80) { skip(4); }
                         return JAISeqEvent.UNKNOWN;
                     /* 2 Byte Unknowns */
+
              
                     case 0xF9:
            
                     case 0xBE: // Completely unknown
-                    case (byte)JAISeqEvent.WRITE_CHILD_PORT:
+                 
                 
                     case 0xE1:
             
@@ -181,11 +185,19 @@ namespace libJAudio.Sequence.Inter
                     /* One byte unknowns */
 
                     case 0xD5: // TIMERELATE
+                        if (InterpreterVersion == JAISeqInterpreterVersion.JA2)
+                        {
+                            rI[0] = Sequence.ReadByte();
+                            rI[1] = Sequence.ReadByte();
+
+                            return JAISeqEvent.J2_WRITE_CHILD;
+                        }
 
                         skip(2);
 
                         return JAISeqEvent.UNKNOWN;
-                    case 0xDA:
+
+                    case 0x90:
                     case 0xDE: // don't know either.
                         skip(1);
                         return JAISeqEvent.UNKNOWN;
@@ -194,9 +206,44 @@ namespace libJAudio.Sequence.Inter
                     case 0xBC: // nobody knows what the actual fuck this is. 
                         return JAISeqEvent.UNKNOWN;
 
-                    case (byte)JAISeqEvent.TRANSPOSE:
-                        skip(3);
-                        return JAISeqEvent.TRANSPOSE;
+                    case 0xd9:
+                        {
+                            if (InterpreterVersion== JAISeqInterpreterVersion.JA2)
+                            {
+                                var mode = Sequence.ReadByte();
+                                var reg = Sequence.ReadByte();
+                                var value = Sequence.ReadByte();
+
+                                rI[0] = mode;
+                                rI[1] = reg;
+                                rI[2] = value;
+
+                           
+                                return JAISeqEvent.J2_COMPARE_REG;
+                            }
+                            rI[0] = Sequence.ReadSByte();
+                            return JAISeqEvent.TRANSPOSE;
+                        }
+                    case 0xD4:
+                        {
+                            if (InterpreterVersion == JAISeqInterpreterVersion.JA2)
+                            {
+                                rI[0] = Sequence.ReadByte();
+                                rI[1] = Sequence.ReadByte();
+
+                                return JAISeqEvent.J2_WRITE_PARENT;
+                            }
+                       
+                            return JAISeqEvent.SET_LAST_NOTE;
+                        }
+                    case (byte)JAISeqEvent.WRITE_CHILD_PORT:
+                        {
+                            rI[0] = Sequence.ReadByte();
+                            rI[1] = Sequence.ReadByte();
+
+                            return JAISeqEvent.WRITE_CHILD_PORT;
+                        }
+            
 
                 }
             }

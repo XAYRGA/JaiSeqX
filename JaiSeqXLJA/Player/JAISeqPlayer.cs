@@ -18,7 +18,7 @@ namespace JaiSeqXLJA.Player
         public static int ppqn = 100;
         public static int bpm = 120;
 
-        public static JAISeqTrack[] tracks = new JAISeqTrack[64];
+        public static JAISeqTrack RootTrack;
 
         public static Stopwatch tickTimer;
         private static float tickLength;
@@ -29,7 +29,8 @@ namespace JaiSeqXLJA.Player
         public static bool noDKJBWhistle = false;
         public static int loadedSampleBytes = 0;
         public static int loadedSamples = 0;
-
+        public static int syncCallbackValue = 0;
+        public static int syncRegValue = 0;
         public static void init()
         {
             paused = JaiSeqXLJA.findDynamicFlagArgument("-paused");
@@ -48,9 +49,9 @@ namespace JaiSeqXLJA.Player
         {
           
             var contents = File.ReadAllBytes(file);
-            tracks[0] = new JAISeqTrack(ref contents, 0x00, seqVer); // entry point.
-            tracks[0].trackNumber = -1;
-            tracks[0].TrackRegisters[0] = 0;
+            RootTrack = new JAISeqTrack(ref contents, 0x00, seqVer); // entry point.
+            RootTrack.trackNumber = 0;
+    
             tickTimer = new Stopwatch();
             tickTimer.Start();
             JASPtr = sys;
@@ -81,37 +82,7 @@ namespace JaiSeqXLJA.Player
             recalculateTimebase();
         }
 
-        public static void setTrackMuted(int trkid, bool muted)
-        {
-            for (int trk = 0; trk < tracks.Length; trk++)
-            {
-                if (tracks[trk] != null && tracks[trk].trackNumber == trkid)
-                {
-                    tracks[trk].muted = muted;
-                    Console.WriteLine($"Track {trk} mute: {tracks[trk].muted} ({trkid})");
-                    if (tracks[trk].muted)
-                        tracks[trk].purgeVoices();
-                    break;
-                }
-            }
-        }
-
-        public static void cycleTrackMuted(int trkid)
-        {
-
-            for (int trk = 0; trk < tracks.Length; trk++)
-            { 
-                if (tracks[trk] != null && tracks[trk].trackNumber==trkid)
-                {
-                    tracks[trk].muted = !tracks[trk].muted;
-                    Console.WriteLine($"Track {trk} mute: {tracks[trk].muted} ({trkid})");
-                    if (tracks[trk].muted)
-                        tracks[trk].purgeVoices();
-                    break;
-                }
-            }
-        }
-
+    
         public unsafe static byte[] PCM8216BYTE(byte[] adpdata)
         {
 
@@ -235,7 +206,6 @@ namespace JaiSeqXLJA.Player
             tickLength = (60000f / (float)(bpm)) / ((float)ppqn);
             ticks = (int)(tickTimer.ElapsedMilliseconds / tickLength);
             Console.WriteLine("Timebase updated {0}bpm {1}ppqn cycle-length {2} @ {3}", bpm, ppqn, tickLength, ticks);
-          
         }
 
         public static void update()
@@ -245,47 +215,24 @@ namespace JaiSeqXLJA.Player
             RuntimeMS = ts;
             var tt_n = ts / tickLength;
             while (ticks < tt_n)
-                try
-                {
-                    tt_n = ts / tickLength;
-                    tick();            
-                }
-                catch (Exception E)
-                {
-                    var w = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("==DESYNC==\nSequence engine failed to complete a tick, now desync'd\n==DESYNC==");
-                 
-                    Console.ForegroundColor = w;
+            {
+                tt_n = ts / tickLength;
+                tick();
+            }
 
-                    Console.WriteLine(E.ToString());
-                }
             
         }
         public static void tick()
-         {
-            ticks++;
-            for (int i=0; i < tracks.Length; i++)
-                if (tracks[i]!=null)
-                    if (!paused)
-                        tracks[i].update();
-  
-        }
-
-        public static void addTrack(int id, JAISeqTrack trk)
         {
-            if (tracks[id + 1]!=null)
-                tracks[id + 1].destroy();
-            tracks[id + 1] = trk;
-
-            var muteIdx = JaiSeqXLJA.findDynamicStringArgument("-mute", "none").Split(',');
-            for (int i = 0; i < muteIdx.Length; i++)
+            if (!paused)
             {
-      
-                if (muteIdx[i] != null && muteIdx[i] == id.ToString())
-                    trk.muted = true;
+                RootTrack.update();
+        
             }
+            ticks++;
         }
+
+
 
     }
 }

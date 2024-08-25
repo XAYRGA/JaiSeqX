@@ -77,6 +77,7 @@ namespace libJAudio.Sequence
             ADD16 = 0xAD, // <byte destination_reg> <short value>
             MUL16 = 0xAE, // <byte destination_reg> <short value>
             CMP16 = 0xAF, // <byte destination_reg> <short value>
+
         //**************//
 
 
@@ -110,7 +111,7 @@ namespace libJAudio.Sequence
         SIMPLE_ENV = 0xD7,
         SIMPLE_ADSR = 0xD8,
         TRANSPOSE = 0xD9,
-        CLOSE_TRACK = 0xDA, // <byte track-id> 
+        CLOSE_TRACK = 0xDA, // <byte track-id>  
         BUSCONNECT = 0xDD,
         INTERRUPT = 0xDF,
        
@@ -141,7 +142,16 @@ namespace libJAudio.Sequence
         J2_SET_BANK = 0x02E2, // <byte bank>
         J2_SET_PROG = 0x02E3, // <byte program>
         J2_PRINTF = 0x02F9, // mActual opcode is 0xFD
-        J2_UNK0 = 0x02D1
+        J2_UNK0 = 0x02D1,
+        J2_LOADTBL = 0xDC,
+        J2_READPORT = 0x02D0,
+        J2_OVERRIDE = 0x0291,
+        J2_COMPARE = 0x02DA,
+        J2_COMPARE_REG = 0x02D9,
+        J2_WRITE_CHILD = 0x02D5,
+        J2_WRITE_PARENT = 0x02D4,
+        J2_CLOSE_TRACK = 0x02C2,
+
 
     }
 

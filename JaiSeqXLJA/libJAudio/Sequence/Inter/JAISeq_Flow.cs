@@ -23,6 +23,13 @@ namespace libJAudio.Sequence.Inter
                     }
                 case 0xC2: // OPEN_TRACK_BROS
                     var w = Sequence.ReadByte();
+                    rI[0] = w;
+                    if (InterpreterVersion == JAISeqInterpreterVersion.JA2)
+                    {
+                      
+                        return JAISeqEvent.J2_CLOSE_TRACK;
+                    }
+                   
                     return JAISeqEvent.OPEN_TRACK_BROS;
                 case 0xC9:
                     return JAISeqEvent.LOOPS;
@@ -67,6 +74,7 @@ namespace libJAudio.Sequence.Inter
                         var addr = (int)Helpers.ReadUInt24BE(Sequence); // pointer, push to ir1
                         rI[0] = flags;
                         rI[1] = addr;
+                        rI[2] = condition;
                         return JAISeqEvent.JUMP_CONDITIONAL;
                     }
                 case 0xC6: // RETURN_CONDITIONAL
@@ -79,17 +87,16 @@ namespace libJAudio.Sequence.Inter
                     {
                         var cond = Sequence.ReadByte();
 
-                        // Might be int32, it will depend on sequence flavor.  JAI2 might have 32 bit calls. 
-                        int addr = 0;
-                        if (InterpreterVersion == JAISeqInterpreterVersion.JA1)
-                        {
-                             addr = (int)Helpers.ReadUInt24BE(Sequence);
-                        } else
-                        {
-                            addr = (int)Helpers.ReadUInt24BE(Sequence);
-                        }
+                  
+                        var reg = 0;
+                        if (cond==0xC0)
+                            reg = Sequence.ReadByte();
+
+                        var addr = (int)Helpers.ReadUInt24BE(Sequence);
+                 
                         rI[0] = cond; // Set to condition
                         rI[1] = addr; // set ir1 to address jumped
+                        rI[2] = reg;
                         return JAISeqEvent.CALL_CONDITIONAL;
                     }
                 case 0xC3: // CALL
@@ -102,13 +109,7 @@ namespace libJAudio.Sequence.Inter
                     {
                         return JAISeqEvent.RETURN;
                     }
-                case (byte)JAISeqEvent.CLOSE_TRACK:
-                    {
-                        var mask = Sequence.ReadByte();
-                        var ugh = Sequence.ReadByte();
-                        Console.WriteLine("GANG");
-                        return JAISeqEvent.CLOSE_TRACK;
-                    }
+            
                 case 0xB1:
                     {
                         rI[0] = Sequence.ReadByte(); // Instruction 
@@ -116,6 +117,14 @@ namespace libJAudio.Sequence.Inter
                         rI[2] = Sequence.ReadByte(); // Data 1(WRONG) 
                         rI[3] = Sequence.ReadByte(); // Data Register
                         return JAISeqEvent.OVERRIDE_1;
+                    }
+                case 0x91:
+                    {
+                        rI[0] = Sequence.ReadByte(); // Mask 
+                        rI[1] = Sequence.ReadByte(); // Instruction
+                        rI[2] = Sequence.ReadByte(); // Data 1(WRONG) 
+                        rI[3] = Sequence.ReadByte(); // Data Register
+                        return JAISeqEvent.J2_OVERRIDE;
                     }
             }
             return JAISeqEvent.UNKNOWN;
