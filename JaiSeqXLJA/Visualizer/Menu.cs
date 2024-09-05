@@ -161,7 +161,7 @@ namespace JaiSeqXLJA.Visualizer
             var indents = "";
             ImGui.Dummy(new Vector2(depth * 10, 1));
             ImGui.SameLine();
-            ImGui.ProgressBar((float)track.delay / (float)track.lastDelay, new Vector2(80, 15), $"{track.delay:X4}/{track.lastDelay:X4}");       
+            ImGui.ProgressBar((track.lastDelay - (float)track.delay )/ (float)track.lastDelay, new Vector2(80, 15), $"{track.delay:X4}/{track.lastDelay:X4}");       
            
             ImGui.SameLine();
             if (ImGui.Checkbox(track.TrackName, ref track.muted) && track.muted)
@@ -267,7 +267,7 @@ namespace JaiSeqXLJA.Visualizer
                 ImGui.SliderInt("PPQN", ref itn, 1, 8192);
                 ImGui.SliderFloat("Gain Multiplier", ref Player.JAISeqPlayer.gainMultiplier, 0, 2);
                 ImGui.Checkbox("Paused", ref Player.JAISeqPlayer.paused);
-                ImGui.SliderInt("Tick Steps", ref tickSteps, 1, 3000);
+       
 
                 if (itn != Player.JAISeqPlayer.ppqn || itb != Player.JAISeqPlayer.bpm)
                 {
@@ -275,20 +275,12 @@ namespace JaiSeqXLJA.Visualizer
                     Player.JAISeqPlayer.bpm = itb;
                     Player.JAISeqPlayer.recalculateTimebase();
                 }
-                ImGui.Columns(2);
+                ImGui.Columns(1);
 
-                if (ImGui.Button("Tick Step"))
-                {
-                    var oldPauseState = pau;
-                    Player.JAISeqPlayer.paused = false;
-                    for (int i = 0; i < tickSteps; i++)
-                    {
-                        Player.JAISeqPlayer.tick();
-                    }
-                    Player.JAISeqPlayer.paused = oldPauseState;
-                }
-                ImGui.NextColumn();
-                ImGui.Text("\nJAISeqX https://github.com/xayrga/jaiseqx");
+              
+    
+                ImGui.Text("JAISeqX https://github.com/xayrga/jaiseqx");
+                ImGui.Dummy(new Vector2(0, 25));
 
 
                 ImGui.Columns(1);
@@ -417,7 +409,7 @@ namespace JaiSeqXLJA.Visualizer
 
             }
 
-
+            ///*
             ImGui.Begin("JaiDSP Reverb Settings");
             ImGui.SliderFloat("fDamp", ref JaiSeqXLJA.fDamp, 0, 1);
             ImGui.SliderFloat("fDryMix", ref JaiSeqXLJA.fDryMix, 0, 1);
@@ -425,7 +417,7 @@ namespace JaiSeqXLJA.Visualizer
             ImGui.SliderFloat("fWetMix", ref JaiSeqXLJA.fWetMix, 0, 3);
             ImGui.SliderFloat("fWidth", ref JaiSeqXLJA.fWidth, 0, 1);
             ImGui.End();
-
+            //*/
 
 
 

@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>jaiseqx_icon_HSx_icon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Bass.Net, Version=2.4.14.1, Culture=neutral, PublicKeyToken=b7566c273e6ef480, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -307,6 +310,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="assets\jaiseqx.png" />
+    <Content Include="assets\jaiseqx_icon.png" />
+    <Content Include="assets\jaiseqx_icon_HSx_icon.ico" />
+    <Content Include="jaiseqx_icon_HSx_icon.ico" />
     <Content Include="libJAudio\Sequence\seqdoc.txt" />
     <EmbeddedResource Include="Shaders\HLSL\imgui-frag.hlsl" />
     <EmbeddedResource Include="Shaders\HLSL\imgui-vertex.hlsl" />

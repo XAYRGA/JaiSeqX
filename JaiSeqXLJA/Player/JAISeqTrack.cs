@@ -53,6 +53,7 @@ namespace JaiSeqXLJA.Player
         public int activeVoiceOrphans;
         public string lastOpcode;
         private float uhoh = 0f;
+        public float vibPitch = 12f;
 
         public bool muted;
         public bool halted;
@@ -231,7 +232,7 @@ namespace JaiSeqXLJA.Player
             var runtimeSeconds = (JAISeqPlayer.RuntimeMS/ 1000f);
             var tau = (2f * Math.PI);
             currentVibrato = (float)(Math.Cos(6f * tau * runtimeSeconds) * (vibratoDepth / 4096f));  // Semitones 
-            var vibratoValue = (float)Math.Pow(2, currentVibrato / 12f); // Semitones to frequency ratio 
+            var vibratoValue = (float)Math.Pow(2, currentVibrato / vibPitch); // Semitones to frequency ratio 
 
             for (int i = 0; i < voices.Length; i++)
             {
@@ -403,14 +404,21 @@ namespace JaiSeqXLJA.Player
         {
             updateVoices();
 
+            
             if (delay > 0) { delay--; }
             if (interrupt_pause)
                 return;
             if (halted) { return; }
             while (delay <= 0 && !halted && !interrupt_pause)
             {
-               // TrackRegisters[3] = 999;
+    
                 var opcode = JAISeqEvent.UNKNOWN;
+                if (CallStack.Count > 16)
+                {
+                    Console.WriteLine("Stack overflow!");
+                    crash();
+                    break;
+                }
 
 
                 try
@@ -430,7 +438,7 @@ namespace JaiSeqXLJA.Player
                 if (opcode != JAISeqEvent.WAIT_8 && opcode != JAISeqEvent.WAIT_16 && opcode != JAISeqEvent.WAIT_VAR) //&& opcode!=JAISeqEvent.NOTE_OFF && opcode!=JAISeqEvent.NOTE_ON) 
                 {
                   lastOpcode = $"{(int)opcode:x2}-{opcode}";
-                   // if (trackNumber==0 && parent==JAISeqPlayer.RootTrack) 
+                   //if (trackNumber==0 && parent==JAISeqPlayer.RootTrack) 
                        // Console.WriteLine($"{pc:X} ({trackNumber}) @ {opcode} ");
              
 
@@ -709,6 +717,23 @@ namespace JaiSeqXLJA.Player
 
                             break;
                         }
+                    case JAISeqEvent.J2_JMPTBL:
+                        {
+                            var addr = trkInter.rI[0];
+                            TrackRegisters[0] = (short)addr;
+                           
+
+                                //var reader = trkInter.Sequence;
+                                //var old_pos = reader.BaseStream.Position;
+                                //reader.BaseStream.Position = addr + 3 * 0;//* TrackRegisters[(byte)indexRegister];
+                                //Console.WriteLine($"[{old_pos:X}]{trackNumber} Reading from 0x{reader.BaseStream.Position:X}");
+                                //var newAddr = (short)Helpers.ReadUInt24BE(trkInter.Sequence);
+                                //Console.WriteLine($"{pc:X} Jumping address 0x{addr:X} > ({newAddr:X}) ");
+                                //reader.BaseStream.Position = newAddr;
+                         
+
+                            break;
+                        }
                     case JAISeqEvent.J2_SET_ARTIC:
                         Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] sets parameter {trkInter.rI[0]:X} to 0x{trkInter.rI[1]:X3} R3 = 0x{TrackRegisters[(byte)trkInter.rI[0]]:X}");
                         if (trkInter.rI[0] == 0x62)
@@ -755,6 +780,7 @@ namespace JaiSeqXLJA.Player
                         }
                     case JAISeqEvent.VIBRATO_PITCH:
                         Console.WriteLine($"Vibpitch {trkInter.rI[0]}");
+                        vibPitch = trkInter.rI[0];
                         break;
                
                     case JAISeqEvent.NOTE_ON:
@@ -850,6 +876,9 @@ namespace JaiSeqXLJA.Player
                             stopVoice((byte)trkInter.rI[0], perc);
                             break;
                         }
+                    case JAISeqEvent.NOP:
+                        delay = 1;
+                        break;
                     case JAISeqEvent.UNKNOWN:
 
                         var ww = Console.ForegroundColor;
@@ -1078,8 +1107,8 @@ namespace JaiSeqXLJA.Player
                         crash();
                         break;
                     case JAISeqEvent.INTERRUPT:
-                        //if (TrackName=="ROOT TRACK") 
-                        interrupt_pause = true;
+                        if (this==JAISeqPlayer.RootTrack)
+                            interrupt_pause = true;
                         break;          
                     default:
                         ww = Console.ForegroundColor;

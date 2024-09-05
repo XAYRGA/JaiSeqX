@@ -109,8 +109,7 @@ namespace JaiSeqXLJA.DSP
                 looped = false,
             };
             rt.generateFileBuffer();
-            //Console.WriteLine($"Dumping sample {v1}");
-            //File.WriteAllBytes("test/" + v1.ToString() + ".wav", rt.fileBuffer);
+
             return rt;
         }
     }

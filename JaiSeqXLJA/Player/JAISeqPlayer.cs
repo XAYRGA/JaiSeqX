@@ -24,16 +24,18 @@ namespace JaiSeqXLJA.Player
         private static float tickLength;
         public static float RuntimeMS;
         private static int ticks = 0;
-        public static float gainMultiplier = 1f;
+        public static float gainMultiplier = 0.3f;
         public static bool paused = false;
         public static bool noDKJBWhistle = false;
         public static int loadedSampleBytes = 0;
         public static int loadedSamples = 0;
         public static int syncCallbackValue = 0;
         public static int syncRegValue = 0;
+        public static string awPath = "Banks";
         public static void init()
         {
             paused = JaiSeqXLJA.findDynamicFlagArgument("-paused");
+            awPath = JaiSeqXLJA.findDynamicStringArgument("-awpath", "Banks");
         }
 
         public static float timebaseValue
@@ -70,7 +72,7 @@ namespace JaiSeqXLJA.Player
                             Console.WriteLine("Creating handle for {0}", jwg.awFile);
                             if (jwg.awFile.Length > 2)
                             {
-                                awHandles[jwg.awFile] = File.OpenRead("Banks/" + jwg.awFile);
+                                awHandles[jwg.awFile] = File.OpenRead($"{awPath}/{jwg.awFile}");
                             } else
                             {
                                 Console.WriteLine("Ignoring WSYS (name too short)");

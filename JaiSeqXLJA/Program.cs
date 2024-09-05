@@ -15,6 +15,7 @@ using libJAudio.Sequence.Inter;
 using JaiSeqXLJA.Player;
 using JaiSeqXLJA.Visualizer;
 using xayrga.JAIDSP;
+using Un4seen.Bass.Misc;
 
 namespace JaiSeqXLJA
 {
@@ -36,28 +37,29 @@ namespace JaiSeqXLJA
 
             //var kk = File.ReadAllBytes("ghhgh.adpcm");
             //File.WriteAllBytes("data.pcm", DSP.JAIDSPADPCM4.ADPCMToPCM16(kk, JAIDSPADPCM4.ADPCMFormat.FOUR_BIT));
-            
-#if DEBUG 
+
+#if DEBUG
             args = new string[]
             {
-                @"psound.aaf",
+                @"jaiinit_sms.aaf",
                 "visu",
-                "pcki2/seq/last.bms",
+                "smsseq/k_kagemario.c.bms",
                 "0",
-           
+
                 "-jdsp.device",
                 "1",
-                "-mute",
-                //"0.0,0.11,0.15",
+                "-awpath",
+                "sms/banks",
+                //"0.0,0.12,0.13,0.14,0.15",
                 //"0",
                 //"0,1,2,3,4,5,6,7,8,9,10,12,13,14,15",
 
                 "-paused",
-                //"-nodkwhistle",
+                "-nodkwhistle",
 
             };
 #endif  
-
+        
       
            // Console.ReadLine();
             

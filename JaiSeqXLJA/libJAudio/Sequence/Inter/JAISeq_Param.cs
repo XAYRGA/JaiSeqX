@@ -23,8 +23,14 @@ namespace libJAudio.Sequence.Inter
                     }
                 case 0xF4:
                     {
-                        rI[0] = Sequence.ReadByte();                   
-                        return JAISeqEvent.VIBRATO_PITCH;
+                        if (InterpreterVersion == JAISeqInterpreterVersion.JA1)
+                        {
+                            rI[0] = Sequence.ReadByte();
+                            return JAISeqEvent.VIBRATO_PITCH;
+                        }
+                        rI[0] = Sequence.ReadUInt16();
+                       
+                        return JAISeqEvent.VOLUME_MODE;
                     }
 
                 case 0xCC:

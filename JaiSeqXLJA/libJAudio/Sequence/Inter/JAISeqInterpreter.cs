@@ -135,14 +135,17 @@ namespace libJAudio.Sequence.Inter
 
 
                     case (byte)JAISeqEvent.SIMPLE_OSC:
-                        skip(3);
+                        if (InterpreterVersion==JAISeqInterpreterVersion.JA1)
+                            skip(3);
+                        else
+                            skip(2);
                         return JAISeqEvent.SIMPLE_OSC;
 
                     case 0xDD:
                     case (byte)JAISeqEvent.FIRSTSET:
                     case (byte)JAISeqEvent.LASTSET:
          
-                    case 0xF3:
+               
                     case 0xEA: // BUS CONNECT
                         skip(3);
                         return JAISeqEvent.UNKNOWN;
@@ -202,7 +205,9 @@ namespace libJAudio.Sequence.Inter
                         skip(1);
                         return JAISeqEvent.UNKNOWN;
                     case (byte)JAISeqEvent.PANSWEEPSET:
-              
+                        skip(3);
+                        return JAISeqEvent.PANSWEEPSET;
+
                     case 0xBC: // nobody knows what the actual fuck this is. 
                         return JAISeqEvent.UNKNOWN;
 
@@ -243,6 +248,9 @@ namespace libJAudio.Sequence.Inter
 
                             return JAISeqEvent.WRITE_CHILD_PORT;
                         }
+                    case 0xF6:
+                        return JAISeqEvent.NOP;
+                        break;
             
 
                 }

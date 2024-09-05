@@ -87,7 +87,6 @@ namespace libJAudio.Sequence.Inter
                     {
                         var cond = Sequence.ReadByte();
 
-                  
                         var reg = 0;
                         if (cond==0xC0)
                             reg = Sequence.ReadByte();
@@ -98,6 +97,19 @@ namespace libJAudio.Sequence.Inter
                         rI[1] = addr; // set ir1 to address jumped
                         rI[2] = reg;
                         return JAISeqEvent.CALL_CONDITIONAL;
+                    }
+                case 0xF3:
+                    {
+
+                        if (InterpreterVersion == JAISeqInterpreterVersion.JA1)
+                            skip(3);
+                        else
+                        {
+                            rI[0] = (int)Helpers.ReadUInt24BE(Sequence);
+                            return JAISeqEvent.J2_JMPTBL;
+                        }
+
+                        return JAISeqEvent.VOLUME_MODE;
                     }
                 case 0xC3: // CALL
                     {

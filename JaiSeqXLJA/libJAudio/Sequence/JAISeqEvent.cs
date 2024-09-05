@@ -151,6 +151,7 @@ namespace libJAudio.Sequence
         J2_WRITE_CHILD = 0x02D5,
         J2_WRITE_PARENT = 0x02D4,
         J2_CLOSE_TRACK = 0x02C2,
+        J2_JMPTBL = 0x00F3,
 
 
     }
