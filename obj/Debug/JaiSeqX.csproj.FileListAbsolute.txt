@@ -1,0 +1,7 @@
+F:\GIT\JAISEQXLJA\JaiSeqX\bin\Debug\tahoma.ttf
+F:\GIT\JAISEQXLJA\JaiSeqX\bin\Debug\JaiSeqX.exe
+F:\GIT\JAISEQXLJA\JaiSeqX\bin\Debug\JaiSeqX.pdb
+F:\GIT\JAISEQXLJA\JaiSeqX\obj\Debug\JaiSeqX.csproj.AssemblyReference.cache
+F:\GIT\JAISEQXLJA\JaiSeqX\obj\Debug\JaiSeqX.csproj.CoreCompileInputs.cache
+F:\GIT\JAISEQXLJA\JaiSeqX\obj\Debug\JaiSeqX.exe
+F:\GIT\JAISEQXLJA\JaiSeqX\obj\Debug\JaiSeqX.pdb

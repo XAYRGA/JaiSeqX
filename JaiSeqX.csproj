@@ -1,113 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{11BAFE96-46C9-440A-A5A8-9B0F0E969078}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>JaiSeqX</RootNamespace>
-    <AssemblyName>JaiSeqX</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Bass.Net">
-      <HintPath>bin\Debug\Bass.Net.dll</HintPath>
-    </Reference>
-    <Reference Include="Be.IO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Be.IO.1.0.0\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+Xamarin.iOS10+MonoTouch10\Be.IO.dll</HintPath>
-    </Reference>
-    <Reference Include="SdlDotNet, Version=6.1.0.0, Culture=neutral, processorArchitecture=x86">
-      <HintPath>packages\SdlDotNet.1.0.0\lib\net20\SdlDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Input.Manipulations" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <Folder Include="jaudio\archive\" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="JAI\Helpers.cs" />
-    <Compile Include="JAI\JASystem.cs" />
-    <Compile Include="JAI\Loaders\JA_BAALoader.cs" />
-    <Compile Include="JAI\Loaders\JA_AAFLoader.cs" />
-    <Compile Include="JAI\Loaders\JASystemLoader.cs" />
-    <Compile Include="JAI\Loaders\JAIInitTypeDetector.cs" />
-    <Compile Include="JAI\Loaders\JA_IBankLoader_V1.cs" />
-    <Compile Include="JAI\Loaders\JA_IBankLoader_V2.cs" />
-    <Compile Include="JAI\Loaders\JA_WSYSLoader_V1.cs" />
-    <Compile Include="JAI\Seq\JAISeqEvent.cs" />
-    <Compile Include="JAI\Seq\JAISeqExecutionFrame.cs" />
-    <Compile Include="JAI\Seq\JAISeqRegisterMap.cs" />
-    <Compile Include="JAI\Seq\JAISeqSubroutine.cs" />
-    <Compile Include="JAI\Seq\JAISeq_Arithmetic.cs" />
-    <Compile Include="JAI\Seq\JAISeq_Flow.cs" />
-    <Compile Include="JAI\Seq\JAISeq_Param.cs" />
-    <Compile Include="JAI\Seq\JAISeq_Perf.cs" />
-    <Compile Include="JAI\JAIInit.cs" />
-    <Compile Include="JAI\Types\JInstrument.cs" />
-    <Compile Include="JAI\Types\JIBank.cs" />
-    <Compile Include="JAI\Types\JOscillator.cs" />
-    <Compile Include="JAI\Types\JSequenceCollection.cs" />
-    <Compile Include="JAI\Types\JSoundTable.cs" />
-    <Compile Include="JAI\Types\JWave.cs" />
-    <Compile Include="JAI\Types\JWaveSystem.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-    <Content Include="bass_fx.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="JAI\Seq\seqdoc.txt" />
-    <Content Include="tahoma.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-    <Content Include="bass.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="packages\SdlDotNet.1.0.0\build\SdlDotNet.targets" Condition="Exists('packages\SdlDotNet.1.0.0\build\SdlDotNet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\SdlDotNet.1.0.0\build\SdlDotNet.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\SdlDotNet.1.0.0\build\SdlDotNet.targets'))" />
-  </Target>
 </Project>
