@@ -801,8 +801,6 @@ namespace JaiSeqXLJA.Player
                                 continue;
                             }
 
-                           
-
 
                             var currentBank = ibnks[bank];
                             if (currentBank == null) {  error("noteOn","Selected IBNK BNK{0} is NULL", bank); break; }
@@ -815,7 +813,7 @@ namespace JaiSeqXLJA.Player
                             if (keyNoteVel == null) { error("noteOn", "Velocity empty BANK{0} PRG{1} -- NOT{2} VAL{3}", bank, program, note, velocity); ; break; }
                             JWave ouData;
                             var snd = JAISeqPlayer.loadSound(keyNoteVel.wsysid, keyNoteVel.wave, out ouData);
-                            if (snd == null) { error("noteOn", "ADPCM Buffer NULL!", keyNoteVel.wsysid, keyNoteVel.wave); Console.WriteLine(" b{0} p{1} -- n{2} v{3}", bank, program, note, velocity); break; }
+                            if (snd == null) { error("noteOn", "ADPCM Buffer NULL!", keyNoteVel.wsysid, keyNoteVel.wave); Console.WriteLine(" {4} b{0} p{1} -- n{2} v{3}", bank, program, note, velocity,TrackName); break; }
 
     
                             var newVoice = new JAIDSPVoice(ref snd);

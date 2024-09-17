@@ -1,7 +1,4 @@
-﻿#define heaptagging
-
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,15 +32,12 @@ namespace JaiSeqXLJA
         static void Main(string[] args)
         {
 
-            //var kk = File.ReadAllBytes("ghhgh.adpcm");
-            //File.WriteAllBytes("data.pcm", DSP.JAIDSPADPCM4.ADPCMToPCM16(kk, JAIDSPADPCM4.ADPCMFormat.FOUR_BIT));
-
 #if DEBUG
             args = new string[]
             {
                 @"jaiinit_sms.aaf",
                 "visu",
-                "smsseq/k_kagemario.c.bms",
+                "smsseq/t_pinnapaco_m.bms",
                 "0",
 
                 "-jdsp.device",
@@ -55,7 +49,7 @@ namespace JaiSeqXLJA
                 //"0,1,2,3,4,5,6,7,8,9,10,12,13,14,15",
 
                 "-paused",
-                "-nodkwhistle",
+   
 
             };
 #endif  

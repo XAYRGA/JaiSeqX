@@ -21,21 +21,18 @@ namespace JaiSeqXLJA.DSP
             byte obfu = 0xDA;
             byte[] eml = new byte[]
             {
-                0xBE, 0xBB, 0xB4,0xBF,0x9A,0xA2,0xBB,0xA3,0xA8,0xF4,0xBD,0xBB,
-            };
+                0xBE, 0xBB, 0xB4,0xBF,0x9A,0xA2,0xBB,0xA3,0xA8,0xF4,0xBD,0xBB,};
 
             byte[] rkey = new byte[]
             {
                 0xE8,0x82,0xE3,0xE9,0xE8,0xE9,0xEB,0xE8,0xEE,0xE9,0xE9,
             };
             for (int i = 0; i < eml.Length; i++)
-            {
                 eml[i] ^= (obfu);
-            }
+   
             for (int i = 0; i < rkey.Length; i++)
-            {
                 rkey[i] ^= (obfu);
-            }
+  
             #endregion
             Un4seen.Bass.BassNet.Registration(Encoding.ASCII.GetString(eml), Encoding.ASCII.GetString(rkey));
             Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_SRC, 6); //  SINC POLYPOINT 128
@@ -43,19 +40,13 @@ namespace JaiSeqXLJA.DSP
 
 
             Bass.BASS_Init(JaiSeqXLJA.findDynamicNumberArgument("-jdsp.device", -1), 48000, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero); // Initialize audio engine
-
-    
-
-            BassFx.LoadMe();
+            BassFx.FreeMe();
+ 
             BASS_DEVICEINFO info = new BASS_DEVICEINFO(); // Print device info. 
             for (int n = 0; Bass.BASS_GetDeviceInfo(n, info); n++)
-            {
                 Console.WriteLine($"{n} = {info.ToString()} ");
-            }
 
 
-
-         
             globalLoopProc = new SYNCPROC(DoLoop);
  
             return true;
@@ -63,7 +54,7 @@ namespace JaiSeqXLJA.DSP
         public static bool Deinit() // free's engine thread
         {
             Bass.BASS_Free();
-            BassFx.FreeMe();
+            BassFx.LoadMe();
             return true;
         }
 
