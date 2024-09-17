@@ -38,7 +38,7 @@ namespace JaiSeqX
             {
                 frac += 0.1f;
                 Thread.Sleep(100);
-                Console.WriteLine(InterpolateTable(CURVE_LINEAR,0));
+                Console.WriteLine(InterpolateTable(CURVE_LINEAR,frac));
                 if (frac >= 1)
                     frac = 0;
                 

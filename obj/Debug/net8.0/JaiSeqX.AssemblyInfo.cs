@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JaiSeqX")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fc23562133abfb628b831f7ea412bd7fbe688be8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8ef3f4ae0a4011299bbf7830782fb157952c8e6c")]
 [assembly: System.Reflection.AssemblyProductAttribute("JaiSeqX")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JaiSeqX")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
