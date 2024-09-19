@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
@@ -9,24 +8,28 @@
     <Platforms>AnyCPU;x86</Platforms>
     <ApplicationIcon>assets\jaiseqx_icon_HSx_icon.ico</ApplicationIcon>
   </PropertyGroup>
-
   <ItemGroup>
     <Content Include="assets\jaiseqx_icon_HSx_icon.ico" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Be.IO" Version="1.0.0" />
     <PackageReference Include="Veldrid.ImageSharp" Version="4.9.0" />
     <PackageReference Include="Veldrid.ImGui" Version="5.72.0" />
     <PackageReference Include="Veldrid.StartupUtilities" Version="4.9.0" />
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="Bass.Net">
       <HintPath>nonfree\Bass.Net.dll</HintPath>
     </Reference>
+    <Reference Include="SixLabors.ImageSharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13">
+      <HintPath>..\packages\SixLabors.ImageSharp.2.1.9\lib\netcoreapp3.1\SixLabors.ImageSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Text.Encoding.CodePages, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>..\packages\System.Text.Encoding.CodePages.8.0.0\lib\net6.0\System.Text.Encoding.CodePages.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
-
   <ItemGroup>
     <None Update="Arial.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -38,5 +41,4 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
 </Project>
