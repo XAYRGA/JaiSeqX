@@ -268,7 +268,8 @@ namespace JaiSeqXLJA.Visualizer
                 ImGui.Checkbox("Paused", ref Player.JAISeqPlayer.paused);
                 ImGui.SameLine();
                 ImGui.Checkbox("Reverb Settings", ref showReverbMenu);
-
+                ImGui.SameLine();
+                ImGui.Checkbox("Sequence Debug", ref JAISeqPlayer.Debug);
 
                 if (itn != Player.JAISeqPlayer.ppqn || itb != Player.JAISeqPlayer.bpm)
                 {

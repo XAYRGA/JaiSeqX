@@ -23,6 +23,8 @@ namespace libJAudio.Sequence.Inter
         public byte last_opcode; // The last opcode that was executed.
         public Stack<int> AddrStack; // JAISeq return stack, depth of 8, used for CALL and RETURN commands.
         public Queue<JAISeqExecutionFrame> history; // Execution history.  
+        public Queue<byte> regDeref = new Queue<byte>();
+        public string[] rS;
         public int[] rI; // Internal Integer registers  -- for interfacing with sequence. 
         public float[] rF; // Internal Float registers -- for interfacing with sequence.
         public JAISeqInterpreterVersion InterpreterVersion;
@@ -43,6 +45,7 @@ namespace libJAudio.Sequence.Inter
             baseAddress = BaseAddr; // store the base address
             rI = new int[8]; 
             rF = new float[8];
+            rS = new string[8];
            // Console.WriteLine($"Initialized with intver {ver}");
             InterpreterVersion = ver;
         }

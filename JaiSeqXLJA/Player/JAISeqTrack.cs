@@ -74,6 +74,21 @@ namespace JaiSeqXLJA.Player
         public static Random wxxxx;
 
 
+    
+
+
+        private void dbgmsg(string function, string data)
+        {
+
+            if (JAISeqPlayer.Debug) { 
+            Console.Write($"JAISeqTrack::{function} > ");
+            Console.WriteLine(data);
+            }
+        }
+
+
+
+
         public JAISeqTrack(ref byte[] SeqFile, int address, JAISeqInterpreterVersion seqVersion)
         {
             bmsData = SeqFile;
@@ -93,8 +108,6 @@ namespace JaiSeqXLJA.Player
             
             var w = Console.ForegroundColor; Console.ForegroundColor = ConsoleColor.Red; Console.Write($"JAISeqTrack::{function} > "); Console.ForegroundColor = w;
             Console.WriteLine(data);
-         
-
         }
         private void error(string function, string data, params object[] format)
         {
@@ -300,26 +313,20 @@ namespace JaiSeqXLJA.Player
             switch (cond)
             {
                 case 0:
-                    //Console.WriteLine($"0x{pc:x} CHECK CONDITION ON {conditionValue} none");
                     return true;  // oops, all boolean
                 case 1: 
-                    //Console.WriteLine($"0x{pc:x} CHECK CONDITION ON {conditionValue}==0?");
                     if (conditionValue == 0) { return true; }
                     return false;
                 case 2:
-                    //Console.WriteLine($"0x{pc:x} CHECK CONDITION ON {conditionValue}!=0");
                     if (conditionValue != 0) { return true; }
                     return false;
                 case 3: 
-                   // Console.WriteLine($"0x{pc:x} CHECK CONDITION ON {conditionValue}==1");
                     if (conditionValue >= 0) { return true; }
                     return false;
                 case 4: 
-                    //Console.WriteLine($"0x{pc:x} CHECK CONDITION ON {conditionValue} > 0");
                     if (conditionValue <= 0) { return true; }
                     return false;
                 case 5:
-                    //Console.WriteLine($"0x{pc:x} CHECK CONDITION ON {conditionValue}<0");
                     if (conditionValue > 0) { return true; }
                     return false;
             }
@@ -463,7 +470,7 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.WRITEPORT:
                         var portValue = TrackRegisters[(byte)trkInter.rI[1]];
                         writePort(trkInter.rI[0], portValue);
-                        Console.WriteLine($"[{TrackName}@0x{pc:x}] writep {trkInter.rI[0]:X},{trkInter.rI[1]} = {TrackRegisters[3]}");
+                        dbgmsg("proc",$"[{TrackName}@0x{pc:x}] writep {trkInter.rI[0]:X},{trkInter.rI[1]} = {TrackRegisters[3]}");
                         break;
                     case JAISeqEvent.PERF_S8_NODUR:
                     case JAISeqEvent.PERF_S8_DUR_U8:
@@ -576,10 +583,10 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.PARAM_SET_8:
                         {
                             TrackRegisters[(byte)trkInter.rI[0]] = (short)trkInter.rI[1];
-                            Console.WriteLine($"PARAM {trkInter.rI[0]} {trkInter.rI[1]}" );
+                            dbgmsg("proc", $"PARAM {trkInter.rI[0]} {trkInter.rI[1]}" );
                             if (trkInter.rI[0] == 7)
-                                Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] bend octaves to {trkInter.rI[1]} ");
-                            else Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] iprm {trkInter.rI[0]} to 0x{trkInter.rI[1]:X3}");
+                                dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] bend octaves to {trkInter.rI[1]} ");
+                            else dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] iprm {trkInter.rI[0]} to 0x{trkInter.rI[1]:X3}");
 
 
                       
@@ -596,7 +603,7 @@ namespace JaiSeqXLJA.Player
                         {
                             trkInter.jump(trkInter.rI[1]);
                             if (TrackName!="ROOT TRACK")
-                                Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] jumps to 0x{trkInter.rI[1]:X6}");
+                                dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] jumps to 0x{trkInter.rI[1]:X6}");
                         }
                         //else
                             //Console.WriteLine("skip T({0}) jmp C-!> : {1} {2:X} (condition fail)", trackNumber, trkInter.rI[0] & 15, trkInter.rI[1]);
@@ -604,7 +611,7 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.CALL:
 
                         CallStack.Push(trkInter.pc);
-                        Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] calls 0x{trkInter.rI[0]:X6} StackDepth={CallStack.Count}");
+                        dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] calls 0x{trkInter.rI[0]:X6} StackDepth={CallStack.Count}");
                         trkInter.jump(trkInter.rI[0]);
 
                         break;
@@ -638,8 +645,8 @@ namespace JaiSeqXLJA.Player
                                 Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] calltable 0x{old_addr:X} idx={index} to 0x{address:X}");
                                 if (this == JAISeqPlayer.RootTrack)
                                     JaiSeqXLJA.sequenceTransitioning = false;
-                            } else 
-                                Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] calls 0x{trkInter.rI[1]:X6} StackDepth={CallStack.Count}");
+                            } else
+                                dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] calls 0x{trkInter.rI[1]:X6} StackDepth={CallStack.Count}");
 
                             trkInter.jump(address);
                         }
@@ -654,7 +661,7 @@ namespace JaiSeqXLJA.Player
                                 crash();
                             }
                             var retaddr = CallStack.Pop();
-                            Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] returns to 0x{retaddr:X4} StackDepth=0x{CallStack.Count}");
+                            dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] returns to 0x{retaddr:X4} StackDepth=0x{CallStack.Count}");
                             trkInter.jump(retaddr);
                             break;
                         }
@@ -669,17 +676,17 @@ namespace JaiSeqXLJA.Player
                                 crash();
                             }
                             var retaddr = CallStack.Pop();
-                            Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] returns if (R3=={trkInter.rI[0]}) to 0x{retaddr:X4} StackDepth={CallStack.Count}");
+                            dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] returns if (R3=={trkInter.rI[0]}) to 0x{retaddr:X4} StackDepth={CallStack.Count}");
                             trkInter.jump(retaddr);
                         }
                         break;
                     case JAISeqEvent.JUMP:
                         if (TrackName!="ROOT TRACK")
-                            Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] jumps to 0x{trkInter.rI[1]:X6}");
+                            dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] jumps to 0x{trkInter.rI[1]:X6}");
                         trkInter.jump(trkInter.rI[1]);
                         break;
                     case JAISeqEvent.FIN:
-                        Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] HALTS.");                        
+                        dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] HALTS.");                        
                         halted = true;
                         destroyChildren();                      
                         return;
@@ -708,10 +715,10 @@ namespace JaiSeqXLJA.Player
                                 var old_pos = reader.BaseStream.Position;
 
                                 reader.BaseStream.Position = tableOffset + 3 * TrackRegisters[(byte)indexRegister];
-                                Console.WriteLine($"[{old_pos:X}]{trackNumber} Reading from 0x{reader.BaseStream.Position:X}");
+                                dbgmsg("proc", $"[{old_pos:X}]{trackNumber} Reading from 0x{reader.BaseStream.Position:X}");
                                 TrackRegisters[(byte)destReg] = (short)Helpers.ReadUInt24BE(trkInter.Sequence);
 
-                                Console.WriteLine($"Loaded address 0x{TrackRegisters[(byte)destReg]:X} ");
+                                dbgmsg("proc", $"Loaded address 0x{TrackRegisters[(byte)destReg]:X} ");
                                 reader.BaseStream.Position = old_pos;
                             }
 
@@ -735,7 +742,7 @@ namespace JaiSeqXLJA.Player
                             break;
                         }
                     case JAISeqEvent.J2_SET_ARTIC:
-                        Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] sets parameter {trkInter.rI[0]:X} to 0x{trkInter.rI[1]:X3} R3 = 0x{TrackRegisters[(byte)trkInter.rI[0]]:X}");
+                        dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] sets parameter {trkInter.rI[0]:X} to 0x{trkInter.rI[1]:X3} R3 = 0x{TrackRegisters[(byte)trkInter.rI[0]]:X}");
                         if (trkInter.rI[0] == 0x62)
                         {
                             JAISeqPlayer.ppqn = trkInter.rI[1];
@@ -782,7 +789,27 @@ namespace JaiSeqXLJA.Player
                         Console.WriteLine($"Vibpitch {trkInter.rI[0]}");
                         vibPitch = trkInter.rI[0];
                         break;
-               
+                    case JAISeqEvent.J2_PRINTF:
+                        {
+                            var strMsg = trkInter.rS[0];
+                            for (int i = 0; i < trkInter.regDeref.Count; i++)
+                            {
+                                var reg = trkInter.regDeref.Dequeue();
+                                var deref = TrackRegisters[reg];
+                                int position = strMsg.IndexOf("%r");
+                  
+                                if (position < 0)
+                                    break;                                
+                                strMsg = strMsg.Substring(0, position) + deref + strMsg.Substring(position + 2);                               
+                            }
+                            var k = Console.ForegroundColor;
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.Write("[JAISeqTrack::printf]");
+                            Console.ForegroundColor = k;
+                            Console.WriteLine($": {strMsg}");
+                           
+                        }
+                        break;               
                     case JAISeqEvent.NOTE_ON:
                         {
 
@@ -842,17 +869,19 @@ namespace JaiSeqXLJA.Player
                             if (currentInst.oscillatorCount > 0)
                                 newVoice.setOcillator(currentInst.oscillators[0]);
 
+
                             //if (currentInst.oscillatorCount > 1)
                             //    Console.WriteLine($"Unsupported multi-oscillator instrument :( {currentInst.oscillators[1].target}");
                             
                             newVoice.play();
+                            newVoice.updateVoice(timeDiffMS);
                      
                             addVoice(newVoice, (byte)voice);
                             break;
                         }
                     case JAISeqEvent.WRITE_PARENT_PORT:
                         Ports[trkInter.rI[0]] = TrackRegisters[(byte)trkInter.rI[1]];
-                        Console.WriteLine($"Writing port {trkInter.rI[0]}({Ports[trkInter.rI[0]]}) from reg {trkInter.rI[1]}({TrackRegisters[(byte)trkInter.rI[1]]}");
+                        dbgmsg("proc", $"Writing port {trkInter.rI[0]}({Ports[trkInter.rI[0]]}) from reg {trkInter.rI[1]}({TrackRegisters[(byte)trkInter.rI[1]]}");
                         break;
                     case JAISeqEvent.NOTE_OFF:
                         {
@@ -904,10 +933,10 @@ namespace JaiSeqXLJA.Player
                             var old_pos = reader.BaseStream.Position;
                           
                             reader.BaseStream.Position = TrackRegisters[(byte)address_register] + 3 * TrackRegisters[(byte)relative_register];
-                            Console.WriteLine($"[{old_pos:X}]{trackNumber} Reading from 0x{reader.BaseStream.Position:X}");
+                            dbgmsg("proc", $"[{old_pos:X}]{trackNumber} Reading from 0x{reader.BaseStream.Position:X}");
                             TrackRegisters[(byte)dest_register] = (short)Helpers.ReadUInt24BE(trkInter.Sequence);
 
-                            Console.WriteLine($"Loaded address 0x{TrackRegisters[(byte)dest_register]:X} ");
+                            dbgmsg("proc", $"Loaded address 0x{TrackRegisters[(byte)dest_register]:X} ");
                             reader.BaseStream.Position = old_pos;
                      
                             break;
@@ -928,7 +957,8 @@ namespace JaiSeqXLJA.Player
                             newTrk.TrackName = Parent == null ? $"Track {newTrk.trackNumber}" : $"Child {this.trackNumber}.{trackID}";
                             newTrk.muted = getTrackMuteArg(tid);
                             newTrk.Parent = this;
-                            Console.WriteLine($"OVERRIDE {trackID} New track at 0x{data:X}");
+                            dbgmsg("proc", $"OVERRIDE {trackID} New track at 0x{data:X}");
+                            JaiSeqXLJA.sequenceTransitioning = false;
                             if (Children.ContainsKey(trackID))
                             {
                                 Children[trackID].destroy();
@@ -951,7 +981,8 @@ namespace JaiSeqXLJA.Player
                             var tid = Parent == null ? $"{newTrk.trackNumber}" : $"{this.trackNumber}.{trackID}";
                             newTrk.TrackName = Parent == null ? $"Track {newTrk.trackNumber}" : $"Child {this.trackNumber}.{trackID}";
                             newTrk.muted = getTrackMuteArg(tid);
-                            Console.WriteLine($"OVERRIDE {newTrk.TrackName} New track at 0x{data:X}");
+                            dbgmsg("proc", $"OVERRIDE {newTrk.TrackName} New track at 0x{data:X}");
+                            JaiSeqXLJA.sequenceTransitioning = false;
                             newTrk.Parent = this;
 
 
@@ -973,12 +1004,12 @@ namespace JaiSeqXLJA.Player
                             if (mode == 1)
                             {
                                 TrackRegisters[3] =  (TrackRegisters[destReg] += (short)Value);
-                                Console.WriteLine($"{pc:X} CMPR {TrackRegisters[destReg]} {destReg} ADD {Value} ");
+                                dbgmsg("proc", $"{pc:X} CMPR {TrackRegisters[destReg]} {destReg} ADD {Value} ");
                             }
                             else if (mode == 3)
                             {
                                 TrackRegisters[3] = (short)(TrackRegisters[destReg] - (short)Value);
-                                Console.WriteLine($"{pc:X}  CMPR {TrackRegisters[destReg]} ({destReg}) COMPARE {Value} ({TrackRegisters[3]})");
+                                dbgmsg("proc", $"{pc:X}  CMPR {TrackRegisters[destReg]} ({destReg}) COMPARE {Value} ({TrackRegisters[3]})");
                             }
 
                             break;
@@ -992,12 +1023,12 @@ namespace JaiSeqXLJA.Player
                             if (mode == 1)
                             {
                                 TrackRegisters[3] = (TrackRegisters[destReg] += TrackRegisters[srcReg]);
-                                Console.WriteLine($"{pc:X} CMPRREG {TrackRegisters[destReg]} {destReg} ADD {TrackRegisters[srcReg]} ");
+                                dbgmsg("proc", $"{pc:X} CMPRREG {TrackRegisters[destReg]} {destReg} ADD {TrackRegisters[srcReg]} ");
                             }
                             else if (mode == 3)
                             {
                                 TrackRegisters[3] = (short)(TrackRegisters[destReg] - (short)TrackRegisters[srcReg]);
-                                Console.WriteLine($"{pc:X}  CMPRREG {destReg}={TrackRegisters[destReg]} COMPARE {srcReg}={TrackRegisters[srcReg]}  ({TrackRegisters[3]})");
+                                dbgmsg("proc", $"{pc:X}  CMPRREG {destReg}={TrackRegisters[destReg]} COMPARE {srcReg}={TrackRegisters[srcReg]}  ({TrackRegisters[3]})");
                             }
 
                             break;
@@ -1055,7 +1086,7 @@ namespace JaiSeqXLJA.Player
                             var child_id = (port >> 4) & 0xF;
                             var portid = port & 0xF;
 
-                            Console.WriteLine($"Writing r0 = {TrackRegisters[(byte)reg]} to port {portid} on child {child_id:X} {port:X}");
+                            dbgmsg("proc", $"Writing r0 = {TrackRegisters[(byte)reg]} to port {portid} on child {child_id:X} {port:X}");
 
                             if (Children.ContainsKey(child_id))
                                 Children[child_id].Ports[portid]  = TrackRegisters[(byte)reg];

@@ -32,6 +32,8 @@ namespace JaiSeqXLJA.Player
         public static int syncCallbackValue = 0;
         public static int syncRegValue = 0;
         public static string awPath = "Banks";
+        public static bool Debug = false;
+
         public static void init()
         {
             paused = JaiSeqXLJA.findDynamicFlagArgument("-paused");
@@ -141,7 +143,7 @@ namespace JaiSeqXLJA.Player
             {
                 try
                 {
-                    var w = File.OpenRead("Banks/" + waveData.wsysFile); // 
+                    var w = File.OpenRead($"{awPath}/{waveData.wsysFile}"); // 
                     awHandles[waveData.wsysFile] = w;
                     var fg = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Red;

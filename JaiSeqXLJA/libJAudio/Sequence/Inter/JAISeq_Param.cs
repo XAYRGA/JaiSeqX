@@ -79,15 +79,20 @@ namespace libJAudio.Sequence.Inter
                             var lastread = -1;
                             string v = "";
                             var extra = 0;
+                            regDeref.Clear();
                             while (lastread != 0)
                             {
                                 if (lastread == '%')
                                     extra++;
                                 lastread = Sequence.ReadByte();
+                           
                                 v += (char)lastread;
                             }
-                            Sequence.ReadBytes(extra);                          
-                            Console.WriteLine($"JAISeq -- printf: {v}");
+                            rS[0] = v;
+                            for (int i=0; i < extra; i++)
+                                regDeref.Enqueue(Sequence.ReadByte());
+
+                            rI[1] = extra;
                             return JAISeqEvent.J2_PRINTF;
                         }
                         return JAISeqEvent.UNKNOWN;

@@ -97,7 +97,7 @@ namespace JaiSeqXLJA.DSP
             for (int i = 0; i < panMatrix.Length; i++)
                 panValue *= ((panMatrix[i]) / 64f);
 
-            //panValue *= panValue;
+            panValue = (float)Math.Sqrt(panValue);
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,  panValue -1f );
         }
         
@@ -238,7 +238,7 @@ namespace JaiSeqXLJA.DSP
             var panValue = 1f;
             for (int i = 0; i < panMatrix.Length; i++)
                 panValue *= ((panMatrix[i]) / 64f);
-            //panValue *= panValue;
+            panValue = (float)Math.Sqrt(panValue);
 
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,  panValue -1f );
 

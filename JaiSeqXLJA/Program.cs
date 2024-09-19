@@ -35,21 +35,21 @@ namespace JaiSeqXLJA
 #if DEBUG
             args = new string[]
             {
-                @"jaiinit_sms.aaf",
+                @"JAudio.aaf",
                 "visu",
-                "smsseq/t_pinnapaco_m.bms",
+                "e_ganon.bms",
                 "0",
 
                 "-jdsp.device",
                 "1",
-                "-awpath",
-                "sms/banks",
+           
                 //"0.0,0.12,0.13,0.14,0.15",
                 //"0",
                 //"0,1,2,3,4,5,6,7,8,9,10,12,13,14,15",
 
                 "-paused",
-   
+          
+          
 
             };
 #endif  
