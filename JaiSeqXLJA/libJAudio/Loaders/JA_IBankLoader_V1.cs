@@ -369,12 +369,23 @@ namespace libJAudio.Loaders
                 var pn = binStream.ReadByte();
                 if (keys[i] != null)
                     keys[i].Pan = pn;
+            }
 
-            }                    
-                
+            for (int i = 0; i < 128; i++)
+            {
+                var rel = binStream.ReadByte();
+                var atk = binStream.ReadByte();
+                if (keys[i] != null)
+                {
+                    keys[i].release = rel;
+                    keys[i].attack = atk;
+                }
+            }
 
 
-            
+
+
+
             return Inst;
         }
 

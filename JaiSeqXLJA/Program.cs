@@ -35,22 +35,18 @@ namespace JaiSeqXLJA
 #if DEBUG
             args = new string[]
             {
-                @"JAudio.aaf",
+                @"gckart.baa",
                 "visu",
-                "e_ganon.bms",
-                "0",
+                "0002.bms",
+                "1",
 
                 "-jdsp.device",
                 "1",
-           
-                //"0.0,0.12,0.13,0.14,0.15",
+         
                 //"0",
                 //"0,1,2,3,4,5,6,7,8,9,10,12,13,14,15",
 
-                "-paused",
-          
-          
-
+             
             };
 #endif  
         

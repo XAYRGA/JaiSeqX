@@ -17,6 +17,12 @@ namespace JaiSeqXLJA.DSP
         float targetDuration = 0;
         public int Value { get => (int)currentValue; }
         public float fValue { get => currentValue; }
+
+        public JAIDSPLinearSlide(float init = 0)
+        {
+            currentValue = init;
+            lastValue = init;
+        }
         public void setTarget(float value, int durationTicks)
         {
             //Console.WriteLine($"JAIDSPLinearSlide: Set target Δ={value} t={durationTicks}");
@@ -26,6 +32,7 @@ namespace JaiSeqXLJA.DSP
                 duration = 0;
                 targetDuration = 0;
                 currentValue = value;
+                lastValue = currentValue;
                 return;
             }
             valueDelta = value - currentValue;

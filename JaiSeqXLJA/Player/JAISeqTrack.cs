@@ -64,6 +64,7 @@ namespace JaiSeqXLJA.Player
         public float pitchBendValue = 1f;
         public float currentVibrato = 1f;
         private JAIDSPLinearSlide pitchBend = new JAIDSPLinearSlide();
+        private JAIDSPLinearSlide volumeBend = new JAIDSPLinearSlide(1);
         public float pitchTarget;
 
         
@@ -167,17 +168,22 @@ namespace JaiSeqXLJA.Player
             return firstFloat * (1 - by) + secondFloat * by;
         }
 
-        public void updateTrackVolume(float volume)
+        public void updateTrackVolume()
         {
+            //Console.WriteLine($"{volume} {volumeBend.fValue}");
+            var vsquare = volumeBend.fValue * volumeBend.fValue;
+            if (volume != vsquare)
+            {
+                volume = volumeBend.fValue;
+                for (int i = 0; i < voices.Length; i++)
+                    if (voices[i] != null)
+                        voices[i].setVolumeMatrix(2, this.volume);
 
-            this.volume = volume * volume;
-            for (int i = 0; i < voices.Length; i++)
-                if (voices[i] != null)
-                    voices[i].setVolumeMatrix(2, this.volume);
-
-            for (int i = 0; i < voiceOrphans.Length; i++)
-                if (voiceOrphans[i] != null)
-                    voiceOrphans[i].setVolumeMatrix(2, this.volume);
+                for (int i = 0; i < voiceOrphans.Length; i++)
+                    if (voiceOrphans[i] != null)
+                        voiceOrphans[i].setVolumeMatrix(2, this.volume);
+              
+            }
         }
 
         public void updateTrackReverb(float reverb)
@@ -195,7 +201,7 @@ namespace JaiSeqXLJA.Player
         public void updateTrackPanning(float panning)
         {
 
-            var fp = (64f - panning) + 64f;
+            var fp = (panning - 64f) + 64f;
 
             this.panning = fp;
             for (int i = 0; i < voices.Length; i++)
@@ -236,7 +242,8 @@ namespace JaiSeqXLJA.Player
             lastUpdate = JAISeqPlayer.tickTimer.Elapsed.TotalMilliseconds;
 
             pitchBend.update();
-
+            volumeBend.update();
+            updateTrackVolume();
             var bendSemitones = TrackRegisters[7];
             var bendCalc = ((pitchBend.Value / 8192f) * (bendSemitones)) / 12f;
             pitchBendValue = (float)Math.Pow(2, bendCalc);
@@ -289,8 +296,10 @@ namespace JaiSeqXLJA.Player
             if (id >= voices.Length - 1)
                 return;
          
+           
             voices[id].stop();
             voiceStatus[id] = false;
+
 
             for (int i = 0; i < voiceOrphans.Length; i++)
                 if (voiceOrphans[i] == null)
@@ -493,8 +502,9 @@ namespace JaiSeqXLJA.Player
                             else if (trkInter.rI[0] == 0)
                             {
                                 //Console.WriteLine($"{opcode} {trkInter.rI[1]}");
-                                volume = trkInter.rF[0];
-                                updateTrackVolume((float)volume);
+
+                                volumeBend.setTarget(trkInter.rF[0], trkInter.rI[2]);
+                                updateTrackVolume();
                             }
                             else if (trkInter.rI[0] == 3)
                             {
@@ -506,7 +516,10 @@ namespace JaiSeqXLJA.Player
                             else if (trkInter.rI[0] == 9)
                             {
                                 vibratoDepth = trkInter.rI[1];
-                                //Console.WriteLine($"Vibrato depth for {trackNumber} set to {vibratoDepth}");
+                                dbgmsg("proc", $" [{TrackName}@0x{trkInter.pcl:X5}] VIBR P={trkInter.rI[0]} V={trkInter.rI[1]}");
+                            } else
+                            {
+                                dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] UNKPRM P={trkInter.rI[0]} V={trkInter.rI[1]}");
                             }
                             break;
                         }
@@ -557,10 +570,14 @@ namespace JaiSeqXLJA.Player
                             }
                             else if ((byte)trkInter.rI[0] == 0)
                             {
-                                //Console.WriteLine(trkInter.rI[1] / 128f);
-                                updateTrackVolume(trkInter.rI[1] / 128f);
+                                //Console.WriteLine(trkInter.rI[1] / 128f
+                                var vol = trkInter.rI[1] / 128f;
+
+                                volumeBend.setTarget(vol, 0);
+                                updateTrackVolume();
                                 //Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] volume to {trkInter.rI[1]}");
-                            } else if (trkInter.rI[0]==2)
+                            }
+                            else if (trkInter.rI[0]==2)
                             {
                                 updateTrackReverb( (trkInter.rI[1] / 128f));
                                 //Console.WriteLine($"!!!!!!!![{TrackName}@0x{trkInter.pcl:X5}] reverb to {trkInter.rI[1]}");
@@ -583,7 +600,7 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.PARAM_SET_8:
                         {
                             TrackRegisters[(byte)trkInter.rI[0]] = (short)trkInter.rI[1];
-                            dbgmsg("proc", $"PARAM {trkInter.rI[0]} {trkInter.rI[1]}" );
+                            dbgmsg("proc", $"{TrackName} RPARAM {trkInter.rI[0]} {trkInter.rI[1]}" );
                             if (trkInter.rI[0] == 7)
                                 dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] bend octaves to {trkInter.rI[1]} ");
                             else dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] iprm {trkInter.rI[0]} to 0x{trkInter.rI[1]:X3}");
@@ -851,9 +868,8 @@ namespace JaiSeqXLJA.Player
                                 desiredPitch = currentInst.Pitch * keyNoteVel.Pitch * keyNote.Pitch;
                             
                             newVoice.setPitchMatrix(0, desiredPitch);
-                            var fVel = ((float)velocity / 127f);
-                            fVel *= (fVel * currentInst.Volume * keyNoteVel.Volume * keyNote.Volume);
-                            var true_volume = fVel ;
+                            var fVel = ((float)velocity / 127f) ;
+                            var true_volume = (fVel * fVel) * currentInst.Volume * keyNoteVel.Volume * keyNote.Volume;
                             true_volume *= Player.JAISeqPlayer.gainMultiplier;
 
                             newVoice.setVolumeMatrix(0,  true_volume );
@@ -868,7 +884,11 @@ namespace JaiSeqXLJA.Player
                    
                             if (currentInst.oscillatorCount > 0)
                                 newVoice.setOcillator(currentInst.oscillators[0]);
-
+                            else if (currentInst.IsPercussion)
+                            {
+                                newVoice.setAttack(keyNote.attack);
+                                newVoice.setRelease(keyNote.release);
+                            }
 
                             //if (currentInst.oscillatorCount > 1)
                             //    Console.WriteLine($"Unsupported multi-oscillator instrument :( {currentInst.oscillators[1].target}");
@@ -904,7 +924,7 @@ namespace JaiSeqXLJA.Player
                             break;
                         }
                     case JAISeqEvent.NOP:
-                        delay = 1;
+                   
                         break;
                     case JAISeqEvent.UNKNOWN:
 

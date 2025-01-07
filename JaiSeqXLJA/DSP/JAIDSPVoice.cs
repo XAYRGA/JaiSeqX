@@ -52,6 +52,9 @@ namespace JaiSeqXLJA.DSP
         private int toStop = 0;
         private bool tryStop = false;
         public bool debug = false;
+        public int attack;
+        public int release;
+        public bool manual_attack_release = false;
 
         JAIDSPEnvelope currentEnv;
 
@@ -97,8 +100,8 @@ namespace JaiSeqXLJA.DSP
             for (int i = 0; i < panMatrix.Length; i++)
                 panValue *= ((panMatrix[i]) / 64f);
 
-            panValue = (float)Math.Sqrt(panValue);
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,  panValue -1f );
+            panValue = panValue;
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,  1f - panValue  );
         }
         
         public void setReverb(float reverb)
@@ -124,7 +127,10 @@ namespace JaiSeqXLJA.DSP
             for (int i = 0; i < gain0Matrix.Length; i++)            
                 vv *= gain0Matrix[i];
 
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL,  vv *  envValue);
+            var finalVol = (vv) * envValue;
+          
+            
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL, finalVol);
         }
 
 
@@ -175,12 +181,12 @@ namespace JaiSeqXLJA.DSP
                     Console.WriteLine($"Instance {voiceHandle:X}  empty envelope vector");
                     FadeStop(100);
                 }
+            } else if (manual_attack_release)
+            {
+                FadeStop(release);
             }
             else
             {
-
-
-     
                 FadeStop(100);
             }
      
@@ -199,6 +205,17 @@ namespace JaiSeqXLJA.DSP
             instOsc = osc;
         }
 
+        public void setAttack(int mils)
+        {
+            attack = mils;
+            manual_attack_release = true;
+        }
+
+        public void setRelease(int mills)
+        {
+            release = mills;
+            manual_attack_release = true;
+        }
 
         public byte updateVoice(double ms)
         {
