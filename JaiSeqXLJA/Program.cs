@@ -26,7 +26,7 @@ namespace JaiSeqXLJA
         public static float fWetMix = 0.824f;
         public static float fWidth = 1f;
         public static bool sequenceTransitioning = false;
-  
+        public static int fixedTranspose = 0;
 
 
         static void Main(string[] args)
@@ -35,13 +35,14 @@ namespace JaiSeqXLJA
 #if DEBUG
             args = new string[]
             {
-                @"gckart.baa",
+                @"jaiinit.aaf",
                 "visu",
-                "0002.bms",
-                "1",
+                "BlueBattle.bms",
+                "0",
 
-                "-jdsp.device",
-                "1",
+                "-paused",
+         
+
          
                 //"0",
                 //"0,1,2,3,4,5,6,7,8,9,10,12,13,14,15",
@@ -84,6 +85,7 @@ namespace JaiSeqXLJA
                         JAIDSP.Init(); // bpth play and visu require the sound engine.       
                         Player.JAISeqPlayer.init();
                         Player.JAISeqPlayer.noDKJBWhistle = findDynamicFlagArgument("-nodkwhistle");
+                        fixedTranspose = findDynamicNumberArgument("-transpose", 0);
                         Player.JAISeqPlayer.startPlayback(sequenceFile, ref JASystem, (JAISeqInterpreterVersion)sequenceVersion);
                         var useVisu = taskFunction == "visu";
                         if (useVisu)

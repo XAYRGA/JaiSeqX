@@ -833,6 +833,7 @@ namespace JaiSeqXLJA.Player
 
 
                             var note = trkInter.rI[0];
+                            note+=JaiSeqXLJA.fixedTranspose;
                             var voice = trkInter.rI[1];
                             var velocity = trkInter.rI[2];
                             var program = TrackRegisters[0x21];
