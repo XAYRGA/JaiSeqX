@@ -35,12 +35,18 @@ namespace JaiSeqXLJA
 #if DEBUG
             args = new string[]
             {
-                @"jaiinit.aaf",
+                @"pikibank.bx",
                 "visu",
-                "BlueBattle.bms",
+                "piki/000007.bms",
                 "0",
+                "-libjaudio.force_init_version",
+                "bx",
+                "-jdsp.forcemap_ibnk_bx",
+                "7",
+             
+   
 
-                "-paused",
+                //"-paused",
          
 
          
@@ -90,8 +96,6 @@ namespace JaiSeqXLJA
                         var useVisu = taskFunction == "visu";
                         if (useVisu)
                             Menu.init();
-
-                       
 
                         while (true)
                         {

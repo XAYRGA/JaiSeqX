@@ -67,18 +67,25 @@ namespace libJAudio.Sequence.Inter
                     {
                       
                         var mode = Sequence.ReadByte();
+                        rI[0] = mode;
                         if (mode == 0x20)
-                        {
-                            rI[0] = mode;
+                        {                           
                             var dest_register = Sequence.ReadByte();
                             var address_register = Sequence.ReadByte();
                             var relative_register = Sequence.ReadByte();
                             rI[1] = dest_register;
                             rI[2] = address_register;
                             rI[3] = relative_register;
+                            return JAISeqEvent.LOADTBL;
+                        } else if (mode==0x14)
+                        {
+       
+                            Sequence.ReadBytes(3);
+                            return JAISeqEvent.LOADTBL;
                         }
-                        return JAISeqEvent.LOADTBL;
+                        return JAISeqEvent.MISS;
                     }
+                    
                 case 0xAD: // ADD16
                     {
                         var destination_reg = Sequence.ReadByte();
@@ -101,7 +108,7 @@ namespace libJAudio.Sequence.Inter
                 case 0xAF: // CMP16                   
                     {
                         var destination_reg = Sequence.ReadByte();
-                        var value = Sequence.ReadByte();
+                        var value = Sequence.ReadUInt16();
                         rI[0] = destination_reg;
                         rI[1] = value;
                         return JAISeqEvent.CMP16;

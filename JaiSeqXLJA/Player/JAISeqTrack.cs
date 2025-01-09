@@ -962,7 +962,11 @@ namespace JaiSeqXLJA.Player
                      
                             break;
                   
+                        } else if (trkInter.rI[0]== 0x14)
+                        {
+                            break;
                         }
+                 
                         crash();
                         break;
                     case JAISeqEvent.OVERRIDE_1:
