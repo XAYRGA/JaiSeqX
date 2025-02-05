@@ -125,11 +125,13 @@ namespace libJAudio.Sequence.Inter
                                 lastread = Sequence.ReadByte();
                                 v += (char)lastread;
                             }
-                            Console.WriteLine(v);
+          
                             var l = Sequence.ReadByte();
                             if (l != 0)
                                 Sequence.BaseStream.Position = Sequence.BaseStream.Position - 1;
-                            return JAISeqEvent.UNKNOWN;
+                            rS[0] = v;
+                            return JAISeqEvent.PRINTF;
+                           
                         }
                     case (byte)JAISeqEvent.SYNC_CPU:
                         skip(2);     
@@ -154,7 +156,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.UNKNOWN;
                     /* 4 byte unknowns */
                     case (byte)JAISeqEvent.OUTSWITCH:
-
+               
                     case (byte)JAISeqEvent.BITWISE:
             
                
@@ -204,6 +206,7 @@ namespace libJAudio.Sequence.Inter
                         return JAISeqEvent.UNKNOWN;
 
                     case 0x90:
+                    
                     case 0xDE: // don't know either.
                         skip(1);
                         return JAISeqEvent.UNKNOWN;
@@ -251,6 +254,12 @@ namespace libJAudio.Sequence.Inter
 
                             return JAISeqEvent.WRITE_CHILD_PORT;
                         }
+                    case 0xE5:
+                        return JAISeqEvent.UNKNOWN;
+                    case (byte)JAISeqEvent.CHECK_PORT_IMPORT:
+                        var port = Sequence.ReadByte();
+                        rI[0] = port;
+                        return JAISeqEvent.CHECK_PORT_IMPORT;
                     case 0xF6:
                         return JAISeqEvent.NOP;
                         break;

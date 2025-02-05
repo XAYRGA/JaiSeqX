@@ -108,7 +108,8 @@ namespace JaiSeqXLJA.Visualizer
             else
             {
                 //DEL: {w.delay:X4}!{w.lastDelay,-8:X4}
-                ImGui.Text($"0x{w.pc:x5}(0x{w.lastOpcode})");
+                //ImGui.Text($"0x{w.pc:x5}(0x{w.lastOpcode})");
+                ImGui.Text($"ADDR = 0x{w.pc:x5}");
             }
         }
 
@@ -270,6 +271,9 @@ namespace JaiSeqXLJA.Visualizer
                 ImGui.Checkbox("Reverb Settings", ref showReverbMenu);
                 ImGui.SameLine();
                 ImGui.Checkbox("Sequence Debug", ref JAISeqPlayer.Debug);
+                ImGui.SameLine();
+                if (ImGui.Button("Dump WaveID"))
+                    JAISeqPlayer.dumpReferencedWaves();
 
                 if (itn != Player.JAISeqPlayer.ppqn || itb != Player.JAISeqPlayer.bpm)
                 {
@@ -374,6 +378,7 @@ namespace JaiSeqXLJA.Visualizer
                         JaiSeqXLJA.sequenceTransitioning = true;
                         kk = 200;
                     }
+                    Player.JAISeqPlayer.RootTrack.portImport = true;
                 }
                 if (Math.Sin(JAISeqPlayer.tickTimer.ElapsedMilliseconds / 100f) > 0 && JaiSeqXLJA.sequenceTransitioning)
                 {

@@ -36,6 +36,7 @@ namespace JaiSeqXLJA.Player
         public float panning = 64f;
         public float vibratoDepth = 0;
         public bool[] voiceStatus = new bool[8];
+        public bool portImport = false;
 
 
         public int transpose = 0;
@@ -440,6 +441,7 @@ namespace JaiSeqXLJA.Player
                 try
                 {
                     opcode = trkInter.loadNextOp(); // load next operation\
+                    
 
                 }
                 catch (Exception E)
@@ -463,7 +465,14 @@ namespace JaiSeqXLJA.Player
 
                 switch (opcode)
                 {
-            
+
+                    case JAISeqEvent.CHECK_PORT_IMPORT:
+                        if (portImport==true)
+                        {
+                            TrackRegisters[3] = (byte)Ports[trkInter.rI[0]];
+                            portImport = false;
+                        }
+                        break;
                     case JAISeqEvent.READPORT:
                         TrackRegisters[(byte)trkInter.rI[1]] = (short)Ports[trkInter.rI[0]];
                         TrackRegisters[3] = (short)Ports[trkInter.rI[0]];
@@ -551,6 +560,9 @@ namespace JaiSeqXLJA.Player
                                 Children[trackID].destroy();
                                 Children.Remove(trackID);
                             }
+                            for (int i=0; i < 8; i++)                            
+                                newTrk.Ports[i] = Ports[i];
+                            
                     
                             Children.Add(trackID, newTrk);
 
@@ -603,8 +615,16 @@ namespace JaiSeqXLJA.Player
                             dbgmsg("proc", $"{TrackName} RPARAM {trkInter.rI[0]} {trkInter.rI[1]}" );
                             if (trkInter.rI[0] == 7)
                                 dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] bend octaves to {trkInter.rI[1]} ");
-                            else dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] iprm {trkInter.rI[0]} to 0x{trkInter.rI[1]:X3}");
+                            else if (trkInter.rI[0]==6)
+                            {
+                                var data = trkInter.rI[1];
+                                TrackRegisters[0x20] = (byte)(data >>8 );
+                                TrackRegisters[0x21] = (byte)(data & 0xFF);
+                               
+                            }
+                            else dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] iprm {trkInter.rI[0]} to 0x{trkInter.rI[1]:X3}"); 
 
+                           
 
                       
                             break;
@@ -613,17 +633,40 @@ namespace JaiSeqXLJA.Player
                         vibratoDepth = trkInter.rI[0];
                         break;
                     case JAISeqEvent.JUMP_CONDITIONAL:
-                        var flg = trkInter.rI[0];
-                        //Console.WriteLine($"{pc:X} {flg & 0xF}, {flg >> 8}");
-                       
-                        if (checkCondition((byte)(trkInter.rI[2])))
                         {
-                            trkInter.jump(trkInter.rI[1]);
-                            if (TrackName!="ROOT TRACK")
-                                dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] jumps to 0x{trkInter.rI[1]:X6}");
-                        }
-                        //else
+                            var flg = trkInter.rI[0];
+
+                            if ((flg & 0xC0) == 0xC0)
+                            {
+                                var addressx = trkInter.rI[1];
+                                var reader = trkInter.Sequence;
+                                var old_pos = reader.BaseStream.Position;
+                                var old_addr = addressx;
+                                var regVal = 0; //TrackRegisters[registerTarget];
+                                var index = TrackRegisters[0];
+                                if (index < 0)
+                                {
+                                    error("JUMP_CONDITIONAL", $"Attempt to jump to negative index {index}");
+                                    break;
+                                }
+                                reader.BaseStream.Position = addressx + 3 * (index);
+                                addressx = (int)Helpers.ReadUInt24BE(reader);
+                  
+                                Console.WriteLine($"[{TrackName}@0x{trkInter.pcl:X5}] jumptable 0x{old_addr:X} idx={index} to 0x{addressx:X}");
+                                reader.BaseStream.Position = addressx;
+                                if (this == JAISeqPlayer.RootTrack)
+                                    JaiSeqXLJA.sequenceTransitioning = false;
+
+                            }
+                            else if (checkCondition((byte)(trkInter.rI[2])))
+                            {
+                                trkInter.jump(trkInter.rI[1]);
+                                if (TrackName != "ROOT TRACK")
+                                    dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] jumps to 0x{trkInter.rI[1]:X6}");
+                            }
+                            //else
                             //Console.WriteLine("skip T({0}) jmp C-!> : {1} {2:X} (condition fail)", trackNumber, trkInter.rI[0] & 15, trkInter.rI[1]);
+                        }
                         break;
                     case JAISeqEvent.CALL:
 
@@ -826,7 +869,19 @@ namespace JaiSeqXLJA.Player
                             Console.WriteLine($": {strMsg}");
                            
                         }
-                        break;               
+                        break;
+                    case JAISeqEvent.PRINTF:
+                        {
+                            var strMsg = trkInter.rS[0];
+                           
+                            var k = Console.ForegroundColor;
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.Write("[JAISeqTrack::printf]");
+                            Console.ForegroundColor = k;
+                            Console.WriteLine($": {strMsg}");
+
+                        }
+                        break;
                     case JAISeqEvent.NOTE_ON:
                         {
 
@@ -851,9 +906,9 @@ namespace JaiSeqXLJA.Player
                             if (currentBank == null) {  error("noteOn","Selected IBNK BNK{0} is NULL", bank); break; }
                             if (program >= currentBank.Instruments.Length) { error("noteOn", "Selected PROG PRG{0} is NULL", bank); break; }
                             var currentInst = currentBank.Instruments[program];
-                            if (currentInst == null) { error("noteOn", "Selected PROG is NULL!"); break; }
+                            if (currentInst == null) { error("noteOn", $"Selected PROG is NULL! bnk{bank} prg{program}"); break; }
                             var keyNote = currentInst.Keys[note];
-                            if (keyNote == null) {error("noteOn", "BNKPROG Key Empty BNK{0} PRG{1} -- NOT{2} VAL{3}", bank, program, note, velocity); break; }
+                            if (keyNote == null) { /*error("noteOn", "BNKPROG Key Empty BNK{0} PRG{1} -- NOT{2} VAL{3}", bank, program, note, velocity);*/ break; }
                             var keyNoteVel = keyNote.Velocities[velocity];
                             if (keyNoteVel == null) { error("noteOn", "Velocity empty BANK{0} PRG{1} -- NOT{2} VAL{3}", bank, program, note, velocity); ; break; }
                             JWave ouData;

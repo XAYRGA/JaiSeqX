@@ -100,8 +100,8 @@ namespace JaiSeqXLJA.DSP
             for (int i = 0; i < panMatrix.Length; i++)
                 panValue *= ((panMatrix[i]) / 64f);
 
-            panValue = panValue;
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,  1f - panValue  );
+            panValue = (float)Math.Pow(panValue, 2);
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,   panValue - 1f  );
         }
         
         public void setReverb(float reverb)
@@ -127,7 +127,7 @@ namespace JaiSeqXLJA.DSP
             for (int i = 0; i < gain0Matrix.Length; i++)            
                 vv *= gain0Matrix[i];
 
-            var finalVol = (vv) * envValue;
+            var finalVol = vv * envValue;
           
             
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_VOL, finalVol);
@@ -255,9 +255,9 @@ namespace JaiSeqXLJA.DSP
             var panValue = 1f;
             for (int i = 0; i < panMatrix.Length; i++)
                 panValue *= ((panMatrix[i]) / 64f);
-            panValue = (float)Math.Sqrt(panValue);
+            panValue = (float)Math.Pow(panValue,2);
 
-            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,  panValue -1f );
+            Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,  (panValue -1f)  );
 
             return 0;
         }

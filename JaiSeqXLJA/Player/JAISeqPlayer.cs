@@ -46,16 +46,24 @@ namespace JaiSeqXLJA.Player
         }
 
         private static Dictionary<int, JAIDSPSampleBuffer> waveCache;
+        private static Dictionary<string, string> ReferencedWaves = new Dictionary<string, string>();
         private static Dictionary<string, Stream> awHandles;
         public static JASystem JASPtr;
 
+
+        public static void dumpReferencedWaves()
+        {
+            foreach (var huh in ReferencedWaves)
+                Console.WriteLine($"{huh.Value}");
+       
+        }
         public static void startPlayback(string file, ref JASystem sys, JAISeqInterpreterVersion seqVer)
         {
           
             var contents = File.ReadAllBytes(file);
             RootTrack = new JAISeqTrack(ref contents, 0x00, seqVer); // entry point.
             RootTrack.trackNumber = 0;
-    
+            
             tickTimer = new Stopwatch();
             tickTimer.Start();
             JASPtr = sys;
@@ -110,6 +118,7 @@ namespace JaiSeqXLJA.Player
         public static JAIDSPSampleBuffer loadSound(int wsys_id, int waveID, out JWave data)
         {
             var cacheIndex = (wsys_id << 16) | waveID;
+            ReferencedWaves[cacheIndex.ToString()] = $"{wsys_id} - {waveID}";
             data = null;
             JAIDSPSampleBuffer ret;
             // Not in cache.

@@ -35,25 +35,14 @@ namespace JaiSeqXLJA
 #if DEBUG
             args = new string[]
             {
-                @"pikibank.bx",
+                @"jaiinit.aaf",
                 "visu",
-                "piki/000007.bms",
+                "training_cont.bms",
                 "0",
-                "-libjaudio.force_init_version",
-                "bx",
-                "-jdsp.forcemap_ibnk_bx",
-                "7",
-             
-   
-
-                //"-paused",
-         
-
-         
-                //"0",
-                //"0,1,2,3,4,5,6,7,8,9,10,12,13,14,15",
-
-             
+                "-jdsp.device",
+                "1",
+                "-mute","",           
+                "-paused"     
             };
 #endif  
         

@@ -70,11 +70,17 @@ namespace libJAudio.Sequence.Inter
                 case 0xC8: // JUMP_CONDITIONAL
                     {
                         byte flags = Sequence.ReadByte(); // Read flags.
+                        byte reg = 0;
+                        if (flags == 0xC0)
+                            reg = Sequence.ReadByte();
+
+                        
                         var condition = flags & 15; // last nybble is condition. 
                         var addr = (int)Helpers.ReadUInt24BE(Sequence); // pointer, push to ir1
                         rI[0] = flags;
                         rI[1] = addr;
                         rI[2] = condition;
+                        rI[3] = reg;
                         return JAISeqEvent.JUMP_CONDITIONAL;
                     }
                 case 0xC6: // RETURN_CONDITIONAL
