@@ -313,7 +313,9 @@ namespace jaudio.instrument
         public EJInstrumentEffectTarget Target;
         public float Rate;
         public int AttackEnvelope;
+        public JEnvelopeVector[] AttackEnvelopeReference;
         public int ReleaseEnvelope;
+        public JEnvelopeVector[] ReleaseEnvelopeReference;
         public float Width;
         public float Base;
 

@@ -35,6 +35,9 @@ namespace jaudio
             public int Last;
             public int Penult;
 
+            public int Offset;
+            public int Length;
+
             public enum EWaveFormat
             {
                 ADPCM4 = 0,

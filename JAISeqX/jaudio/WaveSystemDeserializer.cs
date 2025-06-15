@@ -44,10 +44,11 @@ namespace jaudio
 		public JWaveSystem readBank(bgReader reader)
 		{
 
-			loadFromStream(reader);			
-			bank.ID = reader.ReadInt32();
 
-			for (int i = 0; i < Scenes.Length; i++)
+			loadFromStream(reader);
+            bank.ID = id;
+
+            for (int i = 0; i < Scenes.Length; i++)
 			{
 				var Scene = Scenes[i];
 				var Group = Groups[i];
@@ -56,29 +57,28 @@ namespace jaudio
 				NewWSYSScene.AWName = Group.awPath;
 
 				if (Scene.DEFAULT.Length != Group.waves.Length)
-					throw new Exception("Well, shit.");
+					throw new Exception("dang it");
 
 				// C-ST (STATIC) and C-EX (EXTENDED) aren't used.
-				// There's not even code in the executable to load them.
-				// We're only going to worry about the default scene.
 				for (int j = 0; j < Scene.DEFAULT.Length; j++)
 				{	
 					var WaveSceneInfo = Scene.DEFAULT[j];
 					var Wave = Group.waves[j];
 
 					if (WaveSceneInfo.GroupID != i)
-						throw new Exception("God dammit");
+						throw new Exception("darn.");
 
 					var WaveID = WaveSceneInfo.WaveID;
 
 					if (!bank.Waves.ContainsKey(WaveID))
 					{
+
 						var newWave = new JWaveSystem.Wave()
 						{
 							Format = (JWaveSystem.Wave.EWaveFormat)Wave.format,
 							Key = Wave.key,
 							SampleRate = Wave.sampleRate,
-							SampleCount = Wave.sampleCount,	
+							SampleCount = Wave.sampleCount,
 
 							Loop = Wave.loop,
 							LoopStart = Wave.loop_start,
@@ -86,13 +86,17 @@ namespace jaudio
 
 							Last = Wave.last,
 							Penult = Wave.penult,
+
+							Offset = Wave.awOffset,
+							Length = Wave.awLength
 						};
 						
 						bank.Waves[WaveID] = newWave;
 					}
 					NewWSYSScene.Waves.Add(WaveID);				
 				}
-			}
+				bank.Scenes.Add(NewWSYSScene);
+            }
 
 			return bank;
 		}
@@ -132,6 +136,7 @@ namespace jaudio
                 throw new InvalidDataException("Couldn't match WSYS header!");
             var size = rd.ReadInt32BE();
             id = rd.ReadInt32BE();
+
             total_sounds = rd.ReadInt32BE();
 
             var winfOffset = rd.ReadInt32BE();

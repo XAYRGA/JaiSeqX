@@ -1,5 +1,4 @@
 ﻿using jaudio.sequence;
-using JAudioStudio.jaudio.sequence;
 using System;
 using System.Collections.Generic;
 using System.Linq;

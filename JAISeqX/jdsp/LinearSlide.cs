@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 
 
-namespace JaiSeqXLJA.DSP
+namespace jdsp
 {
     internal class LinearSlide
     {

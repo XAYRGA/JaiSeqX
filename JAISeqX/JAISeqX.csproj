@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +15,7 @@
 
   <ItemGroup>
     <Reference Include="Bass.Net">
-      <HintPath>..\..\JAISEQXLJA\JaiSeqX\JaiSeqXLJA\bin\x86\Debug\net6.0\Bass.Net.dll</HintPath>
+      <HintPath>..\Bass.Net.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -221,11 +221,11 @@ namespace jaudio.instrument
 
             reader.Seek(osci.AttackEnvelope);
             if (osci.AttackEnvelope > 0)
-                loadEnvelope();
+                osci.AttackEnvelopeReference = loadEnvelope();
 
             reader.Seek(osci.ReleaseEnvelope);
             if (osci.ReleaseEnvelope > 0)
-                loadEnvelope();
+                osci.ReleaseEnvelopeReference = loadEnvelope();
 
             return osci;
         }

@@ -9,7 +9,7 @@ using Un4seen.Bass.Misc;
 using Un4seen.Bass.AddOn.Fx;
 
 
-namespace JAISeqX.jdsp
+namespace jdsp
 {
     
     static class jdsp
@@ -26,7 +26,7 @@ namespace JAISeqX.jdsp
 
             for (int i = 0; i < rkey.Length; i++)
                 rkey[i] ^= (obfu);
-
+            Console.WriteLine("JDSP Boot!");
             BassNet.Registration(Encoding.ASCII.GetString(eml), Encoding.ASCII.GetString(rkey));
             Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero); // Initialize audio engine
             loopProc = new SYNCPROC(DoLoop);
@@ -34,6 +34,7 @@ namespace JAISeqX.jdsp
 
         public static string[] GetDeviceList()
         {
+         
             BASS_DEVICEINFO info = new BASS_DEVICEINFO(); // Print device info. 
             int n = 0;
             for (n = 0; Bass.BASS_GetDeviceInfo(n, info); n++) ;
@@ -45,7 +46,7 @@ namespace JAISeqX.jdsp
 
         private static void DoLoop(int syncHandle, int channel, int data, IntPtr user)
         {
-            //Bass.BASS_ChannelSetPosition(channel, user.ToInt64(), BASSMode.BASS_POS;
+            Bass.BASS_ChannelSetPosition(channel, user.ToInt64(), BASSMode.BASS_POS_BYTE);
         }
 
         public static bool Deinit() // free's engine thread
