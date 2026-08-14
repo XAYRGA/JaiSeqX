@@ -81,14 +81,15 @@ namespace JaiSeqXLJA.Visualizer
         private static int tickSteps = 0;
         private static long Ticks = 0;
 
-
+        private static Vector2 dummyzero = new Vector2();
         private static void drawTrackText(JAISeqTrack w)
         {
 
             var DrawList = ImGui.GetWindowDrawList();
-            //ImGui.Dummy(new Vector2(0, 2f));
+            var io = ImGui.GetIO();
             ImGui.SameLine();
             var col = 0xFFFFFFFF;
+
             if (w.lastOpcode == "ff-FIN")
             {
                 ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
@@ -101,6 +102,7 @@ namespace JaiSeqXLJA.Visualizer
 
                 if (Math.Sin(JAISeqPlayer.tickTimer.ElapsedMilliseconds / 100f) > 0)
                     col = 0xFF0000FF;
+
                 ImGui.PushStyleColor(ImGuiCol.Text, col);
                 ImGui.Text($"((CRASHED)) 0x{w.pc:x5}(0x{w.lastOpcode})");
                 ImGui.PopStyleColor();
@@ -109,7 +111,100 @@ namespace JaiSeqXLJA.Visualizer
             {
                 //DEL: {w.delay:X4}!{w.lastDelay,-8:X4}
                 //ImGui.Text($"0x{w.pc:x5}(0x{w.lastOpcode})");
-                ImGui.Text($"ADDR = 0x{w.pc:x5}");
+                ImGui.Text($"@ 0x{w.pc:x5}");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    if (io.KeyShift)
+                    {
+                        ImGui.Text($"---{w.TrackName} Ports---");
+                       
+                        for (int i = 0; i < 16; i++)
+                            if (w.Ports[i] == 0)
+                                ImGui.Text($"{PORTS_LIST[i]} = {w.Ports[i]:X}");
+                            else
+                            {
+                                ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
+                                ImGui.Text($"{PORTS_LIST[i]} = {w.Ports[i]:X}");
+                                ImGui.PopStyleColor();
+                            }
+
+                    }
+                    else if (io.KeyAlt)
+                    {
+                        ImGui.Text($"-------------------{w.TrackName} Registers--------------------");
+                        ImGui.Columns(3);
+                        for (byte i = 0; i < 16; i++)
+                            if (w.TrackRegisters[i] > 0)
+                            {
+                                ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
+                                ImGui.Text($"[{i:X2}]={w.TrackRegisters[i]:x3}");
+                                ImGui.PopStyleColor();
+                            }
+                            else                            
+                                ImGui.Text($"[{i:X2}]={w.TrackRegisters[i]:x3}");
+                        ImGui.NextColumn();
+                        for (byte i = 16; i < 32; i++)
+                            if (w.TrackRegisters[i] > 0)
+                            {
+                                ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
+                                ImGui.Text($"[{i:X2}]={w.TrackRegisters[i]:x3}");
+                                ImGui.PopStyleColor();
+                            }
+                            else
+                                ImGui.Text($"[{i:X2}]={w.TrackRegisters[i]:x3}");
+                        ImGui.NextColumn();
+                        for (byte i = 32; i < 48; i++)
+                            if (w.TrackRegisters[i] > 0)
+                            {
+                                ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
+                                ImGui.Text($"[{i:X2}]={w.TrackRegisters[i]:x3}");
+                                ImGui.PopStyleColor();
+                            }
+                            else                                
+                                ImGui.Text($"[{i:X2}]={w.TrackRegisters[i]:x3}");
+                                
+                            
+                    }
+                    else
+                    {
+
+                        ImGui.Text($"------------Track {w.TrackName} Info------------");
+                        ImGui.Text($"Bank: {w.TrackRegisters[0x21]:X}");
+                        ImGui.Text($"Program: {w.TrackRegisters[0x20]:X}");
+                        ImGui.Text($"Offset: 0x{w.pc:X}");
+                        ImGui.Text($"Subroutine: {w.lastCallAddress:X}");
+                        if (w.lastCallAddress > 0)
+                        {
+                            var endAddr = Math.Clamp((float)(w.previousCallEnd - w.lastCallAddress), 0, 999999999);
+                            ImGui.Text("Subroutine progress");
+                            ImGui.SameLine();
+                            ImGui.ProgressBar(((float)(w.pc - w.lastCallAddress) / endAddr));
+                        }
+                        ImGui.Text($"Last Instruction: {w.lastOpcode}");
+                        ImGui.Text("---Stack---");
+                        var starr = w.CallStack.ToArray();
+                        for (int b = 0; b < starr.Length; b++)
+                            ImGui.Text($"\t0x{starr[b]:X}");
+                        ImGui.Text($"Mute: {w.muted}");
+                        ImGui.Text($"Reading from ports: ");
+                        foreach (int b in w.PortReads)
+                        {
+                            ImGui.SameLine();
+                            ImGui.Text($"{b:X2}");
+                        }
+                        ImGui.Text("----------");
+                        ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
+                        ImGui.Text($"ALT = View Registers");
+                        ImGui.Text($"SHIFT = View Ports");
+                        ImGui.PopStyleColor();
+
+                    }
+                    ImGui.EndTooltip();
+                };
+           
+
+               
             }
         }
 
@@ -215,6 +310,27 @@ namespace JaiSeqXLJA.Visualizer
                 drawTrackVibrato(child.Value);
         }
         static int kk = 0;
+
+
+        public enum JAIPortNames
+        {
+            CMD = 0x00,
+            END,
+            STATUS,
+            WAIT,
+            NUMBER,
+            PORT_5,
+            MAP_PORT,
+            NOTE_PORT,
+            SE_SELECT_PORT,
+            BGM_STATUS_PORT,
+            BGM_PORT2,
+            BGM_PORT3,
+            PORT12,
+            PORT13,
+            FILTER_PORT,
+            FX_PORT
+        }
 
         private static string[] PORTS_LIST =
         {
@@ -347,7 +463,6 @@ namespace JaiSeqXLJA.Visualizer
 
             ImGui.Begin("Parameters", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
             {
-
 
                 ImGui.Columns(4);
                 ImGui.Text("VOL");

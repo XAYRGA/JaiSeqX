@@ -58,26 +58,33 @@ namespace JaiSeqXLJA.DSP
 
         JAIDSPEnvelope currentEnv;
 
-        
-        public BASS_BFX_FREEVERB reverbSettings = new BASS_BFX_FREEVERB()
+
+        public BASS_BFX_ECHO4 reverbSettings = new BASS_BFX_ECHO4()
         {
-            fDamp = JaiSeqXLJA.fDamp,
+            fDelay = JaiSeqXLJA.fDamp,
+            bStereo = false,
             fDryMix = JaiSeqXLJA.fDryMix,
-            fRoomSize = JaiSeqXLJA.fRoomSize,
+            fFeedback = JaiSeqXLJA.fRoomSize,
+            lChannel = BASSFXChan.BASS_BFX_CHANALL,
+            
+
+
+            //fDamp = JaiSeqXLJA.fDamp,
+            //fDryMix = JaiSeqXLJA.fDryMix,
+            //fRoomSize = JaiSeqXLJA.fRoomSize,
             //fWetMix = JaiSeqXLJA.fWetMix,
-            fWidth = JaiSeqXLJA.fWidth,
+            // fWidth = JaiSeqXLJA.fWidth,
         };
 
         public JAIDSPVoice(ref JAIDSPSampleBuffer buff)
         {
             rootBuffer = buff;  // save root buffer.
-
-
             
             voiceHandle = Bass.BASS_StreamCreateFile(buff.globalFileBuffer, 0, buff.fileBuffer.Length, BASSFlag.BASS_DEFAULT);
-            fxHandle = Bass.BASS_ChannelSetFX(voiceHandle, BASSFXType.BASS_FX_BFX_FREEVERB, 1);
+           
+            fxHandle = Bass.BASS_ChannelSetFX(voiceHandle, BASSFXType.BASS_FX_BFX_ECHO4, 1);
+
             Bass.BASS_FXSetParameters(fxHandle, reverbSettings); 
-  
 
             if (buff.looped)
                 syncHandle = Bass.BASS_ChannelSetSync(voiceHandle, BASSSync.BASS_SYNC_POS | BASSSync.BASS_SYNC_MIXTIME | BASSSync.BASS_SYNC_THREAD | BASSSync.BASS_SYNC_MIXTIME, buff.loopEnd, JAIDSP.globalLoopProc, new IntPtr(buff.loopStart));
@@ -100,7 +107,7 @@ namespace JaiSeqXLJA.DSP
             for (int i = 0; i < panMatrix.Length; i++)
                 panValue *= ((panMatrix[i]) / 64f);
 
-            panValue = (float)Math.Pow(panValue, 2);
+            //panValue = (float)Math.Pow(panValue, 2);
             Bass.BASS_ChannelSetAttribute(voiceHandle, BASSAttribute.BASS_ATTRIB_PAN,   panValue - 1f  );
         }
         

@@ -33,6 +33,7 @@ namespace JaiSeqXLJA.Player
         public static int syncRegValue = 0;
         public static string awPath = "Banks";
         public static bool Debug = false;
+        public static int sequenceBufferSize = 1;
 
         public static void init()
         {
@@ -61,6 +62,7 @@ namespace JaiSeqXLJA.Player
         {
           
             var contents = File.ReadAllBytes(file);
+            sequenceBufferSize = contents.Length;
             RootTrack = new JAISeqTrack(ref contents, 0x00, seqVer); // entry point.
             RootTrack.trackNumber = 0;
             
@@ -156,9 +158,13 @@ namespace JaiSeqXLJA.Player
                     awHandles[waveData.wsysFile] = w;
                     var fg = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write("DELAY WARNING: ");
+                    Console.Write("JAIDSP: ");
                     Console.ForegroundColor = fg;
-                    Console.WriteLine("Handle for {0} missing! Hotloading...", waveData.wsysFile);
+                    Console.WriteLine(" waveid {1} not loaded! Loading from {0}", waveData.wsysFile,waveID);
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("JAIDSP: ");
+                    Console.ForegroundColor = fg;
+                    Console.WriteLine("ADPCM4 decode during playback! (might stutter)!", waveData.wsysFile, waveID);
 
                     fhnd = w;
                 } catch

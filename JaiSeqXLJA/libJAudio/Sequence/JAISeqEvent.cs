@@ -117,6 +117,9 @@ namespace libJAudio.Sequence
        
         IRCCUTOFF = 0xF1,
         OUTSWITCH = 0xDB,
+        CLRI = 0xE1,
+        SETI = 0xE2,
+        RETI = 0xE3,
         FIRSTSET = 0xED,
         LASTSET = 0xEE,
 

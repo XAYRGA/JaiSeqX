@@ -30,6 +30,8 @@ namespace JaiSeqXLJA.Player
 
         public Stack<int> CallStack = new Stack<int>(32);
         public int[] Ports = new int[32];
+        public List<int> PortReads = new List<int>();
+
         public int trackNumber;
         public int delay;
         public int lastDelay;
@@ -75,8 +77,12 @@ namespace JaiSeqXLJA.Player
 
         public static Random wxxxx;
 
+        public int initialAddress = 0;
+        public int lowestPc = 1;
+        public int farthestPc = 1;
 
-    
+        public int lastCallAddress = 0;
+        public int previousCallEnd = 0;
 
 
         private void dbgmsg(string function, string data)
@@ -99,6 +105,8 @@ namespace JaiSeqXLJA.Player
             voices = new JAIDSPVoice[0xA]; // Even though we only support 7 voices, I can tell that some will linger whenever we stop them.            
             voiceOrphans = new JAIDSPVoice[0xFF];
             interVer = seqVersion;
+            initialAddress = address;
+            lowestPc = initialAddress;
             if (wxxxx == null)
                 wxxxx = new Random(DateTime.Now.Second);
 
@@ -245,6 +253,7 @@ namespace JaiSeqXLJA.Player
             pitchBend.update();
             volumeBend.update();
             updateTrackVolume();
+      
             var bendSemitones = TrackRegisters[7];
             var bendCalc = ((pitchBend.Value / 8192f) * (bendSemitones)) / 12f;
             pitchBendValue = (float)Math.Pow(2, bendCalc);
@@ -261,6 +270,8 @@ namespace JaiSeqXLJA.Player
                 {
                     voices[i].setPitchMatrix(1, pitchBendValue + uhoh);
                     voices[i].setPitchMatrix(2, vibratoValue);
+                    voices[i].setPanMatrix(0, panning);
+               
                     if (voices[i].updateVoice(timeDiffMS)==3)
                         voices[i].stop(); 
                 }
@@ -375,6 +386,7 @@ namespace JaiSeqXLJA.Player
             try
             {
                 realUpdate();
+                updateVoices();
             } catch (Exception E)
             {
                 error("update", $"oops: {E.ToString()}");
@@ -419,16 +431,20 @@ namespace JaiSeqXLJA.Player
         }
         private void realUpdate()
         {
-            updateVoices();
 
-            
+
+
             if (delay > 0) { delay--; }
             if (interrupt_pause)
                 return;
             if (halted) { return; }
             while (delay <= 0 && !halted && !interrupt_pause)
             {
-    
+
+                if (pc > farthestPc)
+                    farthestPc = pc;
+                if (pc  < lowestPc) 
+                    lowestPc = pc;
                 var opcode = JAISeqEvent.UNKNOWN;
                 if (CallStack.Count > 16)
                 {
@@ -476,7 +492,8 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.READPORT:
                         TrackRegisters[(byte)trkInter.rI[1]] = (short)Ports[trkInter.rI[0]];
                         TrackRegisters[3] = (short)Ports[trkInter.rI[0]];
-
+                        if (!PortReads.Contains(trkInter.rI[0]))
+                            PortReads.Add(trkInter.rI[0]);
                 
                         if (this!=JAISeqPlayer.RootTrack)
                         {
@@ -507,6 +524,11 @@ namespace JaiSeqXLJA.Player
                                 pitchTarget = (trkInter.rI[1] / (float)0x7FFF) * 0.7f;
                                 pitchBend.setTarget(trkInter.rI[1], trkInter.rI[2]);
 
+                            }
+                            else if (trkInter.rI[0] == 2)
+                            {
+                                updateTrackReverb((trkInter.rF[0]));
+                                //Console.WriteLine($"!!!!!!!![{TrackName}@0x{trkInter.pcl:X5}] reverb to {trkInter.rI[1]}");
                             }
                             else if (trkInter.rI[0] == 0)
                             {
@@ -673,7 +695,7 @@ namespace JaiSeqXLJA.Player
                         CallStack.Push(trkInter.pc);
                         dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] calls 0x{trkInter.rI[0]:X6} StackDepth={CallStack.Count}");
                         trkInter.jump(trkInter.rI[0]);
-
+                        lastCallAddress = trkInter.rI[0];
                         break;
                     case JAISeqEvent.CALL_CONDITIONAL:
                         var cond = (byte)trkInter.rI[0];
@@ -681,7 +703,7 @@ namespace JaiSeqXLJA.Player
                         var condMode = (byte)(cond & 0xF);
                         var address = trkInter.rI[1];
                         var secondaryIndexRegister = TrackRegisters[0];
-
+                        lastCallAddress = address;
 
                         if (checkCondition(condMode))
                         {
@@ -715,6 +737,7 @@ namespace JaiSeqXLJA.Player
                         break;
                     case JAISeqEvent.RETURN:
                         {
+                            previousCallEnd = trkInter.pcl;
                             if (CallStack.Count == 0)
                             {
                                 Console.WriteLine("!!!!!!!!!Call stack is empty.");
@@ -723,11 +746,14 @@ namespace JaiSeqXLJA.Player
                             var retaddr = CallStack.Pop();
                             dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] returns to 0x{retaddr:X4} StackDepth=0x{CallStack.Count}");
                             trkInter.jump(retaddr);
+                     
+                            lastCallAddress = 0;
                             break;
                         }
                     case JAISeqEvent.RETURN_CONDITIONAL:
 
-                       
+                        lastCallAddress = 0;
+                        previousCallEnd = trkInter.pcl;
                         if (checkCondition((byte)(trkInter.rI[0])))
                         {
                             if (CallStack.Count == 0)
@@ -748,7 +774,7 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.FIN:
                         dbgmsg("proc", $"[{TrackName}@0x{trkInter.pcl:X5}] HALTS.");                        
                         halted = true;
-                        destroyChildren();                      
+                        //destroyChildren();                      
                         return;
                     case JAISeqEvent.J2_SET_BANK:
                         TrackRegisters[0x20] = (byte)trkInter.rI[0];
@@ -760,6 +786,8 @@ namespace JaiSeqXLJA.Player
                         TrackRegisters[(byte)trkInter.rI[1]] = (short)Ports[trkInter.rI[0]];
                         //Console.WriteLine($"READING PORT {trkInter.rI[0]} into reg {trkInter.rI[1]} v={Ports[trkInter.rI[0]]}");
                         TrackRegisters[3] = (short)Ports[trkInter.rI[0]]; // Apparently reads get written to r3
+                        if (!PortReads.Contains(trkInter.rI[0]))
+                            PortReads.Add(trkInter.rI[0]);
                         break;
                     case JAISeqEvent.J2_LOADTBL:
                         {
@@ -894,6 +922,12 @@ namespace JaiSeqXLJA.Player
                             var program = TrackRegisters[0x21];
                             var bank = TrackRegisters[0x20];
                             var ibnks = JaiSeqXLJA.JASystem.Banks;
+                            if (trkInter.rI[3] > 0)
+                            {
+                                delay += trkInter.rI[3];
+                                lastDelay = delay;
+                            }
+                            
 
                             if (muted || ((trackNumber==14 && (note==49 || note==48)) && JAISeqPlayer.noDKJBWhistle))
                             {
@@ -1125,7 +1159,7 @@ namespace JaiSeqXLJA.Player
                     case JAISeqEvent.ADD8:
                         {
                             var srcReg = (byte)trkInter.rI[0];
-                            var destReg = (byte)trkInter.rI[1];
+                            var destReg = (sbyte)trkInter.rI[1];
 
                             TrackRegisters[srcReg] = TrackRegisters[3] = (short)(TrackRegisters[srcReg] + destReg);
                             break;

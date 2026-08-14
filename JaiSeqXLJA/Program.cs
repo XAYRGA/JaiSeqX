@@ -20,29 +20,37 @@ namespace JaiSeqXLJA
     {
         public static string[] cmdargs;
         public static JASystem JASystem;
-        public static float fDamp = 0.032f;
+        public static float fDamp = 0.120f;
         public static float fDryMix = 1f;
-        public static float fRoomSize = 0.634f;
-        public static float fWetMix = 0.824f;
+        public static float fRoomSize = 0.083f;
+        public static float fWetMix = 0.229f;
         public static float fWidth = 1f;
         public static bool sequenceTransitioning = false;
         public static int fixedTranspose = 0;
 
-
         static void Main(string[] args)
         {
 
-#if DEBUG
+#if DEBUG  
             args = new string[]
             {
-                @"jaiinit.aaf",
+                @"F:\GIT\2ooiePC\root\files\AudioRes\PSound.aaf",
                 "visu",
-                "training_cont.bms",
+                "F:\\GIT\\2ooiePC\\root\\files\\AudioRes\\Seqs\\seqall\\seq.2ooie\\new_17.bms",
                 "0",
-                "-jdsp.device",
-                "1",
-                "-mute","",           
-                "-paused"     
+               // "-jdsp.device",
+               // "4",
+               // "-nodkwhistle",
+                //"-jdsp.forcemap_ibnk_bx", "13",
+                //"-mute","0.0,0.15,0.13",
+                //"-libjaudio.force_init_version", "bx",
+                "-paused",
+             
+                "-awpath",
+                "F:\\GIT\\2ooiePC\\root\\files\\AudioRes\\Banks"
+                //"-transpose","5"
+                //"-transpose","12"
+                //"-nodkwhistle"
             };
 #endif  
         

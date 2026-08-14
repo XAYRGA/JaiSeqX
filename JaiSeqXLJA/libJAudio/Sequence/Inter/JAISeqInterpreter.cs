@@ -81,6 +81,10 @@ namespace libJAudio.Sequence.Inter
                 // So this means that the first 0x80 bytes are just pressing the individual keys.
                 rI[1] = Sequence.ReadByte(); // The next byte tells the voice, 0-8
                 rI[2] = Sequence.ReadByte(); // And finally, the next byte will tell the velocity 
+
+                if (rI[1]==0 && InterpreterVersion==JAISeqInterpreterVersion.JA2)
+                    rI[3] = Helpers.ReadVLQ(Sequence);
+                
                 return JAISeqEvent.NOTE_ON; // Return the note on event. 
             } else if (current_opcode==(byte)JAISeqEvent.WAIT_8) // Contrast to above, the opcode between these two is WAIT_U8
             {
@@ -164,7 +168,8 @@ namespace libJAudio.Sequence.Inter
                         skip(4);
                         return JAISeqEvent.UNKNOWN;
                     case (byte)JAISeqEvent.INTERRUPT:
-                        skip(4);
+                        rI[0] = Sequence.ReadByte();
+                        rI[1] = (int)Helpers.ReadUInt24BE(Sequence);
                         return JAISeqEvent.INTERRUPT;
                     /* special case unknowns? */
                     case 0xB2:
@@ -172,7 +177,7 @@ namespace libJAudio.Sequence.Inter
                     case 0xB4:
                     case 0xB5:
                     case 0xB6:
-                    case 0xB7:
+                    case 0xB7:          
                     int flag = Sequence.ReadByte();
                         if (flag == 0x40) { skip(2); }
                         if (flag == 0x80) { skip(4); }
@@ -183,10 +188,11 @@ namespace libJAudio.Sequence.Inter
                     case 0xF9:
            
                     case 0xBE: // Completely unknown
-                 
-                
-                    case 0xE1:
-            
+
+                    case (byte)JAISeqEvent.RETI:
+                        return JAISeqEvent.RETI;
+                    case (byte)JAISeqEvent.CLRI:
+                        return JAISeqEvent.CLRI;      
                     case 0xEB:
                         skip(2);
                         return JAISeqEvent.UNKNOWN;
@@ -256,6 +262,10 @@ namespace libJAudio.Sequence.Inter
                         }
                     case 0xE5:
                         return JAISeqEvent.UNKNOWN;
+                    case 0xE9:
+                        skip(0xD);
+                        return JAISeqEvent.UNKNOWN;
+
                     case (byte)JAISeqEvent.CHECK_PORT_IMPORT:
                         var port = Sequence.ReadByte();
                         rI[0] = port;
